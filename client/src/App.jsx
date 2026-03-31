@@ -6,7 +6,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import RoleRoute from './components/RoleRoute';
 import Layout from './components/Layout';
 
-import Login from './pages/Login';
+import Logins from './pages/Logins';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 
@@ -21,6 +21,7 @@ import MyCourses from './pages/MyCourses';
 import MyOrders from './pages/MyOrders';
 import Profile from './pages/Profile';
 import Help from './pages/Help';
+import LoginForm from './pages/LoginForm';
 
 // ========== LANGUAGE CONTEXT ==========
 const LanguageContext = createContext();
@@ -376,7 +377,7 @@ const Hero = () => {
     <section id="hero" className="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-blue-50 py-20 md:py-28">
       <div className="absolute top-0 -left-40 w-80 h-80 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
       <div className="absolute bottom-0 -right-40 w-80 h-80 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
-      
+
       <Container>
         <div className="flex flex-col lg:flex-row items-center gap-12">
           <div className="flex-1 text-center lg:text-left">
@@ -731,7 +732,9 @@ function App() {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<Logins />} />
+          <Route path="/loginform" element={<LoginForm />} />
+
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/unauthorized" element={<div className="p-8 text-center">Unauthorized access</div>} />
