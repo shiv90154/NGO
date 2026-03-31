@@ -22,6 +22,8 @@ import MyOrders from './pages/MyOrders';
 import Profile from './pages/Profile';
 import Help from './pages/Help';
 import Home from './pages/Home'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+
 // ========== LANGUAGE CONTEXT ==========
 const LanguageContext = createContext();
 
@@ -732,6 +734,8 @@ function App() {
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
           <Route path="home" element={<Home/>}/>
+          <Route path="/PrivacyPolicy" element={<PrivacyPolicy/>}/>
+          
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
