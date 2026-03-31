@@ -6,6 +6,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import RoleRoute from './components/RoleRoute';
 import Layout from './components/Layout';
 
+import Login from './pages/Login'
 import Logins from './pages/Logins';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -21,7 +22,10 @@ import MyCourses from './pages/MyCourses';
 import MyOrders from './pages/MyOrders';
 import Profile from './pages/Profile';
 import Help from './pages/Help';
-import LoginForm from './pages/LoginForm';
+
+import StudentDashboard from './student/Student';
+
+import Home from './pages/Home'
 
 // ========== LANGUAGE CONTEXT ==========
 const LanguageContext = createContext();
@@ -733,8 +737,11 @@ function App() {
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Logins />} />
-          <Route path="/loginform" element={<LoginForm />} />
+          <Route path="/student" element={<StudentDashboard />} />
 
+          <Route path="home" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/logins" element={<Logins />} />
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/unauthorized" element={<div className="p-8 text-center">Unauthorized access</div>} />
@@ -830,9 +837,9 @@ function App() {
 
           {/* 404 */}
           <Route path="*" element={<div className="p-8 text-center">Page Not Found</div>} />
-        </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+        </Routes >
+      </AuthProvider >
+    </BrowserRouter >
   );
 }
 
