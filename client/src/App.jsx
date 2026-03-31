@@ -21,6 +21,7 @@ import MyCourses from './pages/MyCourses';
 import MyOrders from './pages/MyOrders';
 import Profile from './pages/Profile';
 import Help from './pages/Help';
+import Home from './pages/Home'
 import LoginForm from './pages/LoginForm';
 
 // ========== LANGUAGE CONTEXT ==========
@@ -732,6 +733,8 @@ function App() {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
+          <Route path="home" element={<Home/>}/>
+          <Route path="/login" element={<Login />} />
           <Route path="/login" element={<Logins />} />
           <Route path="/loginform" element={<LoginForm />} />
 
