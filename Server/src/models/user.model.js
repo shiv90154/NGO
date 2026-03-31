@@ -6,12 +6,12 @@ const userSchema = new mongoose.Schema({
     // BASIC INFO
     // ======================
     fullName: { type: String, required: true },
-    email: { type: String, unique: true },
+    email: { type: String, unique: true, sparse: true },
     phone: { type: String, required: true },
     password: { type: String, required: true },
 
     // ======================
-    // ROLE & HIERARCHY
+    // ROLE
     // ======================
     role: {
         type: String,
@@ -28,6 +28,23 @@ const userSchema = new mongoose.Schema({
         ],
         default: 'USER'
     },
+
+    // ======================
+    // MODULE ACCESS (🔥 IMPORTANT)
+    // ======================
+    modules: [
+        {
+            type: String,
+            enum: [
+                "EDUCATION",
+                "AGRICULTURE",
+                "FINANCE",
+                "HEALTHCARE",
+                "NEWS",
+                "IT"
+            ]
+        }
+    ],
 
     parentId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -75,15 +92,15 @@ const userSchema = new mongoose.Schema({
     enrolledCourses: [
         {
             courseId: mongoose.Schema.Types.ObjectId,
-            progress: Number,
-            completed: Boolean
+            progress: { type: Number, default: 0 },
+            completed: { type: Boolean, default: false }
         }
     ],
 
     // ======================
     // HEALTHCARE MODULE
     // ======================
-    specialization: String, // for doctor
+    specialization: String,
     experience: Number,
     consultationFee: Number,
     patients: [
@@ -129,16 +146,22 @@ const userSchema = new mongoose.Schema({
     },
 
     // ======================
+    // OTP VERIFICATION (🔥 NEW)
+    // ======================
+    otp: String,
+    otpExpire: Date,
+
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+
+    // ======================
     // STATUS
     // ======================
     isActive: {
         type: Boolean,
         default: true
-    },
-
-    isVerified: {
-        type: Boolean,
-        default: false
     }
 
 }, {

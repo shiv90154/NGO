@@ -6,7 +6,6 @@ const { connectDB } = require('./src/config');
 // DB connect
 connectDB();
 
-// ======================
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
