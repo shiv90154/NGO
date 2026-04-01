@@ -2,60 +2,91 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../config/api";
 
-// Reusable input component
-const Input = ({ label, name, type = "text", placeholder, value, onChange, required = false, error, ...props }) => (
+// Reusable input component with icon option
+const Input = ({ label, name, type = "text", placeholder, value, onChange, onBlur, required = false, error, icon, ...props }) => (
   <div className="mb-4">
     {label && (
       <label className="block text-sm font-medium text-white/80 mb-1">
         {label} {required && <span className="text-orange-400">*</span>}
       </label>
     )}
-    <input
-      type={type}
-      name={name}
-      placeholder={placeholder}
-      value={value}
-      onChange={onChange}
-      className={`w-full px-4 py-2 rounded-lg bg-white/10 border ${
-        error ? "border-red-500" : "border-white/20"
-      } text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-transparent transition`}
-      required={required}
-      {...props}
-    />
-    {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
+    <div className="relative">
+      {icon && (
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <span className="text-white/50 text-sm">{icon}</span>
+        </div>
+      )}
+      <input
+        type={type}
+        name={name}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        onBlur={onBlur}
+        className={`w-full px-4 py-2 rounded-lg bg-white/10 border ${
+          error ? "border-red-500" : "border-white/20"
+        } text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-transparent transition ${
+          icon ? "pl-8" : ""
+        }`}
+        required={required}
+        {...props}
+      />
+    </div>
+    {error && <p className="text-red-400 text-xs mt-1 transition-all">{error}</p>}
   </div>
 );
 
-const Select = ({ label, name, options, value, onChange, required = false, error, multiple = false }) => (
+// Radio group component for gender
+const RadioGroup = ({ label, name, options, value, onChange, error }) => (
   <div className="mb-4">
-    {label && (
-      <label className="block text-sm font-medium text-white/80 mb-1">
-        {label} {required && <span className="text-orange-400">*</span>}
-      </label>
-    )}
-    <select
-      name={name}
-      value={multiple ? value : value || ""}
-      onChange={onChange}
-      multiple={multiple}
-      className={`w-full px-4 py-2 rounded-lg bg-white/10 border ${
-        error ? "border-red-500" : "border-white/20"
-      } text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-transparent transition ${
-        multiple ? "h-32" : ""
-      }`}
-      required={required}
-    >
-      {!multiple && <option value="">Select</option>}
+    {label && <label className="block text-sm font-medium text-white/80 mb-2">{label}</label>}
+    <div className="flex gap-4">
       {options.map((opt) => (
-        <option key={opt.value} value={opt.value} className="bg-gray-800">
-          {opt.label}
-        </option>
+        <label key={opt.value} className="flex items-center gap-2 text-white/80">
+          <input
+            type="radio"
+            name={name}
+            value={opt.value}
+            checked={value === opt.value}
+            onChange={onChange}
+            className="text-orange-500 focus:ring-orange-500 focus:ring-offset-0"
+          />
+          <span>{opt.label}</span>
+        </label>
       ))}
-    </select>
+    </div>
     {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
   </div>
 );
 
+// Checkbox group for modules
+const CheckboxGroup = ({ label, name, options, selectedValues, onChange, error }) => (
+  <div className="mb-4">
+    {label && <label className="block text-sm font-medium text-white/80 mb-2">{label}</label>}
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+      {options.map((opt) => (
+        <label key={opt.value} className="flex items-center gap-2 text-white/80">
+          <input
+            type="checkbox"
+            value={opt.value}
+            checked={selectedValues.includes(opt.value)}
+            onChange={(e) => {
+              const newValues = e.target.checked
+                ? [...selectedValues, opt.value]
+                : selectedValues.filter((v) => v !== opt.value);
+              onChange({ target: { name, value: newValues } });
+            }}
+            className="text-orange-500 focus:ring-orange-500 rounded"
+          />
+          <span>{opt.label}</span>
+        </label>
+      ))}
+    </div>
+    {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
+  </div>
+);
+
+// Enhanced file input with custom button
 const FileInput = ({ label, name, onChange, error }) => {
   const [fileName, setFileName] = useState("");
 
@@ -68,17 +99,12 @@ const FileInput = ({ label, name, onChange, error }) => {
   return (
     <div className="mb-4">
       {label && <label className="block text-sm font-medium text-white/80 mb-1">{label}</label>}
-      <div className="flex items-center gap-2">
-        <input
-          type="file"
-          name={name}
-          onChange={handleFileChange}
-          accept="image/*"
-          className={`flex-1 text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-500 file:text-white hover:file:bg-orange-600 transition ${
-            error ? "border-red-500" : ""
-          }`}
-        />
-        {fileName && <span className="text-xs text-white/70 truncate max-w-[150px]">{fileName}</span>}
+      <div className="flex items-center gap-3">
+        <label className="cursor-pointer bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-lg text-sm font-medium transition">
+          Choose File
+          <input type="file" name={name} onChange={handleFileChange} accept="image/*" className="hidden" />
+        </label>
+        {fileName && <span className="text-xs text-white/70 truncate max-w-[200px]">{fileName}</span>}
       </div>
       {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
     </div>
@@ -92,6 +118,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [touched, setTouched] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
 
   const [form, setForm] = useState({
     fullName: "",
@@ -123,13 +150,11 @@ export default function Register() {
     panImage: null
   });
 
-  // Allowed roles from backend schema
   const VALID_ROLES = [
     'SUPER_ADMIN', 'STATE_OFFICER', 'DISTRICT_MANAGER',
     'BLOCK_OFFICER', 'VILLAGE_OFFICER', 'DOCTOR', 'TEACHER', 'AGENT', 'USER'
   ];
 
-  // Validation logic
   const validateField = (name, value) => {
     switch (name) {
       case "fullName":
@@ -166,8 +191,7 @@ export default function Register() {
   };
 
   const handleModulesChange = (e) => {
-    const selected = Array.from(e.target.selectedOptions).map((opt) => opt.value);
-    setForm((prev) => ({ ...prev, modules: selected }));
+    setForm((prev) => ({ ...prev, modules: e.target.value }));
   };
 
   const handleSubmit = async (e) => {
@@ -192,7 +216,6 @@ export default function Register() {
     try {
       const data = new FormData();
 
-      // Append form fields (skip empty gender)
       Object.keys(form).forEach((key) => {
         const val = form[key];
         if (key === "modules") {
@@ -205,12 +228,10 @@ export default function Register() {
         }
       });
 
-      // Append files
       Object.keys(files).forEach((key) => {
         if (files[key]) data.append(key, files[key]);
       });
 
-      // Role mapping: use param if it's a valid role, otherwise default to USER
       let mappedRole = role?.toUpperCase() || "USER";
       if (!VALID_ROLES.includes(mappedRole)) {
         mappedRole = "USER";
@@ -229,14 +250,12 @@ export default function Register() {
     }
   };
 
-  // Gender options
   const genderOptions = [
     { value: "MALE", label: "Male" },
     { value: "FEMALE", label: "Female" },
     { value: "OTHER", label: "Other" }
   ];
 
-  // Module options
   const moduleOptions = [
     { value: "EDUCATION", label: "Education" },
     { value: "AGRICULTURE", label: "Agriculture" },
@@ -247,11 +266,11 @@ export default function Register() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1e3a5f] to-[#0f172a] py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-8 px-4">
       <div className="max-w-6xl mx-auto">
         <form
           onSubmit={handleSubmit}
-          className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 md:p-8 shadow-2xl"
+          className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 md:p-8 shadow-2xl"
         >
           {/* Header */}
           <div className="text-center mb-8">
@@ -259,17 +278,17 @@ export default function Register() {
             <h2 className="text-2xl md:text-3xl font-bold text-white">
               {role ? `${role.charAt(0).toUpperCase() + role.slice(1)} Registration` : "User Registration"}
             </h2>
-            <p className="text-white/70 mt-2">Create your account to get started</p>
+            <p className="text-white/60 mt-2">Create your account to get started</p>
           </div>
 
           {/* Error message */}
           {error && (
-            <div className="bg-red-500/20 border border-red-500/50 text-red-300 p-3 rounded-lg mb-6 text-center">
+            <div className="bg-red-500/20 border border-red-500/50 text-red-300 p-3 rounded-lg mb-6 text-center animate-pulse">
               {error}
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
             {/* Personal Information */}
             <div className="space-y-2">
               <h3 className="text-lg font-semibold text-white border-b border-white/20 pb-2 mb-4">
@@ -284,6 +303,7 @@ export default function Register() {
                 onBlur={handleBlur}
                 required
                 error={touched.fullName}
+                icon="👤"
               />
               <Input
                 label="Email Address"
@@ -295,6 +315,7 @@ export default function Register() {
                 onBlur={handleBlur}
                 required
                 error={touched.email}
+                icon="📧"
               />
               <Input
                 label="Phone Number"
@@ -306,18 +327,29 @@ export default function Register() {
                 onBlur={handleBlur}
                 required
                 error={touched.phone}
+                icon="📞"
               />
-              <Input
-                label="Password"
-                name="password"
-                type="password"
-                placeholder="At least 6 characters"
-                value={form.password}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                required
-                error={touched.password}
-              />
+              <div className="relative">
+                <Input
+                  label="Password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="At least 6 characters"
+                  value={form.password}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  required
+                  error={touched.password}
+                  icon="🔒"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-[42px] text-white/50 hover:text-white/80"
+                >
+                  {showPassword ? "🙈" : "👁️"}
+                </button>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="Father's Name"
@@ -342,7 +374,7 @@ export default function Register() {
                   value={form.dob}
                   onChange={handleChange}
                 />
-                <Select
+                <RadioGroup
                   label="Gender"
                   name="gender"
                   options={genderOptions}
@@ -434,15 +466,14 @@ export default function Register() {
               </div>
 
               <h3 className="text-lg font-semibold text-white border-b border-white/20 pb-2 mb-4 mt-6">
-                Interests (Select multiple)
+                Interests
               </h3>
-              <Select
-                label="Modules of Interest"
+              <CheckboxGroup
+                label="Select your areas of interest"
                 name="modules"
                 options={moduleOptions}
-                value={form.modules}
+                selectedValues={form.modules}
                 onChange={handleModulesChange}
-                multiple
               />
               {form.modules.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
@@ -459,9 +490,6 @@ export default function Register() {
                   })}
                 </div>
               )}
-              <p className="text-white/60 text-xs mt-1">
-                Hold Ctrl (Cmd on Mac) to select multiple options.
-              </p>
             </div>
           </div>
 
@@ -485,7 +513,7 @@ export default function Register() {
           </button>
 
           {/* Already have an account? – Role-aware link */}
-          <p className="text-center text-white/70 text-sm mt-6">
+          <p className="text-center text-white/60 text-sm mt-6">
             Already have an account?{" "}
             <button
               type="button"
