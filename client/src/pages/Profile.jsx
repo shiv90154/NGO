@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import api from "../services/api";
+import api from "../config/api"; // 🔥 FIXED
 
 const Profile = () => {
   const { user, setUser } = useAuth();
@@ -11,7 +11,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
-    name: user?.name || "",
+    fullName: user?.fullName || "",
   });
 
   const handleChange = (e) => {
@@ -24,12 +24,13 @@ const Profile = () => {
 
       const res = await api.put("/auth/profile", form);
 
-      localStorage.setItem("user", JSON.stringify(res.data));
-      setUser(res.data);
+      const updatedUser = res.data;
+
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setUser(updatedUser);
 
       setEdit(false);
     } catch (err) {
-      console.error(err);
       alert(err.response?.data?.message || "Update failed");
     } finally {
       setLoading(false);
@@ -37,14 +38,14 @@ const Profile = () => {
   };
 
   const handleCancel = () => {
-    setForm({ name: user?.name });
+    setForm({ fullName: user?.fullName });
     setEdit(false);
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto p-4">
 
-      {/* 🔙 Header */}
+      {/* HEADER */}
       <div className="flex justify-between items-center mb-6">
 
         <button
@@ -73,35 +74,34 @@ const Profile = () => {
         )}
       </div>
 
-      {/* 📦 Card */}
+      {/* CARD */}
       <div className="bg-white shadow-lg rounded-lg p-6">
 
-        {/* Info Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-          {/* Name */}
+          {/* FULL NAME */}
           <div>
-            <label className="text-sm text-gray-500">Name</label>
+            <label className="text-sm text-gray-500">Full Name</label>
             {edit ? (
               <input
                 type="text"
-                name="name"
-                value={form.name}
+                name="fullName"
+                value={form.fullName}
                 onChange={handleChange}
-                className="w-full border px-3 py-2 rounded mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full border px-3 py-2 rounded mt-1 focus:ring-2 focus:ring-blue-400"
               />
             ) : (
-              <p className="font-medium">{user?.name}</p>
+              <p className="font-medium">{user?.fullName}</p>
             )}
           </div>
 
-          {/* Email */}
+          {/* EMAIL */}
           <div>
             <label className="text-sm text-gray-500">Email</label>
             <p className="font-medium">{user?.email}</p>
           </div>
 
-          {/* Role (LOCKED) */}
+          {/* ROLE */}
           <div>
             <label className="text-sm text-gray-500">Role</label>
             <p className="font-medium text-gray-700">
@@ -111,30 +111,34 @@ const Profile = () => {
 
         </div>
 
-        {/* Permissions */}
-        <div className="mt-6">
-          <h2 className="text-lg font-semibold mb-2">Permissions</h2>
+        {/* PERMISSIONS (SAFE) */}
+        {user?.permissions?.length > 0 && (
+          <div className="mt-6">
+            <h2 className="text-lg font-semibold mb-2">Permissions</h2>
 
-          <div className="flex flex-wrap gap-2">
-            {user?.permissions?.map((perm) => (
-              <span
-                key={perm}
-                className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs"
-              >
-                {perm}
-              </span>
-            ))}
+            <div className="flex flex-wrap gap-2">
+              {user.permissions.map((perm) => (
+                <span
+                  key={perm}
+                  className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs"
+                >
+                  {perm}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Save Button */}
+        {/* SAVE */}
         {edit && (
           <div className="mt-6 flex justify-end">
             <button
               onClick={handleUpdate}
               disabled={loading}
               className={`px-6 py-2 rounded text-white ${
-                loading ? "bg-gray-400" : "bg-green-500 hover:bg-green-600"
+                loading
+                  ? "bg-gray-400"
+                  : "bg-green-500 hover:bg-green-600"
               }`}
             >
               {loading ? "Saving..." : "Save Changes"}

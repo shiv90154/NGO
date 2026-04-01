@@ -1,13 +1,90 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <!-- BASIC -->
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>client</title>
+
+    <!-- TITLE -->
+    <title>Samraddh Bharat | Digital Platform</title>
+
+    <!-- SEO -->
+    <meta
+      name="description"
+      content="Samraddh Bharat - Integrated platform for education, healthcare, agriculture, finance and IT services."
+    />
+
+    <!-- THEME -->
+    <meta name="theme-color" content="#1e3a5f" />
+
+    <!-- FAVICON -->
+    <link rel="icon" type="image/png" href="/favicon.png" />
+
+    <!-- FONT -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Inter', sans-serif;
+        background-color: #f9fafb;
+      }
+
+      /* 🔥 Loader */
+      #loader {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        z-index: 9999;
+      }
+
+      /* 🔥 Logo animation */
+      .logo {
+        width: 500px;
+        height: 500px;
+        animation: pulse 1.5s infinite;
+      }
+
+      @keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.7; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+
+      .loader-text {
+        margin-top: 10px;
+        font-size: 14px;
+        color: #555;
+      }
+    </style>
   </head>
+
   <body>
+    <!-- 🔥 Loader with Logo -->
+    <div id="loader">
+      <img src="/logo.jpg" alt="logo" class="logo" />
+      <div class="loader-text">Loading Samraddh Bharat...</div>
+    </div>
+
+    <!-- React App -->
     <div id="root"></div>
+
+    <!-- React Entry -->
     <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Remove Loader -->
+    <script>
+      window.addEventListener("load", () => {
+        const loader = document.getElementById("loader");
+        if (loader) loader.style.display = "none";
+      });
+    </script>
   </body>
 </html>
