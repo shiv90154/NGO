@@ -13,6 +13,8 @@ import Privacy from "./pages/Privacy";
 import Faq from "./pages/Faq";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import NewsRoutes from "./modules/news/routes/news.routes.jsx";
+import DynamicDashboard from "./student/Student.jsx";
+import AgricultureRoutes from "./modules/agriculture/routes/agriculture.routes";
 function App() {
   return (
     <BrowserRouter>
@@ -22,6 +24,8 @@ function App() {
         <Route path="/services" element={<ServicesSection />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/student" element={<DynamicDashboard />} />
+        <Route path="/agriculture/*" element={<AgricultureRoutes />} />
 
 
         <Route path="/login/:role" element={<LoginForm />} />
@@ -36,7 +40,6 @@ function App() {
         <Route path="/disclamier" element={<Disclaimer />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/faq" element={<Faq />} />
-
 
 
       </Routes>
