@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../config/api";
 
-// 🔹 Reusable Input
+// 🔹 Reusable Input (same as before)
 const Input = ({
   type,
   name,
@@ -23,7 +23,6 @@ const Input = ({
           {icon}
         </div>
       )}
-
       <input
         type={type}
         name={name}
@@ -37,7 +36,6 @@ const Input = ({
           icon ? "pl-8" : ""
         } ${showToggle ? "pr-16" : ""}`}
       />
-
       {showToggle && (
         <button
           type="button"
@@ -48,7 +46,6 @@ const Input = ({
         </button>
       )}
     </div>
-
     {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
   </div>
 );
@@ -71,9 +68,8 @@ export default function LoginForm() {
   const validate = () => {
     let errors = {};
 
-    if (!form.email) errors.email = "Email required";
-    else if (!/\S+@\S+\.\S+/.test(form.email))
-      errors.email = "Invalid email";
+    if (!form.email.trim()) errors.email = "Email required";
+    else if (!/\S+@\S+\.\S+/.test(form.email)) errors.email = "Invalid email";
 
     if (!form.password) errors.password = "Password required";
 
@@ -92,44 +88,60 @@ export default function LoginForm() {
 
     try {
       const res = await api.post("/auth/login", {
-        email: form.email,
+        email: form.email.trim(),
         password: form.password,
         role: role?.toUpperCase(),
       });
 
-      const user = res.data.user;
+      // Backend now returns { success: true, token, user }
+      const { token, user } = res.data;
 
-      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
       // 🔥 MODULE BASED REDIRECT
-      if (user.modules?.includes("EDUCATION")) {
+      // If user has multiple modules, you may want to show a dashboard selector.
+      // For now, pick the first module or redirect to a generic profile page.
+      const modules = user.modules || [];
+
+      if (modules.includes("EDUCATION")) {
         navigate("/education/dashboard");
-      } else if (user.modules?.includes("AGRICULTURE")) {
+      } else if (modules.includes("AGRICULTURE")) {
         navigate("/agriculture/dashboard");
-      } else if (user.modules?.includes("FINANCE")) {
+      } else if (modules.includes("FINANCE")) {
         navigate("/finance/dashboard");
-      } else if (user.modules?.includes("HEALTHCARE")) {
+      } else if (modules.includes("HEALTHCARE")) {
         navigate("/healthcare/dashboard");
+      } else if (modules.includes("NEWS")) {
+        navigate("/news/dashboard");
+      } else if (modules.includes("IT")) {
+        navigate("/it/dashboard");
       } else {
+        // No modules assigned, go to profile page
         navigate("/profile");
       }
-
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      // Handle error response from backend (now includes success: false)
+      const message = err.response?.data?.message || "Login failed. Please try again.";
+      setError(message);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    setLoading(false);
+  // Placeholder for forgot password
+  const handleForgotPassword = () => {
+    // navigate to forgot password page
+    // For now, just show an alert
+    alert("Forgot password functionality coming soon.");
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1e3a5f] to-[#0f172a] p-4">
-
       <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl p-8 text-white">
-
         {/* LOGO */}
         <div className="flex flex-col items-center mb-6">
-          <img src="/logo.png" className="w-14 mb-2" />
+          <img src="/logo.png" alt="Logo" className="w-14 mb-2" />
           <h2 className="text-xl font-bold">
             {role ? role.toUpperCase() : "USER"} Login
           </h2>
@@ -149,9 +161,7 @@ export default function LoginForm() {
             name="email"
             placeholder="Enter Email"
             value={form.email}
-            onChange={(e) =>
-              setForm({ ...form, email: e.target.value })
-            }
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
             error={fieldError.email}
             icon="📧"
           />
@@ -162,9 +172,7 @@ export default function LoginForm() {
             name="password"
             placeholder="Enter Password"
             value={form.password}
-            onChange={(e) =>
-              setForm({ ...form, password: e.target.value })
-            }
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
             error={fieldError.password}
             showToggle
             toggleShow={() => setShowPass(!showPass)}
@@ -174,24 +182,33 @@ export default function LoginForm() {
 
           {/* BUTTON */}
           <button
+            type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 py-2 rounded-lg font-semibold"
+            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 py-2 rounded-lg font-semibold transition hover:from-orange-600 hover:to-orange-700 disabled:opacity-50"
           >
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
-        {/* REGISTER LINK */}
-        <div className="text-center mt-4 text-sm">
-          Don’t have an account?{" "}
-          <span
-            onClick={() => navigate(`/register/${role || "user"}`)}
-            className="text-orange-400 cursor-pointer"
+        {/* LINKS */}
+        <div className="flex justify-between items-center mt-4 text-sm">
+          <button
+            type="button"
+            onClick={handleForgotPassword}
+            className="text-white/60 hover:text-orange-400 transition"
           >
-            Register
-          </span>
+            Forgot Password?
+          </button>
+          <div>
+            Don’t have an account?{" "}
+            <span
+              onClick={() => navigate(`/register/${role || "user"}`)}
+              className="text-orange-400 cursor-pointer hover:underline"
+            >
+              Register
+            </span>
+          </div>
         </div>
-
       </div>
     </div>
   );
