@@ -14,13 +14,15 @@ import Disclaimer from "./pages/Disclamier";
 import Privacy from "./pages/Privacy";
 import Faq from "./pages/Faq";
 
-// Import module dashboards directly
+// Import module dashboards
 import EducationDashboard from "./modules/education/pages/Dashboard";
 import AgricultureDashboard from "./modules/agriculture/pages/Dashboard";
-import FinanceDashboard from "./modules/finance/pages/Dashboard";
 import HealthcareDashboard from "./modules/healthcare/pages/Dashboard";
 import NewsDashboard from "./modules/news/pages/Dashboard";
 import ITDashboard from "./modules/it/pages/Dashboard";
+
+// Import Finance routes (includes dashboard + all sub‑pages)
+import FinanceRoutes from "./modules/finance/routes/finance.routes";
 
 function App() {
   return (
@@ -42,13 +44,15 @@ function App() {
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/faq" element={<Faq />} />
 
-        {/* Module dashboard routes */}
+        {/* Module dashboard routes (standalone) */}
         <Route path="/education/dashboard" element={<EducationDashboard />} />
         <Route path="/agriculture/dashboard" element={<AgricultureDashboard />} />
-        <Route path="/finance/dashboard" element={<FinanceDashboard />} />
         <Route path="/healthcare/dashboard" element={<HealthcareDashboard />} />
         <Route path="/news/dashboard" element={<NewsDashboard />} />
         <Route path="/it/dashboard" element={<ITDashboard />} />
+
+        {/* Finance module routes (includes /finance/dashboard, /finance/wallet, etc.) */}
+        {FinanceRoutes()}
       </Routes>
     </BrowserRouter>
   );

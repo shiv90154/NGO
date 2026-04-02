@@ -120,13 +120,15 @@ const userSchema = new mongoose.Schema(
     },
 
     // ======================
-    // KYC / DOCUMENTS
+    // KYC / DOCUMENTS (FIXED)
     // ======================
     aadhaarNumber: {
       type: String,
       match: [/^\d{12}$/, 'Aadhaar must be 12 digits'],
       unique: true,
       sparse: true,
+      default: null,
+      set: v => (v === '' ? null : v),
     },
     panNumber: {
       type: String,
@@ -134,6 +136,8 @@ const userSchema = new mongoose.Schema(
       uppercase: true,
       unique: true,
       sparse: true,
+      default: null,
+      set: v => (v === '' ? null : v),
     },
     aadhaarImage: String,
     panImage: String,
@@ -266,7 +270,7 @@ const userSchema = new mongoose.Schema(
 );
 
 // ======================
-// INDEXES (only non‑unique or composite indexes)
+// INDEXES (only non‑unique or composite)
 // ======================
 userSchema.index({ role: 1 });
 userSchema.index({ modules: 1 });
