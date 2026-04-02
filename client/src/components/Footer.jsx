@@ -49,20 +49,22 @@ const Footer = () => {
           </div>
 
           {/* Support & Policies */}
-          <div>
-            <h3 className="text-white font-semibold text-lg mb-4">Support</h3>
+            <div>
+            <h3 className="text-white font-semibold text-lg mb-4">Quick Links</h3>
             <ul className="space-y-2 text-sm">
               {[
-                'Privacy Policy',
-                'Terms of Use',
-                'Accessibility',
-                'Sitemap',
-                'Grievance Redressal',
-              ].map((item, idx) => (
+                { name: 'Refund', path: '/refund' },
+                { name: 'Disclamier', path: '/disclamier' },
+                { name: 'Privacy', path: '/privacy' },
+                { name: 'Faq', path: '/faq' },
+              ].map((link, idx) => (
                 <li key={idx}>
-                  <a href="#" className="hover:text-white transition-colors duration-200 flex items-center gap-2">
-                    <span className="text-[#ff8c42]">›</span> {item}
-                  </a>
+                  <Link
+                    to={link.path}
+                    className="hover:text-white transition-colors duration-200 flex items-center gap-2"
+                  >
+                    <span className="text-[#ff8c42]">›</span> {link.name}
+                  </Link>
                 </li>
               ))}
             </ul>
