@@ -11,6 +11,7 @@ import {
     FaFileAlt,
     FaCalendar,
     FaUser,
+    FaBookOpen
 } from "react-icons/fa";
 
 /* ================= COMPONENT MAP ================= */
@@ -22,11 +23,12 @@ const componentMap = {
     profile: () => <Profile />,
 };
 
-/* ================= USER DATA (API READY) ================= */
+/* ================= USER DATA ================= */
 const userData = {
     name: "ABC",
     role: "student",
 }
+
 const data = {
     menu: [
         { key: "dashboard", label: "Dashboard", icon: FaHome },
@@ -44,22 +46,22 @@ const DynamicDashboard = () => {
     const ActiveComponent = componentMap[activeKey];
 
     return (
-        <div className="flex  bg-gray-100">
+        <div className="flex bg-gray-100">
 
             {/* SIDEBAR */}
-            <div className="w-64 min-h-screen fixed bg-white shadow-lg flex flex-col">
+            <div className="w-64 min-h-screen fixed bg-white shadow-lg flex flex-col border-r border-gray-200">
 
                 {/* USER INFO */}
-                <div className="p-5 border-b">
-                    <h2 className="text-lg font-semibold text-blue-600">
-                        📘 EduLearn
+                <div className="p-5 border-b border-gray-200 bg-gray-50">
+                    <h2 className="text-lg font-semibold text-[#1e3a5f] flex gap-2">
+                        <FaBookOpen className="w-5 h-5 inline self-center " /> EduLearn
                     </h2>
                     <p className="text-sm text-gray-500 mt-1">
                         Welcome, {userData.name}
                     </p>
                 </div>
 
-                {/* MENU (DYNAMIC) */}
+                {/* MENU */}
                 <div className="flex-1 p-3 space-y-2">
                     {data.menu.map((item) => (
                         <div
@@ -69,8 +71,8 @@ const DynamicDashboard = () => {
                 flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer
                 transition-all duration-200
                 ${activeKey === item.key
-                                    ? "bg-blue-600 text-white shadow-md"
-                                    : "text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                                    ? "bg-[#1e3a5f] text-white shadow-md"
+                                    : "text-gray-700 hover:bg-[#ff8c42]/10 hover:text-[#ff6b22]"
                                 }
                 active:scale-95
               `}
@@ -82,22 +84,23 @@ const DynamicDashboard = () => {
                 </div>
 
                 {/* FOOTER */}
-                <div className="p-4 border-t text-sm text-gray-500">
+                <div className="p-4 border-t border-gray-200 text-sm text-gray-500 bg-gray-50">
                     © 2026 EduLearn
                 </div>
             </div>
 
             {/* MAIN CONTENT */}
-            <div className=" ml-64 flex-1 p-8">
-                <div className="bg-white rounded-xl shadow-md p-6 min-h-[80vh]">
+            <div className="ml-64 flex-1 p-8 bg-gray-100">
 
-                    {/* Dynamic Page Title */}
-                    <h1 className="text-2xl font-bold mb-4 capitalize">
+                <div className="bg-white rounded-xl shadow-md p-6 min-h-[80vh] border border-gray-200">
+
+                    {/* TITLE */}
+                    <h1 className="text-2xl font-bold mb-4 capitalize text-[#1e3a5f]">
                         {activeKey.replace("-", " ")}
                     </h1>
 
-                    {/* Dynamic Component */}
-                    {ActiveComponent ? <ActiveComponent /> : <div>Page Not Found</div>}
+                    {/* COMPONENT */}
+                    {ActiveComponent ? <ActiveComponent /> : <div className="text-gray-500">Page Not Found</div>}
 
                 </div>
             </div>

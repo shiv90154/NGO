@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from "react";
+
 /* ================= MOCK DATA ================= */
 const mockClasses = [
     {
         id: 1,
-        title: "Advanced Mathematics",
+        title: "Mathematics",
         instructor: "Dr. Rajesh Kumar",
         time: "2026-04-02T18:00:00",
         status: "live",
     },
     {
         id: 2,
-        title: "Physics Chapter 5",
+        title: "Social Science ",
         instructor: "Prof. Priya Sharma",
         time: "2026-04-03T17:00:00",
         status: "upcoming",
@@ -23,7 +24,6 @@ const LiveClasses = () => {
 
     const USE_API = false;
 
-    /* ================= GOOGLE CALENDAR LINK ================= */
     const getGoogleCalendarLink = (cls) => {
         const start =
             new Date(cls.time)
@@ -42,7 +42,6 @@ const LiveClasses = () => {
         )}&dates=${start}/${end}`;
     };
 
-    /* ================= LOAD DATA ================= */
     useEffect(() => {
         if (USE_API) {
             fetch(`${import.meta.env.VITE_API_URL}/api/class_data`)
@@ -59,7 +58,6 @@ const LiveClasses = () => {
         }
     }, []);
 
-    /* ================= FORMAT TIME ================= */
     const formatTime = (time) => {
         return new Date(time).toLocaleString();
     };
@@ -69,7 +67,7 @@ const LiveClasses = () => {
 
             {/* HEADER */}
             <div>
-                <h1 className="text-2xl font-bold text-gray-800">
+                <h1 className="text-2xl font-bold text-[#1e3a5f]">
                     Live Classes
                 </h1>
                 <p className="text-gray-500">
@@ -78,7 +76,9 @@ const LiveClasses = () => {
             </div>
 
             {/* LOADING */}
-            {loading && <div className="text-gray-500">Loading...</div>}
+            {loading && (
+                <div className="text-gray-500">Loading...</div>
+            )}
 
             {/* CLASSES */}
             <div className="grid md:grid-cols-2 gap-6">
@@ -86,16 +86,21 @@ const LiveClasses = () => {
                     <div
                         key={cls.id}
                         className="
-              bg-white p-6 rounded-xl shadow-sm
-              hover:shadow-lg hover:-translate-y-1
-              transition-all duration-300
-            "
+                            bg-white p-6 rounded-xl shadow-sm
+                            hover:shadow-md hover:-translate-y-1
+                            transition-all duration-300
+                            border border-gray-100
+                        "
                     >
                         {/* TITLE */}
-                        <h3 className="text-lg font-semibold">{cls.title}</h3>
+                        <h3 className="text-lg font-semibold text-[#1e3a5f]">
+                            {cls.title}
+                        </h3>
 
                         {/* INSTRUCTOR */}
-                        <p className="text-sm text-gray-500">{cls.instructor}</p>
+                        <p className="text-sm text-gray-500">
+                            {cls.instructor}
+                        </p>
 
                         {/* TIME */}
                         <p className="text-sm text-gray-600 mb-4">
@@ -104,9 +109,9 @@ const LiveClasses = () => {
 
                         {/* STATUS */}
                         <span
-                            className={`text-xs px-2 py-1 rounded-full ${cls.status === "live"
-                                ? "bg-red-100 text-red-600"
-                                : "bg-blue-100 text-blue-600"
+                            className={`text-xs px-2 py-1 rounded-full font-medium ${cls.status === "live"
+                                ? "bg-[#ff6b22]/10 text-[#ff6b22]"
+                                : "bg-[#ff8c42]/10 text-[#ff8c42]"
                                 }`}
                         >
                             {cls.status === "live" ? "Live Now" : "Upcoming"}
@@ -115,33 +120,32 @@ const LiveClasses = () => {
                         {/* BUTTONS */}
                         <div className="mt-4 flex gap-3">
 
-                            {/* JOIN BUTTON */}
                             <button
                                 className={`
-                  flex-1 py-2 rounded-md text-white
-                  ${cls.status === "live"
-                                        ? "bg-red-600 hover:bg-red-700"
-                                        : "bg-blue-600 hover:bg-blue-700"
+                                    flex-1 py-2 rounded-md text-white
+                                    ${cls.status === "live"
+                                        ? "bg-[#ff6b22] hover:bg-[#e85f1d]"
+                                        : "bg-[#1e3a5f] hover:bg-[#162d48]"
                                     }
-                  active:scale-95 transition
-                `}
+                                    active:scale-95 transition
+                                `}
                             >
-                                {cls.status === "live" ? "Join Now" : "View Details"}
+                                {cls.status === "live"
+                                    ? "Join Now"
+                                    : "View Details"}
                             </button>
 
-                            {/* REMINDER BUTTON (REAL) */}
                             {cls.status !== "live" && (
                                 <a
                                     href={getGoogleCalendarLink(cls)}
                                     target="_blank"
                                     rel="noreferrer"
                                     className="
-                    flex-1 py-2 text-center rounded-md
-                    border border-blue-600 text-blue-600
-                    hover:bg-blue-50
-                    active:scale-95
-                    transition
-                  "
+                                        flex-1 py-2 text-center rounded-md
+                                        border border-[#1e3a5f] text-[#1e3a5f]
+                                        hover:bg-[#1e3a5f] hover:text-white
+                                        active:scale-95 transition
+                                    "
                                 >
                                     Set Reminder
                                 </a>

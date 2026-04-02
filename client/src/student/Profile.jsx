@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 
 const Profile = () => {
-    // Dummy user data (replace with API data later)
     const [user, setUser] = useState({
         name: "USER 1234",
         email: "abc@example.com",
@@ -17,17 +16,16 @@ const Profile = () => {
     };
 
     const handleSave = () => {
-        // later connect to backend API here
         console.log("Saved user:", user);
         setEditMode(false);
     };
 
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-            <div className="w-full max-w-xl bg-white shadow-lg rounded-xl p-6">
+            <div className="w-full max-w-xl bg-white shadow-lg rounded-xl p-6 border border-gray-200">
 
                 {/* Header */}
-                <h2 className="text-2xl font-bold mb-6 text-center">
+                <h2 className="text-2xl font-bold mb-6 text-center text-[#1e3a5f]">
                     My Profile
                 </h2>
 
@@ -36,62 +34,62 @@ const Profile = () => {
 
                     {/* Name */}
                     <div>
-                        <label className="text-sm text-gray-600">Name</label>
+                        <label className="text-sm text-gray-500">Name</label>
                         <input
                             type="text"
                             name="name"
                             value={user.name}
                             onChange={handleChange}
                             disabled={!editMode}
-                            className="w-full mt-1 p-2 border rounded-md disabled:bg-gray-100"
+                            className="w-full mt-1 p-2 border border-gray-300 rounded-md disabled:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#ff8c42]"
                         />
                     </div>
 
                     {/* Email */}
                     <div>
-                        <label className="text-sm text-gray-600">Email</label>
+                        <label className="text-sm text-gray-500">Email</label>
                         <input
                             type="email"
                             name="email"
                             value={user.email}
                             onChange={handleChange}
                             disabled={!editMode}
-                            className="w-full mt-1 p-2 border rounded-md disabled:bg-gray-100"
+                            className="w-full mt-1 p-2 border border-gray-300 rounded-md disabled:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#ff8c42]"
                         />
                     </div>
 
                     {/* Phone */}
                     <div>
-                        <label className="text-sm text-gray-600">Phone</label>
+                        <label className="text-sm text-gray-500">Phone</label>
                         <input
                             type="text"
                             name="phone"
                             value={user.phone}
                             onChange={handleChange}
                             disabled={!editMode}
-                            className="w-full mt-1 p-2 border rounded-md disabled:bg-gray-100"
+                            className="w-full mt-1 p-2 border border-gray-300 rounded-md disabled:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#ff8c42]"
                         />
                     </div>
 
                     {/* Role */}
                     <div>
-                        <label className="text-sm text-gray-600">Role</label>
+                        <label className="text-sm text-gray-500">Role</label>
                         <input
                             type="text"
                             value={user.role}
                             disabled
-                            className="w-full mt-1 p-2 border rounded-md bg-gray-100"
+                            className="w-full mt-1 p-2 border border-gray-300 rounded-md bg-gray-100"
                         />
                     </div>
 
                     {/* Joined */}
                     <div>
-                        <label className="text-sm text-gray-600">Joined Date</label>
+                        <label className="text-sm text-gray-500">Joined Date</label>
                         <input
                             type="text"
                             value={user.joined}
                             disabled
-                            className="w-full mt-1 p-2 border rounded-md bg-gray-100"
+                            className="w-full mt-1 p-2 border border-gray-300 rounded-md bg-gray-100"
                         />
                     </div>
                 </div>
@@ -101,7 +99,7 @@ const Profile = () => {
                     {!editMode ? (
                         <button
                             onClick={() => setEditMode(true)}
-                            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
+                            className="w-full bg-[#1e3a5f] text-white py-2 rounded-md hover:bg-[#162d48] active:scale-95 transition"
                         >
                             Edit Profile
                         </button>
@@ -109,13 +107,13 @@ const Profile = () => {
                         <>
                             <button
                                 onClick={handleSave}
-                                className="w-1/2 bg-green-600 text-white py-2 rounded-md hover:bg-green-700"
+                                className="w-1/2 bg-[#ff6b22] text-white py-2 rounded-md hover:bg-[#e65a1c] active:scale-95 transition"
                             >
                                 Save
                             </button>
                             <button
                                 onClick={() => setEditMode(false)}
-                                className="w-1/2 bg-gray-400 text-white py-2 rounded-md hover:bg-gray-500"
+                                className="w-1/2 bg-gray-400 text-white py-2 rounded-md hover:bg-gray-500 active:scale-95 transition"
                             >
                                 Cancel
                             </button>
