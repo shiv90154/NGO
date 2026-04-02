@@ -13,6 +13,10 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@heroicons/react": "^2.2.0",
+<<<<<<< HEAD
+=======
+    "@mui/icons-material": "^7.3.9",
+>>>>>>> 0f7b6e458a5a112195a22d0434c795f63886977d
     "@mui/material": "^7.3.9",
     "@tailwindcss/vite": "^4.2.2",
     "axios": "^1.14.0",
