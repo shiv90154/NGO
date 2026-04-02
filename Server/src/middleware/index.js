@@ -1,23 +1,22 @@
-// middleware/index.js
-const { protect } = require('./auth.middleware');
-const { authorizeRoles, hasModuleAccess } = require('./role.middleware');
-const { validateRegister } = require('./validation.middleware');
-const { upload, handleMulterError } = require('./upload.middleware');
-const { otpLimiter, loginLimiter, apiLimiter } = require('./rateLimit.middleware');
-const { errorHandler, AppError } = require('./error.middleware');
-const notFound = require('./notFound.middleware');
+// src/middleware/index.js
 
-module.exports = {
-    protect,
-    authorizeRoles,
-    hasModuleAccess,
-    validateRegister,
-    upload,
-    handleMulterError,
-    otpLimiter,
-    loginLimiter,
-    apiLimiter,
-    errorHandler,
-    AppError,
-    notFound,
+// 404 Not Found middleware
+const notFound = (req, res, next) => {
+  res.status(404).json({
+    success: false,
+    message: `Route not found: ${req.method} ${req.originalUrl}`,
+  });
 };
+
+// Global error handler
+const errorHandler = (err, req, res, next) => {
+  console.error('Error:', err.stack);
+  const statusCode = err.statusCode || 500;
+  res.status(statusCode).json({
+    success: false,
+    message: err.message || 'Internal Server Error',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+  });
+};
+
+module.exports = { errorHandler, notFound };
