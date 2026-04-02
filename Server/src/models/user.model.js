@@ -11,7 +11,6 @@ const userSchema = new mongoose.Schema(
       required: [true, 'Full name is required'],
       trim: true,
     },
-
     email: {
       type: String,
       required: [true, 'Email is required'],
@@ -20,23 +19,18 @@ const userSchema = new mongoose.Schema(
       trim: true,
       match: [/\S+@\S+\.\S+/, 'Please provide a valid email address'],
     },
-
     phone: {
       type: String,
       required: [true, 'Phone number is required'],
-      unique: true, // ✅ FIXED (removed index:true)
+      unique: true,
       match: [/^\d{10}$/, 'Phone number must be exactly 10 digits'],
     },
-
     password: {
       type: String,
       required: [true, 'Password is required'],
       minlength: [6, 'Password must be at least 6 characters'],
     },
 
-    // ======================
-    // ROLE
-    // ======================
     role: {
       type: String,
       enum: [
@@ -62,9 +56,23 @@ const userSchema = new mongoose.Schema(
       default: [],
     },
 
+    // ======================
+    // REFERRAL (MLM)
+    // ======================
     parentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
+    },
+    referralCode: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+    referredBy: String,
+    teamSize: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
 
     // ======================
@@ -73,7 +81,6 @@ const userSchema = new mongoose.Schema(
     fatherName: { type: String, trim: true },
     motherName: { type: String, trim: true },
     dob: Date,
-
     gender: {
       type: String,
       enum: ['MALE', 'FEMALE', 'OTHER'],
@@ -85,16 +92,16 @@ const userSchema = new mongoose.Schema(
     aadhaarNumber: {
       type: String,
       match: [/^\d{12}$/, 'Aadhaar must be 12 digits'],
+      unique: true,
       sparse: true,
     },
-
     panNumber: {
       type: String,
       match: [/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, 'Invalid PAN format'],
       uppercase: true,
+      unique: true,
       sparse: true,
     },
-
     aadhaarImage: String,
     panImage: String,
 
@@ -105,12 +112,10 @@ const userSchema = new mongoose.Schema(
     district: { type: String, trim: true },
     block: { type: String, trim: true },
     village: { type: String, trim: true },
-
     pincode: {
       type: String,
       match: [/^\d{6}$/, 'Pincode must be 6 digits'],
     },
-
     fullAddress: { type: String, trim: true },
 
     // ======================
@@ -140,6 +145,12 @@ const userSchema = new mongoose.Schema(
         },
       },
     ],
+    taughtCourses: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Course',
+      },
+    ],
 
     // ======================
     // HEALTHCARE MODULE
@@ -147,13 +158,18 @@ const userSchema = new mongoose.Schema(
     specialization: String,
     experience: Number,
     consultationFee: Number,
-
     patients: [
       {
         patientId: {
           type: mongoose.Schema.Types.ObjectId,
           ref: 'User',
         },
+      },
+    ],
+    appointments: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Appointment',
       },
     ],
 
@@ -172,42 +188,28 @@ const userSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
-
     totalEarnings: {
       type: Number,
       default: 0,
       min: 0,
     },
-
     bankAccount: {
       accountNumber: String,
       ifsc: String,
       bankName: String,
     },
-
-    // ======================
-    // MLM / COMMISSION
-    // ======================
-    referralCode: {
-      type: String,
-      unique: true,
-      sparse: true,
-    },
-
-    referredBy: String,
-
-    teamSize: {
-      type: Number,
-      default: 0,
-      min: 0,
-    },
+    transactions: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Transaction',
+      },
+    ],
 
     // ======================
     // OTP VERIFICATION
     // ======================
     otp: String,
     otpExpire: Date,
-
     isVerified: {
       type: Boolean,
       default: false,
@@ -226,47 +228,37 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-
 // ======================
-// INDEXES (SAFE ONLY)
+// INDEXES
 // ======================
 userSchema.index({ role: 1 });
+userSchema.index({ modules: 1 });
 userSchema.index({ isVerified: 1 });
-
-
-// ======================
-// HASH PASSWORD
-// ======================
-userSchema.pre('save', async function () {
-  if (!this.isModified('password')) return;
-
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-});
-
+userSchema.index({ referralCode: 1 }, { sparse: true });
 
 // ======================
-// REFERRAL CODE AUTO GEN
+// PRE-SAVE HOOK (combine password hashing and referral code)
 // ======================
-userSchema.pre("save", async function () {
-  // PASSWORD HASH
-  if (this.isModified("password")) {
+userSchema.pre('save', async function (next) {
+  // Hash password if modified
+  if (this.isModified('password')) {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
   }
 
-  // REFERRAL CODE GENERATE
+  // Generate referral code if not present
   if (!this.referralCode) {
     this.referralCode = Math.random().toString(36).substring(2, 8).toUpperCase();
   }
+
+  next();
 });
 
 // ======================
-// MATCH PASSWORD
+// METHOD: COMPARE PASSWORD
 // ======================
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
-
 
 module.exports = mongoose.model('User', userSchema);

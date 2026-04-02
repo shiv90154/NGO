@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, useAnimation, useInView } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
-import CountUp from 'react-countup';
+import React from 'react';
+// eslint-disable-next-line no-unused-vars
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
@@ -60,33 +60,18 @@ const Home = () => {
     { name: "Dr. Anil Mehta", role: "Doctor, Rajasthan", text: "Ayushman Telehealth allows me to consult patients in remote areas. The platform is intuitive and reliable.", rating: 4, avatar: "👨‍⚕️" }
   ];
 
-  // Statistics with dynamic counters
-  const statistics = [
-    { value: 50, label: "Digital Services", suffix: "+" },
-    { value: 2500000, label: "Active Users", suffix: "+", prefix: "" },
-    { value: 24, label: "AI Support", suffix: "/7" },
-    { value: 100, label: "Secure & Transparent", suffix: "%" }
-  ];
-
-  // Ref for stats section to trigger counters
-  const statsRef = useRef(null);
-  const isStatsInView = useInView(statsRef, { once: true, threshold: 0.3 });
-
-  // Controls for module animations
-  const controls = useAnimation();
-
   // Helper to navigate
   const handleExplore = () => {
     document.getElementById('modules')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen flex flex-col bg-linear-to-br from-gray-50 to-gray-100">
       <Header />
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0f2b3d] via-[#1e4a76] to-[#2a6b9e]">
+        <div className="absolute inset-0 bg-linear-to-br from-[#0f2b3d] via-[#1e4a76] to-[#2a6b9e]">
           <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1524492412937-b28074a5d7da?ixlib=rb-4.0.3')] bg-cover bg-center opacity-10"></div>
         </div>
 
@@ -99,7 +84,7 @@ const Home = () => {
             <span className="text-[#ff8c42] font-bold text-lg tracking-wider inline-block px-4 py-1 bg-white/10 backdrop-blur-sm rounded-full mb-4">
               GOVERNMENT OF INDIA INITIATIVE
             </span>
-            <h1 className="text-5xl md:text-7xl font-bold mt-2 mb-4 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+            <h1 className="text-5xl md:text-7xl font-bold mt-2 mb-4 bg-linear-to-r from-white to-gray-300 bg-clip-text text-transparent">
               Samraddh Bharat
             </h1>
             <p className="text-3xl md:text-4xl font-light text-gray-200 mb-4">समृद्ध भारत · विकसित भारत</p>
@@ -189,50 +174,65 @@ const Home = () => {
       </motion.section>
 
       {/* Core Modules Section */}
-      <section id="modules" className="py-20 px-4 bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="container mx-auto">
+   <section id="modules" className="py-20 px-4 bg-gradient-to-br from-gray-50 to-gray-100">
+  <div className="container mx-auto">
+    
+    {/* Heading */}
+    <motion.div
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+      variants={fadeInUp}
+      className="text-center mb-12"
+    >
+      <h2 className="text-4xl md:text-5xl font-bold text-[#1e3a5f] mb-4">
+        Integrated Core Modules
+      </h2>
+      <p className="text-gray-600 max-w-2xl mx-auto">
+        Complete digital ecosystem for governance and citizen services
+      </p>
+    </motion.div>
+
+    {/* Cards */}
+    <motion.div
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+      variants={staggerContainer}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+    >
+      {coreModules.map((module, index) => (
+        <motion.div
+          key={index}
+          variants={cardVariants(index * 0.1)}
+          whileHover={{ scale: 1.03, transition: { duration: 0.3 } }}
+          className="bg-white rounded-2xl shadow-lg p-6 text-center hover:shadow-2xl transition-all group border-t-4 border-[#ff8c42]"
+        >
+          
+          {/* Icon */}
           <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeInUp}
-            className="text-center mb-12"
+            className="text-5xl mb-4 inline-block"
+            whileHover={{ scale: 1.1, rotate: 5 }}
           >
-            <h2 className="text-4xl md:text-5xl font-bold text-[#1e3a5f] mb-4">Integrated Core Modules</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">Complete digital ecosystem for governance and citizen services</p>
+            {module.icon}
           </motion.div>
 
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-          >
-            {coreModules.map((module, index) => (
-              <motion.div
-                key={index}
-                variants={cardVariants(index * 0.1)}
-                whileHover={{ scale: 1.03, transition: { duration: 0.3 } }}
-                className="bg-white rounded-2xl shadow-lg p-6 text-center hover:shadow-2xl transition-all cursor-pointer group border-t-4 border-[#ff8c42]"
-                onClick={() => navigate(module.path)}
-              >
-                <motion.div
-                  className="text-5xl mb-4 inline-block"
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                >
-                  {module.icon}
-                </motion.div>
-                <h3 className="text-xl font-semibold text-[#1e3a5f] mb-2">{module.title}</h3>
-                <p className="text-gray-600 text-sm">{module.desc}</p>
-                <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity text-[#ff8c42] text-sm font-semibold">
-                  Learn more →
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
+          {/* Title */}
+          <h3 className="text-xl font-semibold text-[#1e3a5f] mb-2">
+            {module.title}
+          </h3>
+
+          {/* Description */}
+          <p className="text-gray-600 text-sm">
+            {module.desc}
+          </p>
+
+        </motion.div>
+      ))}
+    </motion.div>
+
+  </div>
+</section>
 
       {/* Subscription Plans */}
       <section className="py-20 px-4 bg-white">
@@ -327,12 +327,7 @@ const Home = () => {
                 <span className="text-xs font-bold text-[#ff8c42] uppercase">{item.tag}</span>
                 <h3 className="text-xl font-semibold text-[#1e3a5f] my-2">{item.title}</h3>
                 <p className="text-gray-600 mb-4">{item.desc}</p>
-                <button
-                  onClick={() => navigate(item.cta)}
-                  className="text-[#ff8c42] font-semibold hover:text-[#e6732e]"
-                >
-                  Apply Now →
-                </button>
+             
               </motion.div>
             ))}
           </motion.div>
@@ -386,35 +381,6 @@ const Home = () => {
           </div>
         </div>
       </section>
-
-      {/* This code has some error  */}
-
-      {/* Statistics Section with dynamic counters */}
-      {/* <section ref={statsRef} className="bg-gradient-to-r from-[#1e3a5f] to-[#2a6b9e] text-white py-20 px-4">
-        <div className="container mx-auto">
-          <motion.h3 className="text-3xl md:text-4xl font-bold text-center mb-12" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} viewport={{ once: true }}>
-            Samraddh Bharat in Numbers
-          </motion.h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-            {statistics.map((stat, idx) => (
-              <motion.div key={idx} initial={{ opacity: 0, scale: 0.5 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, delay: idx * 0.1 }} whileHover={{ scale: 1.05 }} viewport={{ once: true }}>
-                <div className="text-5xl font-bold mb-2 text-[#ff8c42]">
-                  {isStatsInView ? (
-                    <CountUp
-                      start={0}
-                      end={stat.value}
-                      duration={2}
-                      suffix={stat.suffix}
-                      prefix={stat.prefix}
-                    />
-                  ) : stat.value}
-                </div>
-                <div className="text-gray-300">{stat.label}</div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section> */}
 
       {/* About Section (compact) */}
       <section id="about" className="py-20 px-4 bg-white">

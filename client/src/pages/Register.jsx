@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../config/api";
 
@@ -86,27 +86,76 @@ const CheckboxGroup = ({ label, name, options, selectedValues, onChange, error }
   </div>
 );
 
-// Enhanced file input with custom button
-const FileInput = ({ label, name, onChange, error }) => {
+// Enhanced file input with custom button and validation
+const FileInput = ({ label, name, onChange, error, accept = "image/*", maxSize = 5 * 1024 * 1024 }) => {
   const [fileName, setFileName] = useState("");
+  const [fileError, setFileError] = useState("");
+  const inputRef = useRef(null);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    setFileName(file ? file.name : "");
-    onChange(e);
+    if (file) {
+      // Client-side validation
+      if (!file.type.startsWith("image/")) {
+        setFileError("Only image files are allowed");
+        setFileName("");
+        onChange({ target: { name, value: null } });
+        return;
+      }
+      if (file.size > maxSize) {
+        setFileError(`File size must be less than ${maxSize / (1024 * 1024)}MB`);
+        setFileName("");
+        onChange({ target: { name, value: null } });
+        return;
+      }
+      setFileError("");
+      setFileName(file.name);
+      onChange({ target: { name, value: file } });
+    } else {
+      setFileName("");
+      setFileError("");
+      onChange({ target: { name, value: null } });
+    }
+    // Reset input value so the same file can be selected again
+    if (inputRef.current) inputRef.current.value = "";
+  };
+
+  const handleClear = () => {
+    setFileName("");
+    setFileError("");
+    onChange({ target: { name, value: null } });
+    if (inputRef.current) inputRef.current.value = "";
   };
 
   return (
     <div className="mb-4">
       {label && <label className="block text-sm font-medium text-white/80 mb-1">{label}</label>}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         <label className="cursor-pointer bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-lg text-sm font-medium transition">
           Choose File
-          <input type="file" name={name} onChange={handleFileChange} accept="image/*" className="hidden" />
+          <input
+            type="file"
+            name={name}
+            ref={inputRef}
+            onChange={handleFileChange}
+            accept={accept}
+            className="hidden"
+          />
         </label>
-        {fileName && <span className="text-xs text-white/70 truncate max-w-[200px]">{fileName}</span>}
+        {fileName && (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-white/70 truncate max-w-[200px]">{fileName}</span>
+            <button
+              type="button"
+              onClick={handleClear}
+              className="text-red-400 hover:text-red-300 text-sm"
+            >
+              ✕
+            </button>
+          </div>
+        )}
       </div>
-      {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
+      {(fileError || error) && <p className="text-red-400 text-xs mt-1">{fileError || error}</p>}
     </div>
   );
 };
@@ -116,7 +165,8 @@ export default function Register() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [serverError, setServerError] = useState("");
+  const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [showPassword, setShowPassword] = useState(false);
 
@@ -125,22 +175,18 @@ export default function Register() {
     email: "",
     phone: "",
     password: "",
-
     fatherName: "",
     motherName: "",
     dob: "",
     gender: "",
-
     aadhaarNumber: "",
     panNumber: "",
-
     state: "",
     district: "",
     block: "",
     village: "",
     pincode: "",
     fullAddress: "",
-
     modules: []
   });
 
@@ -175,39 +221,50 @@ export default function Register() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm(prev => ({ ...prev, [name]: value }));
     if (touched[name]) {
-      setTouched((prev) => ({ ...prev, [name]: validateField(name, value) }));
+      const errorMsg = validateField(name, value);
+      setErrors(prev => ({ ...prev, [name]: errorMsg }));
     }
   };
 
   const handleBlur = (e) => {
     const { name, value } = e.target;
-    setTouched((prev) => ({ ...prev, [name]: validateField(name, value) }));
+    setTouched(prev => ({ ...prev, [name]: true }));
+    const errorMsg = validateField(name, value);
+    setErrors(prev => ({ ...prev, [name]: errorMsg }));
   };
 
   const handleFile = (e) => {
-    setFiles({ ...files, [e.target.name]: e.target.files[0] });
+    const { name, value } = e.target;
+    setFiles(prev => ({ ...prev, [name]: value }));
+    // Clear any previous file-related error (if we had any)
+    setErrors(prev => ({ ...prev, [name]: "" }));
   };
 
   const handleModulesChange = (e) => {
-    setForm((prev) => ({ ...prev, modules: e.target.value }));
+    setForm(prev => ({ ...prev, modules: e.target.value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setServerError("");
 
     // Validate all required fields
     const requiredFields = ["fullName", "email", "phone", "password"];
     const newErrors = {};
-    requiredFields.forEach((field) => {
+    requiredFields.forEach(field => {
       const errorMsg = validateField(field, form[field]);
       if (errorMsg) newErrors[field] = errorMsg;
     });
+    // Also ensure no file errors (optional)
     if (Object.keys(newErrors).length > 0) {
-      setTouched(newErrors);
-      setError("Please fix the errors before submitting.");
+      setErrors(newErrors);
+      // Mark all required fields as touched
+      const newTouched = {};
+      requiredFields.forEach(field => { newTouched[field] = true; });
+      setTouched(prev => ({ ...prev, ...newTouched }));
+      setServerError("Please fix the errors before submitting.");
       return;
     }
 
@@ -216,10 +273,11 @@ export default function Register() {
     try {
       const data = new FormData();
 
-      Object.keys(form).forEach((key) => {
+      // Append all form fields
+      Object.keys(form).forEach(key => {
         const val = form[key];
         if (key === "modules") {
-          form.modules.forEach((m) => data.append("modules", m));
+          form.modules.forEach(m => data.append("modules", m));
         } else if (key === "gender" && val === "") {
           // skip empty gender
           return;
@@ -228,7 +286,8 @@ export default function Register() {
         }
       });
 
-      Object.keys(files).forEach((key) => {
+      // Append files
+      Object.keys(files).forEach(key => {
         if (files[key]) data.append(key, files[key]);
       });
 
@@ -238,13 +297,20 @@ export default function Register() {
       }
       data.append("role", mappedRole);
 
-      await api.post("/auth/register", data, {
+      const response = await api.post("/auth/register", data, {
         headers: { "Content-Type": "multipart/form-data" }
       });
 
-      navigate("/verify-otp", { state: { email: form.email } });
+      // Backend now returns { success: true, message, email } or similar
+      if (response.data.success) {
+        navigate("/verify-otp", { state: { email: form.email } });
+      } else {
+        setServerError(response.data.message || "Registration failed.");
+      }
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed. Please try again.");
+      // Handle error from backend
+      const message = err.response?.data?.message || "Registration failed. Please try again.";
+      setServerError(message);
     } finally {
       setLoading(false);
     }
@@ -281,10 +347,10 @@ export default function Register() {
             <p className="text-white/60 mt-2">Create your account to get started</p>
           </div>
 
-          {/* Error message */}
-          {error && (
-            <div className="bg-red-500/20 border border-red-500/50 text-red-300 p-3 rounded-lg mb-6 text-center animate-pulse">
-              {error}
+          {/* Server error message */}
+          {serverError && (
+            <div className="bg-red-500/20 border border-red-500/50 text-red-300 p-3 rounded-lg mb-6 text-center">
+              {serverError}
             </div>
           )}
 
@@ -302,7 +368,7 @@ export default function Register() {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 required
-                error={touched.fullName}
+                error={touched.fullName ? errors.fullName : undefined}
                 icon="👤"
               />
               <Input
@@ -314,7 +380,7 @@ export default function Register() {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 required
-                error={touched.email}
+                error={touched.email ? errors.email : undefined}
                 icon="📧"
               />
               <Input
@@ -326,7 +392,7 @@ export default function Register() {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 required
-                error={touched.phone}
+                error={touched.phone ? errors.phone : undefined}
                 icon="📞"
               />
               <div className="relative">
@@ -339,7 +405,7 @@ export default function Register() {
                   onChange={handleChange}
                   onBlur={handleBlur}
                   required
-                  error={touched.password}
+                  error={touched.password ? errors.password : undefined}
                   icon="🔒"
                 />
                 <button
@@ -460,9 +526,24 @@ export default function Register() {
                 Upload Documents
               </h3>
               <div className="space-y-3">
-                <FileInput label="Profile Photo" name="profileImage" onChange={handleFile} />
-                <FileInput label="Aadhaar Image" name="aadhaarImage" onChange={handleFile} />
-                <FileInput label="PAN Image" name="panImage" onChange={handleFile} />
+                <FileInput
+                  label="Profile Photo"
+                  name="profileImage"
+                  onChange={handleFile}
+                  error={errors.profileImage}
+                />
+                <FileInput
+                  label="Aadhaar Image"
+                  name="aadhaarImage"
+                  onChange={handleFile}
+                  error={errors.aadhaarImage}
+                />
+                <FileInput
+                  label="PAN Image"
+                  name="panImage"
+                  onChange={handleFile}
+                  error={errors.panImage}
+                />
               </div>
 
               <h3 className="text-lg font-semibold text-white border-b border-white/20 pb-2 mb-4 mt-6">

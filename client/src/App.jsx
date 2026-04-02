@@ -8,11 +8,11 @@ import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import VerifyOTP from "./pages/VerifyOTP";
 import Refund from "./pages/Refund";
-import Disclaimer from "./pages/Disclamier";
+import Disclaimer from "./pages/Disclamier.jsx";
 import Privacy from "./pages/Privacy";
 import Faq from "./pages/Faq";
-
-
+import ScrollToTop from "./components/ScrollToTop.jsx";
+import NewsRoutes from "./modules/news/routes/news.routes.jsx";
 function App() {
   return (
     <BrowserRouter>
