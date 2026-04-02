@@ -14,29 +14,29 @@ import Refund from "./pages/Refund";
 import Disclaimer from "./pages/Disclamier.jsx";
 import Privacy from "./pages/Privacy";
 import Faq from "./pages/Faq";
+import NotFound from "./pages/NotFound";
 function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/services" element={<ServicesSection />} />
-           <Route path="/about" element={<About />} />
-<Route path="/contact" element={<Contact />} />
-        <Route path="/login/:role" element={<LoginForm />} />
-        <Route path="/register/:role" element={<Register />} />
-        <Route path="/student" element={<DynamicDashboard />} />
-        <Route path="/verify-otp" element={<VerifyOTP />} />
-        <Route path="/profile" element={<Profile />} />
-         <Route path="/refund" element={<Refund />} />
-        
-          <Route path="/disclamier" element={<Disclaimer />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/faq" element={<Faq />} />
+     <Routes>
+  <Route path="/" element={<Home />} />
+  <Route path="/services" element={<ServicesSection />} />
+  <Route path="/about" element={<About />} />
+  <Route path="/contact" element={<Contact />} />
+  <Route path="/login/:role" element={<LoginForm />} />
+  <Route path="/register/:role" element={<Register />} />
+  <Route path="/student" element={<DynamicDashboard />} />
+  <Route path="/verify-otp" element={<VerifyOTP />} />
+  <Route path="/profile" element={<Profile />} />
+  <Route path="/refund" element={<Refund />} />
+  <Route path="/disclaimer" element={<Disclaimer />} />
+  <Route path="/privacy" element={<Privacy />} />
+  <Route path="/faq" element={<Faq />} />
 
-         
-     
-      </Routes>
+  {/* 404 Page */}
+  <Route path="*" element={<NotFound />} />
+</Routes>
       <NewsRoutes />
     </BrowserRouter>
   );
