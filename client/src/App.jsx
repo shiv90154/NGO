@@ -14,7 +14,6 @@ import Refund from "./pages/Refund";
 import Disclaimer from "./pages/Disclamier.jsx";
 import Privacy from "./pages/Privacy";
 import Faq from "./pages/Faq";
-import NotFound from "./pages/NotFound";
 function App() {
   return (
     <BrowserRouter>
@@ -34,8 +33,7 @@ function App() {
   <Route path="/privacy" element={<Privacy />} />
   <Route path="/faq" element={<Faq />} />
 
-  {/* 404 Page */}
-  <Route path="*" element={<NotFound />} />
+  
 </Routes>
       <NewsRoutes />
     </BrowserRouter>
