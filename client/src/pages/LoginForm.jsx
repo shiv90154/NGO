@@ -13,6 +13,7 @@ const Input = ({ type, name, placeholder, value, onChange, onBlur, error, showTo
         value={value}
         onChange={onChange}
         onBlur={onBlur}
+        autoComplete={type === "password" ? "current-password" : "email"}
         className={`w-full px-4 py-2 rounded-lg bg-white/10 border ${
           error ? "border-red-500" : "border-white/20"
         } text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-orange-500 ${icon ? "pl-8" : ""} ${
@@ -48,6 +49,17 @@ export default function LoginForm() {
     return Object.keys(errors).length === 0;
   };
 
+  // Map module names to dashboard paths
+  const getDashboardPath = (modules) => {
+    if (modules.includes("EDUCATION")) return "/education/dashboard";
+    if (modules.includes("AGRICULTURE")) return "/agriculture/dashboard";
+    if (modules.includes("FINANCE")) return "/finance/dashboard";
+    if (modules.includes("HEALTHCARE")) return "/healthcare/dashboard";
+    if (modules.includes("NEWS")) return "/news/dashboard";
+    if (modules.includes("IT")) return "/it/dashboard";
+    return "/profile";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -57,14 +69,15 @@ export default function LoginForm() {
       const res = await api.post("/users/login", {
         email: form.email.trim(),
         password: form.password,
-        // role is NOT sent to avoid "Role mismatch" error
+        // role intentionally omitted – backend no longer checks it
       });
       const { token, user } = res.data;
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      // ✅ Redirect to test dashboard after successful login
-      navigate("/test-dashboard");
+      // Redirect based on user's modules
+      const dashboardPath = getDashboardPath(user.modules || []);
+      navigate(dashboardPath);
     } catch (err) {
       const message = err.response?.data?.message || err.message || "Login failed. Please try again.";
       setError(message);
