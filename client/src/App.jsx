@@ -8,6 +8,9 @@ import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import VerifyOTP from "./pages/VerifyOTP";
 import Refund from "./pages/Refund";
+import Disclaimer from "./pages/Disclamier";
+import Privacy from "./pages/Privacy";
+import Faq from "./pages/Faq";
 
 
 function App() {
@@ -29,6 +32,11 @@ function App() {
 
         <Route path="/profile" element={<Profile />} />
          <Route path="/refund" element={<Refund />} />
+          <Route path="/disclamier" element={<Disclaimer />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/faq" element={<Faq />} />
+
+         
      
       </Routes>
     </BrowserRouter>
