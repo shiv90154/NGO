@@ -10,9 +10,11 @@ import Profile from "./pages/Profile";
 import VerifyOTP from "./pages/VerifyOTP";
 import DynamicDashboard from "./student/Student";
 import NewsRoutes from "./modules/news/routes/news.routes";
+import ScrollToTop from "./components/ScrollToTop";
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/services" element={<ServicesSection />} />

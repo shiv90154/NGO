@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 import {
     getNews,
     likeNews,
     shareNews,
-    addComment,
     addNews
 } from "../services/news.api";
 
@@ -17,6 +17,38 @@ import {
     Plus
 } from "lucide-react";
 
+/* =======================
+   BLUR IMAGE COMPONENT
+======================= */
+
+const loadedImages = new Set();
+
+const BlurImage = ({ src, alt }) => {
+    const [loaded, setLoaded] = useState(loadedImages.has(src));
+
+    useEffect(() => {
+        if (loaded) loadedImages.add(src);
+    }, [loaded, src]);
+
+    return (
+        <div className="relative w-full h-full overflow-hidden bg-gray-200">
+            {/* Skeleton */}
+            {!loaded && (
+                <div className="absolute inset-0 bg-gray-300 animate-pulse" />
+            )}
+
+            {/* Image */}
+            <img
+                src={src}
+                alt={alt || ""}
+                loading="lazy"
+                className={`w-full h-full object-cover transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"
+                    }`}
+                onLoad={() => setLoaded(true)}
+            />
+        </div>
+    );
+};
 const Dashboard = () => {
     const [news, setNews] = useState([]);
     const [showForm, setShowForm] = useState(false);
@@ -58,7 +90,7 @@ const Dashboard = () => {
 
                 <button
                     onClick={() => setShowForm(true)}
-                    className="flex items-center gap-2 bg-[#ff6b22] text-white px-4 py-2 rounded-lg"
+                    className="flex items-center gap-2 bg-[#ff6b22] text-white px-4 py-2 rounded-lg hover:scale-105 transition"
                 >
                     <Plus size={16} /> Publish
                 </button>
@@ -135,7 +167,7 @@ const Dashboard = () => {
                             </button>
                             <button
                                 onClick={handlePublish}
-                                className="bg-[#1e3a5f] text-white px-4 py-1 rounded"
+                                className="bg-[#1e3a5f] text-white px-4 py-1 rounded hover:scale-105 transition"
                             >
                                 Publish
                             </button>
@@ -155,23 +187,22 @@ const Dashboard = () => {
                             </h2>
                         </div>
 
-                        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-[#ff8c42]">
+                        <div className="flex gap-4 overflow-x-auto pb-2">
                             {news
                                 .filter((n) => n.category === cat)
                                 .map((n) => (
                                     <div
                                         key={n.id}
                                         onClick={() => navigate(`/news/${n.id}`)}
-                                        className="min-w-[280px] max-w-[280px] h-[340px] bg-white rounded-2xl shadow-md overflow-hidden flex flex-col hover:shadow-lg transition cursor-pointer"
+                                        className="min-w-[280px] max-w-[280px] h-[340px] bg-white rounded-2xl shadow-md overflow-hidden flex flex-col hover:shadow-xl hover:scale-[1.02] transition cursor-pointer"
                                     >
                                         {/* MEDIA */}
                                         {n.media && (
                                             <div className="h-[140px] w-full">
                                                 {n.media.type === "image" ? (
-                                                    <img
+                                                    <BlurImage
                                                         src={n.media.url}
-                                                        alt=""
-                                                        className="w-full h-full object-cover"
+                                                        alt={n.title}
                                                     />
                                                 ) : (
                                                     <video
@@ -195,7 +226,6 @@ const Dashboard = () => {
                                                 </p>
                                             </div>
 
-                                            {/* ACTIONS */}
                                             <div className="flex justify-between items-center mt-3 text-gray-600 text-sm">
 
                                                 <button
@@ -204,7 +234,7 @@ const Dashboard = () => {
                                                         await likeNews(n.id);
                                                         fetchNews();
                                                     }}
-                                                    className="flex items-center gap-1 hover:text-red-500"
+                                                    className="flex items-center gap-1 hover:text-red-500 transition"
                                                 >
                                                     <Heart size={16} /> {n.likes}
                                                 </button>
@@ -215,7 +245,7 @@ const Dashboard = () => {
                                                         await shareNews(n.id);
                                                         fetchNews();
                                                     }}
-                                                    className="flex items-center gap-1 hover:text-blue-500"
+                                                    className="flex items-center gap-1 hover:text-blue-500 transition"
                                                 >
                                                     <Share2 size={16} /> {n.shares}
                                                 </button>
@@ -246,15 +276,14 @@ const Dashboard = () => {
                             <div
                                 key={n.id}
                                 onClick={() => navigate(`/news/${n.id}`)}
-                                className="p-4 border rounded-xl hover:shadow transition cursor-pointer"
+                                className="p-4 border rounded-xl hover:shadow-lg transition cursor-pointer"
                             >
                                 {n.media && (
-                                    <div className="mb-2">
+                                    <div className="mb-2 h-48">
                                         {n.media.type === "image" ? (
-                                            <img
+                                            <BlurImage
                                                 src={n.media.url}
-                                                alt=""
-                                                className="w-full h-48 object-cover rounded"
+                                                alt={n.title}
                                             />
                                         ) : (
                                             <video
@@ -275,14 +304,13 @@ const Dashboard = () => {
                                 </p>
 
                                 <div className="flex gap-4 mt-3 text-sm text-gray-600">
-
                                     <button
                                         onClick={async (e) => {
                                             e.stopPropagation();
                                             await likeNews(n.id);
                                             fetchNews();
                                         }}
-                                        className="flex items-center gap-1 hover:text-red-500"
+                                        className="flex items-center gap-1 hover:text-red-500 transition"
                                     >
                                         <Heart size={16} /> {n.likes}
                                     </button>
@@ -293,7 +321,7 @@ const Dashboard = () => {
                                             await shareNews(n.id);
                                             fetchNews();
                                         }}
-                                        className="flex items-center gap-1 hover:text-blue-500"
+                                        className="flex items-center gap-1 hover:text-blue-500 transition"
                                     >
                                         <Share2 size={16} /> {n.shares}
                                     </button>
@@ -322,7 +350,7 @@ const Dashboard = () => {
                                 <div
                                     key={n.id}
                                     onClick={() => navigate(`/news/${n.id}`)}
-                                    className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                                    className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition hover:scale-[1.02]"
                                 >
                                     <p className="font-medium text-[#1e3a5f] line-clamp-2">
                                         {n.title}

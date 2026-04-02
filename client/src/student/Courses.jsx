@@ -2,16 +2,15 @@ import React from "react";
 
 /* ================= DYNAMIC DATA (API READY) ================= */
 const coursesData = [
-    // Example data (empty array will trigger "No Courses" UI)
     {
         id: 1,
-        title: "Class 10 Mathematics",
+        title: "Class 6 Mathematics",
         instructor: "Dr. Rajesh Kumar",
         progress: 75,
     },
     {
         id: 2,
-        title: "Physics Class 12",
+        title: "Science Class 6",
         instructor: "Prof. Priya Sharma",
         progress: 40,
     },
@@ -24,7 +23,7 @@ const Courses = () => {
 
             {/* HEADER */}
             <div>
-                <h1 className="text-2xl font-bold text-gray-800">
+                <h1 className="text-2xl font-bold text-[#1e3a5f]">
                     Your Courses
                 </h1>
                 <p className="text-gray-500">
@@ -35,11 +34,11 @@ const Courses = () => {
             {/* CONDITIONAL RENDER */}
             {coursesData.length === 0 ? (
                 /* EMPTY STATE */
-                <div className="flex flex-col items-center justify-center bg-white rounded-xl shadow-sm p-10 text-center">
+                <div className="flex flex-col items-center justify-center bg-white rounded-xl shadow-sm p-10 text-center border border-gray-100">
 
                     <div className="text-5xl mb-4">📚</div>
 
-                    <h2 className="text-xl font-semibold text-gray-700 mb-2">
+                    <h2 className="text-xl font-semibold text-[#1e3a5f] mb-2">
                         No Courses Taken Yet
                     </h2>
 
@@ -49,10 +48,12 @@ const Courses = () => {
 
                     <button
                         className="
-              px-6 py-2 rounded-lg bg-blue-600 text-white
-              hover:bg-blue-700 active:scale-95
-              transition-all duration-200
-            "
+                            px-6 py-2 rounded-lg 
+                            bg-[#ff6b22] text-white
+                            hover:bg-[#e85f1d] 
+                            active:scale-95
+                            transition-all duration-200
+                        "
                     >
                         Explore Courses
                     </button>
@@ -64,13 +65,14 @@ const Courses = () => {
                         <div
                             key={course.id}
                             className="
-                bg-white p-6 rounded-xl shadow-sm
-                hover:shadow-xl hover:-translate-y-1
-                transition-all duration-300
-              "
+                                bg-white p-6 rounded-xl shadow-sm
+                                hover:shadow-lg hover:-translate-y-1
+                                transition-all duration-300
+                                border border-gray-100
+                            "
                         >
                             {/* TITLE */}
-                            <h3 className="text-lg font-semibold text-gray-800">
+                            <h3 className="text-lg font-semibold text-[#1e3a5f]">
                                 {course.title}
                             </h3>
 
@@ -83,9 +85,9 @@ const Courses = () => {
                             <div className="w-full bg-gray-200 h-2 rounded-full mb-2">
                                 <div
                                     className="
-                    bg-blue-600 h-2 rounded-full
-                    transition-all duration-500
-                  "
+                                        bg-[#ff8c42] h-2 rounded-full
+                                        transition-all duration-500
+                                    "
                                     style={{ width: `${course.progress}%` }}
                                 ></div>
                             </div>
@@ -97,12 +99,12 @@ const Courses = () => {
                             {/* ACTION */}
                             <button
                                 className="
-                  w-full py-2 rounded-md
-                  bg-blue-600 text-white
-                  hover:bg-blue-700
-                  active:scale-95
-                  transition-all duration-200
-                "
+                                    w-full py-2 rounded-md
+                                    bg-[#1e3a5f] text-white
+                                    hover:bg-[#162d48]
+                                    active:scale-95
+                                    transition-all duration-200
+                                "
                             >
                                 Continue Learning
                             </button>

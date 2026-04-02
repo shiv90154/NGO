@@ -387,8 +387,10 @@ const Home = () => {
         </div>
       </section>
 
+      {/* This code has some error  */}
+
       {/* Statistics Section with dynamic counters */}
-      <section ref={statsRef} className="bg-gradient-to-r from-[#1e3a5f] to-[#2a6b9e] text-white py-20 px-4">
+      {/* <section ref={statsRef} className="bg-gradient-to-r from-[#1e3a5f] to-[#2a6b9e] text-white py-20 px-4">
         <div className="container mx-auto">
           <motion.h3 className="text-3xl md:text-4xl font-bold text-center mb-12" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} viewport={{ once: true }}>
             Samraddh Bharat in Numbers
@@ -412,7 +414,7 @@ const Home = () => {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* About Section (compact) */}
       <section id="about" className="py-20 px-4 bg-white">
