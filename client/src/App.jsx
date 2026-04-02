@@ -14,11 +14,14 @@ import Refund from "./pages/Refund";
 import Disclaimer from "./pages/Disclamier.jsx";
 import Privacy from "./pages/Privacy";
 import Faq from "./pages/Faq";
+import TestDashboard from "./pages/TestDashboard";
+
 function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
       <Routes>
+        {/* Main routes */}
         <Route path="/" element={<Home />} />
         <Route path="/services" element={<ServicesSection />} />
         <Route path="/about" element={<About />} />
@@ -28,16 +31,13 @@ function App() {
         <Route path="/student" element={<DynamicDashboard />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
         <Route path="/profile" element={<Profile />} />
-         <Route path="/refund" element={<Refund />} />
-        
-<Route path="/disclamier" element={<Disclaimer />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/faq" element={<Faq />} />
-
-         
-     
+        <Route path="/refund" element={<Refund />} />
+        <Route path="/disclamier" element={<Disclaimer />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/faq" element={<Faq />} />
+        <Route path="/news/*" element={<NewsRoutes />} />
+        <Route path="/test-dashboard" element={<TestDashboard />} />
       </Routes>
-      <NewsRoutes />
     </BrowserRouter>
   );
 }

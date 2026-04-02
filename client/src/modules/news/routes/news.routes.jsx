@@ -5,8 +5,10 @@ import NewsDetails from "../pages/NewsDetails";
 const NewsRoutes = () => {
     return (
         <Routes>
-            <Route path="/news" element={<Dashboard />} />
-            <Route path="/news/:id" element={<NewsDetails />} />
+
+            <Route index element={<Dashboard />} />
+         
+            <Route path=":id" element={<NewsDetails />} />
         </Routes>
     );
 };

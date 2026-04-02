@@ -2,7 +2,9 @@ import { useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../config/api";
 
-// Reusable input component with icon option
+// ======================
+// Reusable Input Component
+// ======================
 const Input = ({ label, name, type = "text", placeholder, value, onChange, onBlur, required = false, error, icon, ...props }) => (
   <div className="mb-4">
     {label && (
@@ -32,11 +34,13 @@ const Input = ({ label, name, type = "text", placeholder, value, onChange, onBlu
         {...props}
       />
     </div>
-    {error && <p className="text-red-400 text-xs mt-1 transition-all">{error}</p>}
+    {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
   </div>
 );
 
-// Radio group component for gender
+// ======================
+// Radio Group Component
+// ======================
 const RadioGroup = ({ label, name, options, value, onChange, error }) => (
   <div className="mb-4">
     {label && <label className="block text-sm font-medium text-white/80 mb-2">{label}</label>}
@@ -59,7 +63,9 @@ const RadioGroup = ({ label, name, options, value, onChange, error }) => (
   </div>
 );
 
-// Checkbox group for modules
+// ======================
+// Checkbox Group Component (for modules)
+// ======================
 const CheckboxGroup = ({ label, name, options, selectedValues, onChange, error }) => (
   <div className="mb-4">
     {label && <label className="block text-sm font-medium text-white/80 mb-2">{label}</label>}
@@ -86,7 +92,9 @@ const CheckboxGroup = ({ label, name, options, selectedValues, onChange, error }
   </div>
 );
 
-// Enhanced file input with custom button and validation
+// ======================
+// File Input Component
+// ======================
 const FileInput = ({ label, name, onChange, error, accept = "image/*", maxSize = 5 * 1024 * 1024 }) => {
   const [fileName, setFileName] = useState("");
   const [fileError, setFileError] = useState("");
@@ -95,7 +103,6 @@ const FileInput = ({ label, name, onChange, error, accept = "image/*", maxSize =
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Client-side validation
       if (!file.type.startsWith("image/")) {
         setFileError("Only image files are allowed");
         setFileName("");
@@ -116,7 +123,6 @@ const FileInput = ({ label, name, onChange, error, accept = "image/*", maxSize =
       setFileError("");
       onChange({ target: { name, value: null } });
     }
-    // Reset input value so the same file can be selected again
     if (inputRef.current) inputRef.current.value = "";
   };
 
@@ -133,25 +139,12 @@ const FileInput = ({ label, name, onChange, error, accept = "image/*", maxSize =
       <div className="flex items-center gap-3 flex-wrap">
         <label className="cursor-pointer bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-lg text-sm font-medium transition">
           Choose File
-          <input
-            type="file"
-            name={name}
-            ref={inputRef}
-            onChange={handleFileChange}
-            accept={accept}
-            className="hidden"
-          />
+          <input type="file" name={name} ref={inputRef} onChange={handleFileChange} accept={accept} className="hidden" />
         </label>
         {fileName && (
           <div className="flex items-center gap-2">
             <span className="text-xs text-white/70 truncate max-w-[200px]">{fileName}</span>
-            <button
-              type="button"
-              onClick={handleClear}
-              className="text-red-400 hover:text-red-300 text-sm"
-            >
-              ✕
-            </button>
+            <button type="button" onClick={handleClear} className="text-red-400 hover:text-red-300 text-sm">✕</button>
           </div>
         )}
       </div>
@@ -160,6 +153,9 @@ const FileInput = ({ label, name, onChange, error, accept = "image/*", maxSize =
   );
 };
 
+// ======================
+// MAIN REGISTER COMPONENT
+// ======================
 export default function Register() {
   const { role } = useParams();
   const navigate = useNavigate();
@@ -170,6 +166,7 @@ export default function Register() {
   const [touched, setTouched] = useState({});
   const [showPassword, setShowPassword] = useState(false);
 
+  // Common form fields
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -187,18 +184,51 @@ export default function Register() {
     village: "",
     pincode: "",
     fullAddress: "",
-    modules: []
+    modules: [],
+  });
+
+  // Role-specific fields
+  const [teacherFields, setTeacherFields] = useState({
+    specialization: "",
+    qualifications: "",
+    experienceYears: "",
+  });
+
+  const [doctorFields, setDoctorFields] = useState({
+    doctorSpecialization: "",
+    doctorExperience: "",
+    consultationFee: "",
+    registrationNumber: "",
+  });
+
+  const [farmerFields, setFarmerFields] = useState({
+    landSize: "",
+    crops: "",
+    farmingType: "conventional",
+    isContractFarmer: false,
+  });
+
+  const [agentFields, setAgentFields] = useState({
+    commissionRate: "",
+  });
+
+  const [bankAccount, setBankAccount] = useState({
+    accountNumber: "",
+    ifsc: "",
+    bankName: "",
+    accountHolderName: "",
   });
 
   const [files, setFiles] = useState({
     profileImage: null,
     aadhaarImage: null,
-    panImage: null
+    panImage: null,
   });
 
   const VALID_ROLES = [
-    'SUPER_ADMIN', 'STATE_OFFICER', 'DISTRICT_MANAGER',
-    'BLOCK_OFFICER', 'VILLAGE_OFFICER', 'DOCTOR', 'TEACHER', 'AGENT', 'USER'
+    "SUPER_ADMIN", "ADDITIONAL_DIRECTOR", "STATE_OFFICER",
+    "DISTRICT_MANAGER", "DISTRICT_PRESIDENT", "FIELD_OFFICER",
+    "BLOCK_OFFICER", "VILLAGE_OFFICER", "DOCTOR", "TEACHER", "AGENT", "USER",
   ];
 
   const validateField = (name, value) => {
@@ -214,6 +244,12 @@ export default function Register() {
       case "password":
         if (!value) return "Password is required";
         return value.length < 6 ? "Password must be at least 6 characters" : "";
+      case "aadhaarNumber":
+        if (value && !/^\d{12}$/.test(value)) return "Aadhaar must be 12 digits";
+        return "";
+      case "panNumber":
+        if (value && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(value)) return "Invalid PAN format";
+        return "";
       default:
         return "";
     }
@@ -221,49 +257,78 @@ export default function Register() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
+    setForm((prev) => ({ ...prev, [name]: value }));
     if (touched[name]) {
       const errorMsg = validateField(name, value);
-      setErrors(prev => ({ ...prev, [name]: errorMsg }));
+      setErrors((prev) => ({ ...prev, [name]: errorMsg }));
     }
   };
 
   const handleBlur = (e) => {
     const { name, value } = e.target;
-    setTouched(prev => ({ ...prev, [name]: true }));
+    setTouched((prev) => ({ ...prev, [name]: true }));
     const errorMsg = validateField(name, value);
-    setErrors(prev => ({ ...prev, [name]: errorMsg }));
+    setErrors((prev) => ({ ...prev, [name]: errorMsg }));
   };
 
   const handleFile = (e) => {
     const { name, value } = e.target;
-    setFiles(prev => ({ ...prev, [name]: value }));
-    // Clear any previous file-related error (if we had any)
-    setErrors(prev => ({ ...prev, [name]: "" }));
+    setFiles((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleModulesChange = (e) => {
-    setForm(prev => ({ ...prev, modules: e.target.value }));
+    setForm((prev) => ({ ...prev, modules: e.target.value }));
+  };
+
+  // Role-specific handlers
+  const handleTeacherChange = (e) => {
+    const { name, value } = e.target;
+    setTeacherFields((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleDoctorChange = (e) => {
+    const { name, value } = e.target;
+    setDoctorFields((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFarmerChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFarmerFields((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleAgentChange = (e) => {
+    const { name, value } = e.target;
+    setAgentFields((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleBankChange = (e) => {
+    const { name, value } = e.target;
+    setBankAccount((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setServerError("");
 
-    // Validate all required fields
+    // Validate required common fields
     const requiredFields = ["fullName", "email", "phone", "password"];
     const newErrors = {};
-    requiredFields.forEach(field => {
+    requiredFields.forEach((field) => {
       const errorMsg = validateField(field, form[field]);
       if (errorMsg) newErrors[field] = errorMsg;
     });
-    // Also ensure no file errors (optional)
+    if (form.aadhaarNumber && validateField("aadhaarNumber", form.aadhaarNumber))
+      newErrors.aadhaarNumber = validateField("aadhaarNumber", form.aadhaarNumber);
+    if (form.panNumber && validateField("panNumber", form.panNumber))
+      newErrors.panNumber = validateField("panNumber", form.panNumber);
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      // Mark all required fields as touched
-      const newTouched = {};
-      requiredFields.forEach(field => { newTouched[field] = true; });
-      setTouched(prev => ({ ...prev, ...newTouched }));
+      requiredFields.forEach((f) => setTouched((prev) => ({ ...prev, [f]: true })));
       setServerError("Please fix the errors before submitting.");
       return;
     }
@@ -273,42 +338,62 @@ export default function Register() {
     try {
       const data = new FormData();
 
-      // Append all form fields
-      Object.keys(form).forEach(key => {
-        const val = form[key];
+      // Append common form fields
+      Object.keys(form).forEach((key) => {
         if (key === "modules") {
-          form.modules.forEach(m => data.append("modules", m));
-        } else if (key === "gender" && val === "") {
-          // skip empty gender
-          return;
+          if (form.modules.length) {
+            form.modules.forEach((m) => data.append("modules", m));
+          }
         } else if (key !== "role") {
-          data.append(key, val);
+          data.append(key, form[key] !== undefined && form[key] !== null ? form[key] : "");
         }
       });
 
+      // Append role-specific fields based on role
+      const mappedRole = role?.toUpperCase() || "USER";
+      data.append("role", mappedRole);
+
+      if (mappedRole === "TEACHER") {
+        if (teacherFields.specialization) data.append("specialization", teacherFields.specialization);
+        if (teacherFields.qualifications) data.append("qualifications", teacherFields.qualifications);
+        if (teacherFields.experienceYears) data.append("experienceYears", teacherFields.experienceYears);
+      } else if (mappedRole === "DOCTOR") {
+        if (doctorFields.doctorSpecialization) data.append("doctorSpecialization", doctorFields.doctorSpecialization);
+        if (doctorFields.doctorExperience) data.append("doctorExperience", doctorFields.doctorExperience);
+        if (doctorFields.consultationFee) data.append("consultationFee", doctorFields.consultationFee);
+        if (doctorFields.registrationNumber) data.append("registrationNumber", doctorFields.registrationNumber);
+      } else if (mappedRole === "AGENT") {
+        if (agentFields.commissionRate) data.append("commissionRate", agentFields.commissionRate);
+      }
+
+      // Farmer fields (if AGRICULTURE module selected)
+      if (form.modules.includes("AGRICULTURE")) {
+        if (farmerFields.landSize) data.append("landSize", farmerFields.landSize);
+        if (farmerFields.crops) data.append("crops", farmerFields.crops);
+        if (farmerFields.farmingType) data.append("farmingType", farmerFields.farmingType);
+        data.append("isContractFarmer", farmerFields.isContractFarmer);
+      }
+
+      // Bank account (if any field filled)
+      if (bankAccount.accountNumber || bankAccount.ifsc || bankAccount.bankName) {
+        data.append("bankAccount", JSON.stringify(bankAccount));
+      }
+
       // Append files
-      Object.keys(files).forEach(key => {
+      Object.keys(files).forEach((key) => {
         if (files[key]) data.append(key, files[key]);
       });
 
-      let mappedRole = role?.toUpperCase() || "USER";
-      if (!VALID_ROLES.includes(mappedRole)) {
-        mappedRole = "USER";
-      }
-      data.append("role", mappedRole);
-
-      const response = await api.post("/auth/register", data, {
-        headers: { "Content-Type": "multipart/form-data" }
+      const response = await api.post("/users/register", data, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
-      // Backend now returns { success: true, message, email } or similar
       if (response.data.success) {
         navigate("/verify-otp", { state: { email: form.email } });
       } else {
         setServerError(response.data.message || "Registration failed.");
       }
     } catch (err) {
-      // Handle error from backend
       const message = err.response?.data?.message || "Registration failed. Please try again.";
       setServerError(message);
     } finally {
@@ -319,7 +404,7 @@ export default function Register() {
   const genderOptions = [
     { value: "MALE", label: "Male" },
     { value: "FEMALE", label: "Female" },
-    { value: "OTHER", label: "Other" }
+    { value: "OTHER", label: "Other" },
   ];
 
   const moduleOptions = [
@@ -328,8 +413,10 @@ export default function Register() {
     { value: "FINANCE", label: "Finance" },
     { value: "HEALTHCARE", label: "Healthcare" },
     { value: "NEWS", label: "News" },
-    { value: "IT", label: "IT" }
+    { value: "IT", label: "IT" },
   ];
+
+  const mappedRole = role?.toUpperCase() || "USER";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-8 px-4">
@@ -347,7 +434,6 @@ export default function Register() {
             <p className="text-white/60 mt-2">Create your account to get started</p>
           </div>
 
-          {/* Server error message */}
           {serverError && (
             <div className="bg-red-500/20 border border-red-500/50 text-red-300 p-3 rounded-lg mb-6 text-center">
               {serverError}
@@ -355,7 +441,7 @@ export default function Register() {
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
-            {/* Personal Information */}
+            {/* LEFT COLUMN: Personal Details */}
             <div className="space-y-2">
               <h3 className="text-lg font-semibold text-white border-b border-white/20 pb-2 mb-4">
                 Personal Details
@@ -448,57 +534,54 @@ export default function Register() {
                   onChange={handleChange}
                 />
               </div>
+
+              {/* Bank Account Section */}
+              <h3 className="text-lg font-semibold text-white border-b border-white/20 pb-2 mb-4 mt-6">
+                Bank Account (Optional)
+              </h3>
+              <Input
+                label="Account Number"
+                name="accountNumber"
+                placeholder="Bank account number"
+                value={bankAccount.accountNumber}
+                onChange={handleBankChange}
+              />
+              <Input
+                label="IFSC Code"
+                name="ifsc"
+                placeholder="IFSC code"
+                value={bankAccount.ifsc}
+                onChange={handleBankChange}
+              />
+              <Input
+                label="Bank Name"
+                name="bankName"
+                placeholder="Bank name"
+                value={bankAccount.bankName}
+                onChange={handleBankChange}
+              />
+              <Input
+                label="Account Holder Name"
+                name="accountHolderName"
+                placeholder="Name as on bank account"
+                value={bankAccount.accountHolderName}
+                onChange={handleBankChange}
+              />
             </div>
 
-            {/* Address & Documents */}
+            {/* RIGHT COLUMN: Address, Documents, Interests, Role-specific fields */}
             <div className="space-y-2">
               <h3 className="text-lg font-semibold text-white border-b border-white/20 pb-2 mb-4">
                 Address Details
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input
-                  label="State"
-                  name="state"
-                  placeholder="State"
-                  value={form.state}
-                  onChange={handleChange}
-                />
-                <Input
-                  label="District"
-                  name="district"
-                  placeholder="District"
-                  value={form.district}
-                  onChange={handleChange}
-                />
-                <Input
-                  label="Block"
-                  name="block"
-                  placeholder="Block"
-                  value={form.block}
-                  onChange={handleChange}
-                />
-                <Input
-                  label="Village / City"
-                  name="village"
-                  placeholder="Village or city"
-                  value={form.village}
-                  onChange={handleChange}
-                />
-                <Input
-                  label="Pincode"
-                  name="pincode"
-                  placeholder="Postal code"
-                  value={form.pincode}
-                  onChange={handleChange}
-                />
+                <Input label="State" name="state" placeholder="State" value={form.state} onChange={handleChange} />
+                <Input label="District" name="district" placeholder="District" value={form.district} onChange={handleChange} />
+                <Input label="Block" name="block" placeholder="Block" value={form.block} onChange={handleChange} />
+                <Input label="Village / City" name="village" placeholder="Village or city" value={form.village} onChange={handleChange} />
+                <Input label="Pincode" name="pincode" placeholder="Postal code" value={form.pincode} onChange={handleChange} />
                 <div className="sm:col-span-2">
-                  <Input
-                    label="Full Address"
-                    name="fullAddress"
-                    placeholder="House number, street, landmark"
-                    value={form.fullAddress}
-                    onChange={handleChange}
-                  />
+                  <Input label="Full Address" name="fullAddress" placeholder="House number, street, landmark" value={form.fullAddress} onChange={handleChange} />
                 </div>
               </div>
 
@@ -512,6 +595,8 @@ export default function Register() {
                   placeholder="12-digit Aadhaar"
                   value={form.aadhaarNumber}
                   onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={touched.aadhaarNumber ? errors.aadhaarNumber : undefined}
                 />
                 <Input
                   label="PAN Number"
@@ -519,6 +604,8 @@ export default function Register() {
                   placeholder="PAN (e.g., ABCDE1234F)"
                   value={form.panNumber}
                   onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={touched.panNumber ? errors.panNumber : undefined}
                 />
               </div>
 
@@ -526,28 +613,13 @@ export default function Register() {
                 Upload Documents
               </h3>
               <div className="space-y-3">
-                <FileInput
-                  label="Profile Photo"
-                  name="profileImage"
-                  onChange={handleFile}
-                  error={errors.profileImage}
-                />
-                <FileInput
-                  label="Aadhaar Image"
-                  name="aadhaarImage"
-                  onChange={handleFile}
-                  error={errors.aadhaarImage}
-                />
-                <FileInput
-                  label="PAN Image"
-                  name="panImage"
-                  onChange={handleFile}
-                  error={errors.panImage}
-                />
+                <FileInput label="Profile Photo" name="profileImage" onChange={handleFile} error={errors.profileImage} />
+                <FileInput label="Aadhaar Image" name="aadhaarImage" onChange={handleFile} error={errors.aadhaarImage} />
+                <FileInput label="PAN Image" name="panImage" onChange={handleFile} error={errors.panImage} />
               </div>
 
               <h3 className="text-lg font-semibold text-white border-b border-white/20 pb-2 mb-4 mt-6">
-                Interests
+                Interests (Modules)
               </h3>
               <CheckboxGroup
                 label="Select your areas of interest"
@@ -561,20 +633,149 @@ export default function Register() {
                   {form.modules.map((mod) => {
                     const label = moduleOptions.find((opt) => opt.value === mod)?.label || mod;
                     return (
-                      <span
-                        key={mod}
-                        className="bg-orange-500/20 text-orange-300 px-2 py-1 rounded-md text-xs"
-                      >
+                      <span key={mod} className="bg-orange-500/20 text-orange-300 px-2 py-1 rounded-md text-xs">
                         {label}
                       </span>
                     );
                   })}
                 </div>
               )}
+
+              {/* Role-specific fields */}
+              {mappedRole === "TEACHER" && (
+                <>
+                  <h3 className="text-lg font-semibold text-white border-b border-white/20 pb-2 mb-4 mt-6">
+                    Teacher Profile Details
+                  </h3>
+                  <Input
+                    label="Specialization"
+                    name="specialization"
+                    placeholder="e.g., Mathematics, Physics, English"
+                    value={teacherFields.specialization}
+                    onChange={handleTeacherChange}
+                  />
+                  <Input
+                    label="Qualifications (comma separated)"
+                    name="qualifications"
+                    placeholder="e.g., B.Ed, M.Sc, PhD"
+                    value={teacherFields.qualifications}
+                    onChange={handleTeacherChange}
+                  />
+                  <Input
+                    label="Years of Experience"
+                    name="experienceYears"
+                    type="number"
+                    placeholder="e.g., 5"
+                    value={teacherFields.experienceYears}
+                    onChange={handleTeacherChange}
+                  />
+                </>
+              )}
+
+              {mappedRole === "DOCTOR" && (
+                <>
+                  <h3 className="text-lg font-semibold text-white border-b border-white/20 pb-2 mb-4 mt-6">
+                    Doctor Profile Details
+                  </h3>
+                  <Input
+                    label="Specialization"
+                    name="doctorSpecialization"
+                    placeholder="e.g., Cardiologist, Dermatologist"
+                    value={doctorFields.doctorSpecialization}
+                    onChange={handleDoctorChange}
+                  />
+                  <Input
+                    label="Years of Experience"
+                    name="doctorExperience"
+                    type="number"
+                    placeholder="e.g., 10"
+                    value={doctorFields.doctorExperience}
+                    onChange={handleDoctorChange}
+                  />
+                  <Input
+                    label="Consultation Fee (₹)"
+                    name="consultationFee"
+                    type="number"
+                    placeholder="e.g., 500"
+                    value={doctorFields.consultationFee}
+                    onChange={handleDoctorChange}
+                  />
+                  <Input
+                    label="Registration Number"
+                    name="registrationNumber"
+                    placeholder="Medical council registration"
+                    value={doctorFields.registrationNumber}
+                    onChange={handleDoctorChange}
+                  />
+                </>
+              )}
+
+              {mappedRole === "AGENT" && (
+                <>
+                  <h3 className="text-lg font-semibold text-white border-b border-white/20 pb-2 mb-4 mt-6">
+                    Agent / MLM Details
+                  </h3>
+                  <Input
+                    label="Commission Rate (%)"
+                    name="commissionRate"
+                    type="number"
+                    step="0.01"
+                    placeholder="e.g., 5"
+                    value={agentFields.commissionRate}
+                    onChange={handleAgentChange}
+                  />
+                </>
+              )}
+
+              {form.modules.includes("AGRICULTURE") && (
+                <>
+                  <h3 className="text-lg font-semibold text-white border-b border-white/20 pb-2 mb-4 mt-6">
+                    Farmer Profile Details
+                  </h3>
+                  <Input
+                    label="Land Size (in acres)"
+                    name="landSize"
+                    type="number"
+                    step="0.01"
+                    placeholder="e.g., 2.5"
+                    value={farmerFields.landSize}
+                    onChange={handleFarmerChange}
+                  />
+                  <Input
+                    label="Crops Grown (comma separated)"
+                    name="crops"
+                    placeholder="e.g., Wheat, Rice, Cotton"
+                    value={farmerFields.crops}
+                    onChange={handleFarmerChange}
+                  />
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-white/80 mb-1">Farming Type</label>
+                    <select
+                      name="farmingType"
+                      value={farmerFields.farmingType}
+                      onChange={handleFarmerChange}
+                      className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    >
+                      <option value="conventional">Conventional</option>
+                      <option value="organic">Organic</option>
+                      <option value="mixed">Mixed</option>
+                    </select>
+                  </div>
+                  <label className="flex items-center gap-2 text-white/80 mb-4">
+                    <input
+                      type="checkbox"
+                      name="isContractFarmer"
+                      checked={farmerFields.isContractFarmer}
+                      onChange={handleFarmerChange}
+                      className="text-orange-500 focus:ring-orange-500 rounded"
+                    />
+                    <span>Contract Farmer</span>
+                  </label>
+                </>
+              )}
             </div>
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
@@ -593,7 +794,6 @@ export default function Register() {
             )}
           </button>
 
-          {/* Already have an account? – Role-aware link */}
           <p className="text-center text-white/60 text-sm mt-6">
             Already have an account?{" "}
             <button
