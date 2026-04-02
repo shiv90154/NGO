@@ -48,8 +48,8 @@ const DynamicDashboard = () => {
     return (
         <div className="flex bg-gray-100">
 
-            {/* SIDEBAR */}
-            <div className="w-64 min-h-screen fixed bg-white shadow-lg flex flex-col border-r border-gray-200">
+            {/* SIDEBAR (DESKTOP ONLY) */}
+            <div className="hidden md:flex w-64 min-h-screen fixed bg-white shadow-lg flex-col border-r border-gray-200">
 
                 {/* USER INFO */}
                 <div className="p-5 border-b border-gray-200 bg-gray-50">
@@ -68,14 +68,14 @@ const DynamicDashboard = () => {
                             key={item.key}
                             onClick={() => setActiveKey(item.key)}
                             className={`
-                flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer
-                transition-all duration-200
-                ${activeKey === item.key
+                                flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer
+                                transition-all duration-200
+                                ${activeKey === item.key
                                     ? "bg-[#1e3a5f] text-white shadow-md"
                                     : "text-gray-700 hover:bg-[#ff8c42]/10 hover:text-[#ff6b22]"
                                 }
-                active:scale-95
-              `}
+                                active:scale-95
+                            `}
                         >
                             <item.icon />
                             <span>{item.label}</span>
@@ -90,19 +90,41 @@ const DynamicDashboard = () => {
             </div>
 
             {/* MAIN CONTENT */}
-            <div className="ml-64 flex-1 p-8 bg-gray-100">
+            <div className="md:ml-64 flex-1 p-4 md:p-8 bg-gray-100 pb-20">
 
-                <div className="bg-white rounded-xl shadow-md p-6 min-h-[80vh] border border-gray-200">
+                <div className="bg-white rounded-xl shadow-md p-4 md:p-6 min-h-[80vh] border border-gray-200">
 
                     {/* TITLE */}
-                    <h1 className="text-2xl font-bold mb-4 capitalize text-[#1e3a5f]">
+                    <h1 className="text-xl md:text-2xl font-bold mb-4 capitalize text-[#1e3a5f]">
                         {activeKey.replace("-", " ")}
                     </h1>
 
                     {/* COMPONENT */}
-                    {ActiveComponent ? <ActiveComponent /> : <div className="text-gray-500">Page Not Found</div>}
-
+                    {ActiveComponent ? (
+                        <ActiveComponent />
+                    ) : (
+                        <div className="text-gray-500">Page Not Found</div>
+                    )}
                 </div>
+            </div>
+
+            {/* MOBILE BOTTOM NAVBAR */}
+            <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 shadow-md flex justify-around items-center py-2 md:hidden z-50">
+                {data.menu.map((item) => (
+                    <div
+                        key={item.key}
+                        onClick={() => setActiveKey(item.key)}
+                        className={`
+                            flex flex-col items-center text-xs cursor-pointer transition-all duration-200
+                            ${activeKey === item.key
+                                ? "text-[#1e3a5f]"
+                                : "text-gray-500"
+                            }
+                        `}
+                    >
+                        <item.icon className="text-lg mb-1" />
+                    </div>
+                ))}
             </div>
 
         </div>
