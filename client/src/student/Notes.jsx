@@ -3,20 +3,20 @@ import React, { useEffect, useState } from "react";
 const MOCK_NOTES = [
     {
         _id: "1",
-        title: "DBMS Unit 1",
-        description: "Introduction to Database Management Systems",
+        title: "English Unit 1",
+        description: "Fables and Folk Tales",
         fileUrl: "",
     },
     {
         _id: "2",
-        title: "Operating Systems",
-        description: "Process management and scheduling",
+        title: "Hindi Lesson 2 ",
+        description: "समास ",
         fileUrl: "",
     },
     {
         _id: "3",
-        title: "Computer Networks",
-        description: "OSI Model and TCP/IP basics",
+        title: "Social Science Chapter 3",
+        description: "Landforms and Life",
         fileUrl: "",
     },
 ];
@@ -30,15 +30,12 @@ const Notes = () => {
             try {
                 const res = await fetch(`${import.meta.env.VITE_API_URL}/notes`);
 
-                // If backend is not ready, this may fail
                 if (!res.ok) throw new Error("Backend not ready");
 
                 const data = await res.json();
                 setNotes(data);
             } catch (error) {
                 console.warn("Using mock data:", error.message);
-
-                // fallback to mock data
                 setNotes(MOCK_NOTES);
             } finally {
                 setLoading(false);
@@ -50,10 +47,10 @@ const Notes = () => {
 
     return (
         <div className="min-h-screen bg-gray-100 p-6 flex justify-center">
-            <div className="w-full max-w-3xl bg-white p-6 rounded-xl shadow">
+            <div className="w-full max-w-3xl bg-white p-6 rounded-xl shadow border border-gray-200">
 
                 {/* Title */}
-                <h2 className="text-2xl font-bold mb-6 text-center">
+                <h2 className="text-2xl font-bold mb-6 text-center text-[#1e3a5f]">
                     Study Notes
                 </h2>
 
@@ -65,10 +62,12 @@ const Notes = () => {
                         {notes.map((note) => (
                             <div
                                 key={note._id}
-                                className="flex justify-between items-center bg-gray-50 p-4 rounded-md border"
+                                className="flex justify-between items-center bg-gray-50 p-4 rounded-md border border-gray-200 hover:shadow-md transition"
                             >
                                 <div>
-                                    <p className="font-medium">{note.title}</p>
+                                    <p className="font-medium text-[#1e3a5f]">
+                                        {note.title}
+                                    </p>
                                     <p className="text-sm text-gray-500">
                                         {note.description}
                                     </p>
@@ -78,7 +77,7 @@ const Notes = () => {
                                     href={note.fileUrl}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="text-blue-600 hover:underline"
+                                    className="text-[#ff8c42] hover:text-[#ff6b22] hover:underline transition"
                                 >
                                     View / Download
                                 </a>
