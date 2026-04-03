@@ -7,43 +7,49 @@ import LoginForm from "./pages/LoginForm";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import VerifyOTP from "./pages/VerifyOTP";
+import TestDashboard from "./pages/TestDashboard";
+import ScrollToTop from "./components/ScrollToTop";
 import Refund from "./pages/Refund";
-import Disclaimer from "./pages/Disclamier.jsx";
+import Disclaimer from "./pages/Disclamier";
 import Privacy from "./pages/Privacy";
 import Faq from "./pages/Faq";
-import ScrollToTop from "./components/ScrollToTop.jsx";
-import NewsRoutes from "./modules/news/routes/news.routes.jsx";
-import DynamicDashboard from "./student/Student.jsx";
-import AgricultureRoutes from "./modules/agriculture/routes/agriculture.routes";
+
+// Import module dashboards directly
+import EducationDashboard from "./modules/education/pages/Dashboard";
+import AgricultureDashboard from "./modules/agriculture/pages/Dashboard";
+import FinanceDashboard from "./modules/finance/pages/Dashboard";
+import HealthcareDashboard from "./modules/healthcare/pages/Dashboard";
+import NewsDashboard from "./modules/news/pages/Dashboard";
+import ITDashboard from "./modules/it/pages/Dashboard";
+
 function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
       <Routes>
+        {/* Public routes */}
         <Route path="/" element={<Home />} />
         <Route path="/services" element={<ServicesSection />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/student" element={<DynamicDashboard />} />
-        <Route path="/agriculture/*" element={<AgricultureRoutes />} />
-
-
         <Route path="/login/:role" element={<LoginForm />} />
         <Route path="/register/:role" element={<Register />} />
-
-
         <Route path="/verify-otp" element={<VerifyOTP />} />
-
-
         <Route path="/profile" element={<Profile />} />
+        <Route path="/test-dashboard" element={<TestDashboard />} />
         <Route path="/refund" element={<Refund />} />
         <Route path="/disclamier" element={<Disclaimer />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/faq" element={<Faq />} />
 
-
+        {/* Module dashboard routes */}
+        <Route path="/education/dashboard" element={<EducationDashboard />} />
+        <Route path="/agriculture/dashboard" element={<AgricultureDashboard />} />
+        <Route path="/finance/dashboard" element={<FinanceDashboard />} />
+        <Route path="/healthcare/dashboard" element={<HealthcareDashboard />} />
+        <Route path="/news/dashboard" element={<NewsDashboard />} />
+        <Route path="/it/dashboard" element={<ITDashboard />} />
       </Routes>
-      <NewsRoutes />
     </BrowserRouter>
   );
 }

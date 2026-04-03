@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -35,29 +34,27 @@ const Header = () => {
           : "bg-[#1e3a5f]"
       } text-white`}
     >
-      <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-
-        {/* 🔥 LOGO */}
+      <div className="container mx-auto px-3 sm:px-4 py-3 flex justify-between items-center">
+        {/* LOGO - responsive text and image */}
         <div
-          className="flex items-center gap-3 cursor-pointer"
+          className="flex items-center gap-2 sm:gap-3 cursor-pointer flex-shrink-0"
           onClick={() => handleNav("/")}
         >
           <img
             src="/logo.jpg"
-            alt="logo"
-            className="w-10 h-10 object-contain rounded-md shadow"
+            alt="Samraddh Bharat Logo"
+            className="w-8 h-8 sm:w-10 sm:h-10 object-contain rounded-md shadow"
           />
-          <span className="text-lg font-bold tracking-wide">
+          <span className="text-sm sm:text-base md:text-lg font-bold tracking-wide whitespace-nowrap">
             SAMRADDH BHARAT
           </span>
         </div>
 
-        {/* DESKTOP NAV */}
-        <nav className="hidden md:flex gap-6 items-center">
-
+        {/* DESKTOP NAV - hidden on tablet/mobile, visible from md breakpoint */}
+        <nav className="hidden md:flex gap-4 lg:gap-6 items-center">
           <button
             onClick={() => handleNav("/")}
-            className={`hover:text-orange-400 ${
+            className={`hover:text-orange-400 transition-colors text-sm lg:text-base ${
               isActive("/") ? "text-orange-400" : ""
             }`}
           >
@@ -66,7 +63,7 @@ const Header = () => {
 
           <button
             onClick={() => handleNav("/services")}
-            className={`hover:text-orange-400 ${
+            className={`hover:text-orange-400 transition-colors text-sm lg:text-base ${
               isActive("/services") ? "text-orange-400" : ""
             }`}
           >
@@ -75,7 +72,7 @@ const Header = () => {
 
           <button
             onClick={() => handleNav("/about")}
-            className={`hover:text-orange-400 ${
+            className={`hover:text-orange-400 transition-colors text-sm lg:text-base ${
               isActive("/about") ? "text-orange-400" : ""
             }`}
           >
@@ -84,46 +81,47 @@ const Header = () => {
 
           <button
             onClick={() => handleNav("/contact")}
-            className={`hover:text-orange-400 ${
+            className={`hover:text-orange-400 transition-colors text-sm lg:text-base ${
               isActive("/contact") ? "text-orange-400" : ""
             }`}
           >
             Contact
           </button>
 
-          {/* 🔥 LOGIN BUTTON FIXED */}
           <button
             onClick={() => handleNav("/services")}
-            className="bg-orange-500 px-5 py-2 rounded-lg font-semibold hover:bg-orange-600"
+            className="bg-orange-500 px-4 py-1.5 lg:px-5 lg:py-2 rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm lg:text-base"
           >
             Login / Register
           </button>
         </nav>
 
-        {/* MOBILE MENU BUTTON */}
+        {/* MOBILE MENU BUTTON - larger tap area */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden text-2xl"
+          className="md:hidden text-2xl sm:text-3xl p-2 -mr-2"
+          aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
         >
           {mobileMenuOpen ? "✕" : "☰"}
         </button>
       </div>
 
-      {/* MOBILE MENU */}
+      {/* MOBILE MENU - with improved touch sizing */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="bg-[#1e3a5f] md:hidden overflow-hidden"
+            className="bg-[#1e3a5f] md:hidden overflow-hidden shadow-lg"
           >
-            <div className="flex flex-col gap-3 p-4">
-
+            <div className="flex flex-col gap-2 p-4 pt-2">
               <button
                 onClick={() => handleNav("/")}
-                className={`text-left py-2 px-3 rounded-lg ${
-                  isActive("/") ? "bg-orange-500/20 text-orange-400" : "hover:bg-white/10"
+                className={`text-left py-3 px-4 rounded-lg text-base ${
+                  isActive("/")
+                    ? "bg-orange-500/20 text-orange-400"
+                    : "hover:bg-white/10"
                 }`}
               >
                 Home
@@ -131,8 +129,10 @@ const Header = () => {
 
               <button
                 onClick={() => handleNav("/services")}
-                className={`text-left py-2 px-3 rounded-lg ${
-                  isActive("/services") ? "bg-orange-500/20 text-orange-400" : "hover:bg-white/10"
+                className={`text-left py-3 px-4 rounded-lg text-base ${
+                  isActive("/services")
+                    ? "bg-orange-500/20 text-orange-400"
+                    : "hover:bg-white/10"
                 }`}
               >
                 Modules
@@ -140,8 +140,10 @@ const Header = () => {
 
               <button
                 onClick={() => handleNav("/about")}
-                className={`text-left py-2 px-3 rounded-lg ${
-                  isActive("/about") ? "bg-orange-500/20 text-orange-400" : "hover:bg-white/10"
+                className={`text-left py-3 px-4 rounded-lg text-base ${
+                  isActive("/about")
+                    ? "bg-orange-500/20 text-orange-400"
+                    : "hover:bg-white/10"
                 }`}
               >
                 About
@@ -149,8 +151,10 @@ const Header = () => {
 
               <button
                 onClick={() => handleNav("/contact")}
-                className={`text-left py-2 px-3 rounded-lg ${
-                  isActive("/contact") ? "bg-orange-500/20 text-orange-400" : "hover:bg-white/10"
+                className={`text-left py-3 px-4 rounded-lg text-base ${
+                  isActive("/contact")
+                    ? "bg-orange-500/20 text-orange-400"
+                    : "hover:bg-white/10"
                 }`}
               >
                 Contact
@@ -158,11 +162,10 @@ const Header = () => {
 
               <button
                 onClick={() => handleNav("/services")}
-                className="bg-orange-500 text-white py-2 px-3 rounded-lg font-semibold mt-2"
+                className="bg-orange-500 text-white py-3 px-4 rounded-lg font-semibold mt-2 text-base"
               >
                 Login / Register
               </button>
-
             </div>
           </motion.div>
         )}

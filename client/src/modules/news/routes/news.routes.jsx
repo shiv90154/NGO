@@ -3,11 +3,13 @@ import Dashboard from "../pages/Dashboard";
 import NewsDetails from "../pages/NewsDetails";
 
 const NewsRoutes = () => {
-    return (
+    return (<>
+        {/* <Header /> */}
         <Routes>
             <Route path="/news" element={<Dashboard />} />
             <Route path="/news/:id" element={<NewsDetails />} />
         </Routes>
+        </>
     );
 };
 

@@ -31,12 +31,18 @@ const userSchema = new mongoose.Schema(
       minlength: [6, 'Password must be at least 6 characters'],
     },
 
+    // ======================
+    // USER ROLE (Hierarchy)
+    // ======================
     role: {
       type: String,
       enum: [
         'SUPER_ADMIN',
+        'ADDITIONAL_DIRECTOR',
         'STATE_OFFICER',
         'DISTRICT_MANAGER',
+        'DISTRICT_PRESIDENT',
+        'FIELD_OFFICER',
         'BLOCK_OFFICER',
         'VILLAGE_OFFICER',
         'DOCTOR',
@@ -57,22 +63,49 @@ const userSchema = new mongoose.Schema(
     },
 
     // ======================
-    // REFERRAL (MLM)
+    // OFFICIAL HIERARCHY
     // ======================
-    parentId: {
+    reportsTo: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
+      default: null,
+    },
+    hierarchyLevel: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    // ======================
+    // MLM / FRANCHISE TREE
+    // ======================
+    sponsorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
     },
     referralCode: {
       type: String,
       unique: true,
       sparse: true,
     },
-    referredBy: String,
+    mlmLevel: {
+      type: Number,
+      default: 0,
+    },
+    leftChild: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+    rightChild: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
     teamSize: {
       type: Number,
       default: 0,
-      min: 0,
     },
 
     // ======================
@@ -127,58 +160,43 @@ const userSchema = new mongoose.Schema(
     // ======================
     // EDUCATION MODULE
     // ======================
+    teacherProfile: {
+      specialization: { type: String, trim: true },
+      qualifications: [String],
+      experienceYears: { type: Number, min: 0, default: 0 },
+      taughtCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
+    },
     enrolledCourses: [
       {
-        courseId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Course',
-        },
-        progress: {
-          type: Number,
-          default: 0,
-          min: 0,
-          max: 100,
-        },
-        completed: {
-          type: Boolean,
-          default: false,
-        },
-      },
-    ],
-    taughtCourses: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Course',
+        courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
+        progress: { type: Number, default: 0, min: 0, max: 100 },
+        completed: { type: Boolean, default: false },
+        enrolledAt: { type: Date, default: Date.now },
       },
     ],
 
     // ======================
     // HEALTHCARE MODULE
     // ======================
-    specialization: String,
-    experience: Number,
-    consultationFee: Number,
-    patients: [
-      {
-        patientId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'User',
-        },
-      },
-    ],
-    appointments: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Appointment',
-      },
-    ],
+    doctorProfile: {
+      specialization: { type: String, trim: true },
+      experienceYears: { type: Number, min: 0, default: 0 },
+      consultationFee: { type: Number, min: 0, default: 0 },
+      registrationNumber: { type: String, trim: true },
+      availableSlots: [Date],
+    },
+    patients: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    appointments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Appointment' }],
 
     // ======================
     // AGRICULTURE MODULE
     // ======================
-    landSize: Number,
-    crops: [String],
-    farmingType: String,
+    farmerProfile: {
+      landSize: { type: Number, min: 0, default: 0 },
+      crops: [String],
+      farmingType: { type: String, enum: ['organic', 'conventional', 'mixed'], default: 'conventional' },
+      isContractFarmer: { type: Boolean, default: false },
+    },
 
     // ======================
     // FINANCE MODULE
@@ -191,19 +209,28 @@ const userSchema = new mongoose.Schema(
     totalEarnings: {
       type: Number,
       default: 0,
-      min: 0,
     },
     bankAccount: {
-      accountNumber: String,
-      ifsc: String,
-      bankName: String,
+      accountNumber: { type: String, trim: true },
+      ifsc: { type: String, trim: true },
+      bankName: { type: String, trim: true },
+      accountHolderName: { type: String, trim: true },
     },
-    transactions: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Transaction',
-      },
-    ],
+    transactions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Transaction' }],
+
+    // ======================
+    // AGENT / MLM SPECIFIC
+    // ======================
+    commissionRate: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100,
+    },
+    totalCommissionEarned: {
+      type: Number,
+      default: 0,
+    },
 
     // ======================
     // OTP VERIFICATION
@@ -216,11 +243,21 @@ const userSchema = new mongoose.Schema(
     },
 
     // ======================
-    // STATUS
+    // STATUS & TRACKING
     // ======================
     isActive: {
       type: Boolean,
       default: true,
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
     },
   },
   {
@@ -229,17 +266,21 @@ const userSchema = new mongoose.Schema(
 );
 
 // ======================
-// INDEXES
+// INDEXES (only non‑unique or composite indexes)
 // ======================
 userSchema.index({ role: 1 });
 userSchema.index({ modules: 1 });
 userSchema.index({ isVerified: 1 });
-userSchema.index({ referralCode: 1 }, { sparse: true });
+userSchema.index({ reportsTo: 1 });
+userSchema.index({ sponsorId: 1 });
+userSchema.index({ 'doctorProfile.specialization': 1 });
+userSchema.index({ 'teacherProfile.specialization': 1 });
+userSchema.index({ 'farmerProfile.crops': 1 });
 
 // ======================
-// PRE-SAVE HOOK (combine password hashing and referral code)
+// PRE-SAVE HOOK (async, no `next` parameter)
 // ======================
-userSchema.pre('save', async function (next) {
+userSchema.pre('save', async function () {
   // Hash password if modified
   if (this.isModified('password')) {
     const salt = await bcrypt.genSalt(10);
@@ -251,7 +292,24 @@ userSchema.pre('save', async function (next) {
     this.referralCode = Math.random().toString(36).substring(2, 8).toUpperCase();
   }
 
-  next();
+  // Auto-set hierarchyLevel based on role (only for new documents)
+  const roleLevelMap = {
+    SUPER_ADMIN: 0,
+    ADDITIONAL_DIRECTOR: 1,
+    STATE_OFFICER: 2,
+    DISTRICT_MANAGER: 3,
+    DISTRICT_PRESIDENT: 4,
+    FIELD_OFFICER: 5,
+    BLOCK_OFFICER: 6,
+    VILLAGE_OFFICER: 7,
+    DOCTOR: 8,
+    TEACHER: 8,
+    AGENT: 8,
+    USER: 9,
+  };
+  if (this.isNew && !this.hierarchyLevel) {
+    this.hierarchyLevel = roleLevelMap[this.role] || 9;
+  }
 });
 
 // ======================
@@ -260,5 +318,13 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
+
+// ======================
+// VIRTUAL: Full address as string
+// ======================
+userSchema.virtual('fullAddressString').get(function () {
+  const parts = [this.fullAddress, this.village, this.block, this.district, this.state, this.pincode].filter(Boolean);
+  return parts.join(', ');
+});
 
 module.exports = mongoose.model('User', userSchema);
