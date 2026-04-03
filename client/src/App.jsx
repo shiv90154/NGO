@@ -15,7 +15,7 @@ import Privacy from "./pages/Privacy";
 import Faq from "./pages/Faq";
 
 // Import module dashboards
-import EducationDashboard from "./modules/education/pages/Dashboard";
+import EducationRoutes from "./modules/education/routes/education.routes";
 import AgricultureDashboard from "./modules/agriculture/pages/Dashboard";
 import HealthcareDashboard from "./modules/healthcare/pages/Dashboard";
 import NewsDashboard from "./modules/news/pages/Dashboard";
@@ -45,7 +45,7 @@ function App() {
         <Route path="/faq" element={<Faq />} />
 
         {/* Module dashboard routes (standalone) */}
-        <Route path="/education/dashboard" element={<EducationDashboard />} />
+        <Route path="/education/*" element={<EducationRoutes />} />
         <Route path="/agriculture/dashboard" element={<AgricultureDashboard />} />
         <Route path="/healthcare/dashboard" element={<HealthcareDashboard />} />
         <Route path="/news/dashboard" element={<NewsDashboard />} />
