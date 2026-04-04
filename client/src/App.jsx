@@ -53,6 +53,7 @@ function App() {
 
         {/* Finance module routes (includes /finance/dashboard, /finance/wallet, etc.) */}
         {FinanceRoutes()}
+        
       </Routes>
     </BrowserRouter>
   );
