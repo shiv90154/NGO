@@ -9,7 +9,7 @@ const Footer = () => {
       <div className="container mx-auto max-w-6xl">
         {/* Responsive grid: 1 column on mobile, 2 on small/medium, 4 on large screens */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-          
+
           {/* Logo & Mission */}
           <div>
             <div className="flex items-center gap-2 mb-4">
@@ -37,7 +37,7 @@ const Footer = () => {
                 { name: 'Home', path: '/' },
                 { name: 'About Us', path: '/about' },
                 { name: 'Services', path: '/services' },
-                { name: 'Student Dashboard', path: '/student' },
+                { name: 'Student Dashboard', path: '/education' },
                 { name: 'News', path: '/news' },
               ].map((link, idx) => (
                 <li key={idx}>
@@ -58,7 +58,7 @@ const Footer = () => {
             <ul className="space-y-2 text-sm">
               {[
                 { name: 'Refund Policy', path: '/refund' },
-                { name: 'Disclaimer', path: '/disclaimer' },      // fixed typo
+                { name: 'Disclaimer', path: '/disclaimer' },
                 { name: 'Privacy Policy', path: '/privacy' },
                 { name: 'FAQ', path: '/faq' },
               ].map((link, idx) => (

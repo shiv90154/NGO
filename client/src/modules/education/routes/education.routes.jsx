@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 import DynamicDashboard from "../pages/Student";
 import Dashboard from "../pages/Dashboard";
@@ -13,7 +13,8 @@ const EducationRoutes = () => {
 
       <Route path="/" element={<DynamicDashboard />}>
 
-        <Route index element={<Dashboard />} />
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<Dashboard />} />
         <Route path="courses" element={<Courses />} />
         <Route path="classes" element={<Classes />} />
         <Route path="notes" element={<Notes />} />

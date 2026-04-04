@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import {
     FaHome,
@@ -8,12 +8,7 @@ import {
     FaBookOpen
 } from "react-icons/fa";
 
-/* ================= USER DATA ================= */
-const userData = {
-    name: "ABC",
-    role: "student",
-};
-
+/* ================= MENU ================= */
 const data = {
     menu: [
         { key: "dashboard", label: "Dashboard", icon: FaHome, path: "" },
@@ -26,6 +21,8 @@ const data = {
 
 /* ================= MAIN COMPONENT ================= */
 const DynamicDashboard = () => {
+
+
     return (
         <div className="flex bg-gray-100">
 
@@ -37,8 +34,9 @@ const DynamicDashboard = () => {
                     <h2 className="text-lg font-semibold text-[#1e3a5f] flex gap-2">
                         <FaBookOpen className="w-5 h-5 self-center" /> EduLearn
                     </h2>
+
                     <p className="text-sm text-gray-500 mt-1">
-                        Welcome, {userData.name}
+                        Welcome
                     </p>
                 </div>
 
@@ -50,7 +48,7 @@ const DynamicDashboard = () => {
                             to={item.path}
                             end={item.path === ""}
                             className={({ isActive }) =>
-                                `flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200
+                                `flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200
                                 ${isActive
                                     ? "bg-[#1e3a5f] text-white shadow-md"
                                     : "text-gray-700 hover:bg-[#ff8c42]/10 hover:text-[#ff6b22]"
@@ -73,10 +71,7 @@ const DynamicDashboard = () => {
             <div className="md:ml-64 flex-1 p-4 md:p-8 bg-gray-100 pb-20">
 
                 <div className="bg-white rounded-xl shadow-md p-4 md:p-6 min-h-[80vh] border border-gray-200">
-
-                    {/* THIS WILL LOAD PAGE */}
                     <Outlet />
-
                 </div>
             </div>
 
@@ -89,10 +84,7 @@ const DynamicDashboard = () => {
                         end={item.path === ""}
                         className={({ isActive }) =>
                             `flex flex-col items-center text-xs transition
-                            ${isActive
-                                ? "text-[#1e3a5f]"
-                                : "text-gray-500"
-                            }`
+                            ${isActive ? "text-[#1e3a5f]" : "text-gray-500"}`
                         }
                     >
                         <item.icon className="text-lg mb-1" />
