@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-
+import { useOutletContext } from "react-router-dom";
 const MOCK_NOTES = [
     {
         _id: "1",
@@ -22,6 +22,8 @@ const MOCK_NOTES = [
 ];
 
 const Notes = () => {
+    const { studentId } = useOutletContext();
+
     const [notes, setNotes] = useState([]);
     const [loading, setLoading] = useState(true);
 

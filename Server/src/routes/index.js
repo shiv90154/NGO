@@ -4,6 +4,8 @@ const router = express.Router();
 
 // Import only the routes that actually exist
 const userRoutes = require('./user.routes.js');
+const studentRoutes = require("./student.routes");
+router.use("/students", studentRoutes);
 
 // Mount user routes
 router.use('/users', userRoutes);

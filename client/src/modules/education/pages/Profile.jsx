@@ -1,29 +1,58 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const Profile = () => {
+    const studentId = localStorage.getItem("studentId");
+    const [editMode, setEditMode] = useState(false);
     const [user, setUser] = useState({
-        name: "USER 1234",
-        email: "abc@example.com",
-        phone: "9876543210",
+        name: "",
+        email: "",
+        phone: "",
         role: "Student",
-        joined: "2025-01-10",
+        joined: "",
     });
 
-    const [editMode, setEditMode] = useState(false);
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/students/profile/${studentId}`);
+                const data = await res.json();
+                if (data.success) {
+                    setUser(data.data);
+                }
+            } catch (err) {
+                console.error("Error fetching profile:", err);
+            }
+        };
+
+        fetchProfile();
+    }, [studentId]);
 
     const handleChange = (e) => {
         setUser({ ...user, [e.target.name]: e.target.value });
     };
 
-    const handleSave = () => {
-        console.log("Saved user:", user);
-        setEditMode(false);
+    const handleSave = async () => {
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/students/profile/${studentId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(user),
+            });
+            const data = await res.json();
+            if (data.success) {
+                setEditMode(false);
+                console.log("Profile updated successfully");
+            }
+        } catch (err) {
+            console.error("Error updating profile:", err);
+        }
     };
 
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
             <div className="w-full max-w-xl bg-white shadow-lg rounded-xl p-6 border border-gray-200">
-
                 {/* Header */}
                 <h2 className="text-2xl font-bold mb-6 text-center text-[#1e3a5f]">
                     My Profile
@@ -31,7 +60,6 @@ const Profile = () => {
 
                 {/* Profile Fields */}
                 <div className="space-y-4">
-
                     {/* Name */}
                     <div>
                         <label className="text-sm text-gray-500">Name</label>
@@ -87,7 +115,7 @@ const Profile = () => {
                         <label className="text-sm text-gray-500">Joined Date</label>
                         <input
                             type="text"
-                            value={user.joined}
+                            value={new Date(user.joined).toLocaleDateString()}
                             disabled
                             className="w-full mt-1 p-2 border border-gray-300 rounded-md bg-gray-100"
                         />
