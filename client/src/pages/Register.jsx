@@ -1,811 +1,678 @@
-import { useState, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import api from "../config/api";
+import { useState, useRef } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import {
+  FaUser, FaEnvelope, FaLock, FaMobile, FaCalendarAlt, FaVenusMars, FaUserMd, FaChevronDown, FaChevronUp, FaArrowLeft, FaCheckCircle,
+  FaCloudUploadAlt, FaEye, FaEyeSlash, FaChevronRight, FaGraduationCap,
+  FaNewspaper, FaCode, FaMoneyBillWave
+} from 'react-icons/fa';
+import { GiFarmer } from 'react-icons/gi';
 
-// ======================
-// Reusable Input Component
-// ======================
-const Input = ({ label, name, type = "text", placeholder, value, onChange, onBlur, required = false, error, icon, ...props }) => (
-  <div className="mb-4">
-    {label && (
-      <label className="block text-sm font-medium text-white/80 mb-1">
-        {label} {required && <span className="text-orange-400">*</span>}
-      </label>
-    )}
-    <div className="relative">
-      {icon && (
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <span className="text-white/50 text-sm">{icon}</span>
-        </div>
-      )}
-      <input
-        type={type}
-        name={name}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        onBlur={onBlur}
-        className={`w-full px-4 py-2 rounded-lg bg-white/10 border ${
-          error ? "border-red-500" : "border-white/20"
-        } text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-transparent transition ${
-          icon ? "pl-8" : ""
-        }`}
-        required={required}
-        {...props}
-      />
-    </div>
-    {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
-  </div>
-);
-
-// ======================
-// Radio Group Component
-// ======================
-const RadioGroup = ({ label, name, options, value, onChange, error }) => (
-  <div className="mb-4">
-    {label && <label className="block text-sm font-medium text-white/80 mb-2">{label}</label>}
-    <div className="flex gap-4">
-      {options.map((opt) => (
-        <label key={opt.value} className="flex items-center gap-2 text-white/80">
-          <input
-            type="radio"
-            name={name}
-            value={opt.value}
-            checked={value === opt.value}
-            onChange={onChange}
-            className="text-orange-500 focus:ring-orange-500 focus:ring-offset-0"
-          />
-          <span>{opt.label}</span>
-        </label>
-      ))}
-    </div>
-    {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
-  </div>
-);
-
-// ======================
-// Checkbox Group Component (for modules)
-// ======================
-const CheckboxGroup = ({ label, name, options, selectedValues, onChange, error }) => (
-  <div className="mb-4">
-    {label && <label className="block text-sm font-medium text-white/80 mb-2">{label}</label>}
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-      {options.map((opt) => (
-        <label key={opt.value} className="flex items-center gap-2 text-white/80">
-          <input
-            type="checkbox"
-            value={opt.value}
-            checked={selectedValues.includes(opt.value)}
-            onChange={(e) => {
-              const newValues = e.target.checked
-                ? [...selectedValues, opt.value]
-                : selectedValues.filter((v) => v !== opt.value);
-              onChange({ target: { name, value: newValues } });
-            }}
-            className="text-orange-500 focus:ring-orange-500 rounded"
-          />
-          <span>{opt.label}</span>
-        </label>
-      ))}
-    </div>
-    {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
-  </div>
-);
-
-// ======================
-// File Input Component
-// ======================
-const FileInput = ({ label, name, onChange, error, accept = "image/*", maxSize = 5 * 1024 * 1024 }) => {
-  const [fileName, setFileName] = useState("");
-  const [fileError, setFileError] = useState("");
-  const inputRef = useRef(null);
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (!file.type.startsWith("image/")) {
-        setFileError("Only image files are allowed");
-        setFileName("");
-        onChange({ target: { name, value: null } });
-        return;
-      }
-      if (file.size > maxSize) {
-        setFileError(`File size must be less than ${maxSize / (1024 * 1024)}MB`);
-        setFileName("");
-        onChange({ target: { name, value: null } });
-        return;
-      }
-      setFileError("");
-      setFileName(file.name);
-      onChange({ target: { name, value: file } });
-    } else {
-      setFileName("");
-      setFileError("");
-      onChange({ target: { name, value: null } });
-    }
-    if (inputRef.current) inputRef.current.value = "";
-  };
-
-  const handleClear = () => {
-    setFileName("");
-    setFileError("");
-    onChange({ target: { name, value: null } });
-    if (inputRef.current) inputRef.current.value = "";
-  };
-
-  return (
-    <div className="mb-4">
-      {label && <label className="block text-sm font-medium text-white/80 mb-1">{label}</label>}
-      <div className="flex items-center gap-3 flex-wrap">
-        <label className="cursor-pointer bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-lg text-sm font-medium transition">
-          Choose File
-          <input type="file" name={name} ref={inputRef} onChange={handleFileChange} accept={accept} className="hidden" />
-        </label>
-        {fileName && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-white/70 truncate max-w-[200px]">{fileName}</span>
-            <button type="button" onClick={handleClear} className="text-red-400 hover:text-red-300 text-sm">✕</button>
-          </div>
-        )}
-      </div>
-      {(fileError || error) && <p className="text-red-400 text-xs mt-1">{fileError || error}</p>}
-    </div>
-  );
-};
-
-// ======================
-// MAIN REGISTER COMPONENT
-// ======================
-export default function Register() {
-  const { role } = useParams();
+const api = import.meta.env.VITE_API_URL
+const Register = () => {
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState({});
+  const [success, setSuccess] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(false);
-  const [serverError, setServerError] = useState("");
-  const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
-  const [showPassword, setShowPassword] = useState(false);
-
-  // Common form fields
-  const [form, setForm] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    password: "",
-    fatherName: "",
-    motherName: "",
-    dob: "",
-    gender: "",
-    aadhaarNumber: "",
-    panNumber: "",
-    state: "",
-    district: "",
-    block: "",
-    village: "",
-    pincode: "",
-    fullAddress: "",
-    modules: [],
+  // Basic Info (Compulsory)
+  const [basicInfo, setBasicInfo] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    mobile: '',
+    dob: '',
+    gender: '',
+    role: 'user',
   });
 
-  // Role-specific fields
-  const [teacherFields, setTeacherFields] = useState({
-    specialization: "",
-    qualifications: "",
-    experienceYears: "",
+  // Module 1: Finance/Identity
+  const [financeInfo, setFinanceInfo] = useState({
+    aadharCard: '',
+    aadharFile: null,
+    panCard: '',
+    panFile: null,
+    voterId: '',
+    passportNumber: ''
   });
 
-  const [doctorFields, setDoctorFields] = useState({
-    doctorSpecialization: "",
-    doctorExperience: "",
-    consultationFee: "",
-    registrationNumber: "",
+  // Module 2: Healthcare
+  const [healthInfo, setHealthInfo] = useState({
+    bloodGroup: '',
+    allergies: '',
+    medicalHistory: '',
+    emergencyContactName: '',
+    emergencyContactRelation: '',
+    emergencyContactPhone: ''
   });
 
-  const [farmerFields, setFarmerFields] = useState({
-    landSize: "",
-    crops: "",
-    farmingType: "conventional",
-    isContractFarmer: false,
+  // Module 3: Agriculture
+  const [agriInfo, setAgriInfo] = useState({
+    landSize: '',
+    cropType: '',
+    farmLocation: '',
+    irrigationType: ''
   });
 
-  const [agentFields, setAgentFields] = useState({
-    commissionRate: "",
+  // Module 4: Education
+  const [educationInfo, setEducationInfo] = useState({
+    className: '',
+    schoolName: '',
+    board: '',
+    percentage: '',
   });
 
-  const [bankAccount, setBankAccount] = useState({
-    accountNumber: "",
-    ifsc: "",
-    bankName: "",
-    accountHolderName: "",
+  // Module 5: IT
+  const [itInfo, setItInfo] = useState({
+    projectType: '',
+    techStack: '',
+    experience: ''
   });
 
-  const [files, setFiles] = useState({
-    profileImage: null,
-    aadhaarImage: null,
-    panImage: null,
+  // Module 6: Social Media
+  const [socialInfo, setSocialInfo] = useState({
+    username: '',
+    bio: '',
+    profilePicture: null,
+    interests: '',
   });
 
-  const VALID_ROLES = [
-    "SUPER_ADMIN", "ADDITIONAL_DIRECTOR", "STATE_OFFICER",
-    "DISTRICT_MANAGER", "DISTRICT_PRESIDENT", "FIELD_OFFICER",
-    "BLOCK_OFFICER", "VILLAGE_OFFICER", "DOCTOR", "TEACHER", "AGENT", "USER",
+  // Section toggles
+  const [showFinance, setShowFinance] = useState(false);
+  const [showHealth, setShowHealth] = useState(false);
+  const [showAgri, setShowAgri] = useState(false);
+  const [showEducation, setShowEducation] = useState(false);
+  const [showIT, setShowIT] = useState(false);
+  const [showSocial, setShowSocial] = useState(false);
+
+  const aadharInputRef = useRef();
+  const panInputRef = useRef();
+  const profilePicInputRef = useRef();
+
+  // Dropdown options
+  const projectTypeOptions = [
+    'Mobile App Development',
+    'Web Application Development',
+    'E-commerce Platform',
+    'Custom Software',
+    'API Development',
+    'AI/ML Integration',
+    'Other'
   ];
 
-  const validateField = (name, value) => {
-    switch (name) {
-      case "fullName":
-        return !value ? "Full name is required" : "";
-      case "email":
-        if (!value) return "Email is required";
-        return !/^\S+@\S+\.\S+$/.test(value) ? "Invalid email address" : "";
-      case "phone":
-        if (!value) return "Phone number is required";
-        return !/^\d{10}$/.test(value) ? "Phone must be 10 digits" : "";
-      case "password":
-        if (!value) return "Password is required";
-        return value.length < 6 ? "Password must be at least 6 characters" : "";
-      case "aadhaarNumber":
-        if (value && !/^\d{12}$/.test(value)) return "Aadhaar must be 12 digits";
-        return "";
-      case "panNumber":
-        if (value && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(value)) return "Invalid PAN format";
-        return "";
-      default:
-        return "";
+  const techStackOptions = [
+    'MERN (MongoDB, Express, React, Node)',
+    'MEAN (MongoDB, Express, Angular, Node)',
+    'Python (Django/Flask)',
+    'Java (Spring Boot)',
+    'PHP (Laravel)',
+    'Mobile (React Native/Flutter)',
+    'Other'
+  ];
+
+  const handleBasicChange = (e) => {
+    setBasicInfo({ ...basicInfo, [e.target.name]: e.target.value });
+    if (error[e.target.name]) {
+      setError({ ...error, [e.target.name]: '' });
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-    if (touched[name]) {
-      const errorMsg = validateField(name, value);
-      setErrors((prev) => ({ ...prev, [name]: errorMsg }));
+  const handleFinanceChange = (e) => {
+    setFinanceInfo({ ...financeInfo, [e.target.name]: e.target.value });
+  };
+
+  const handleFileChange = (e, fieldName) => {
+    const file = e.target.files[0];
+    if (file && (file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'application/pdf')) {
+      setFinanceInfo({ ...financeInfo, [fieldName]: file });
+    } else {
+      setError({ ...error, [fieldName]: 'Only JPG, JPEG, or PDF files are allowed' });
     }
   };
 
-  const handleBlur = (e) => {
-    const { name, value } = e.target;
-    setTouched((prev) => ({ ...prev, [name]: true }));
-    const errorMsg = validateField(name, value);
-    setErrors((prev) => ({ ...prev, [name]: errorMsg }));
+  const handleProfilePictureChange = (e) => {
+    const file = e.target.files[0];
+    if (file && (file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'image/png')) {
+      setSocialInfo({ ...socialInfo, profilePicture: file });
+    } else {
+      setError({ ...error, profilePicture: 'Only JPG, JPEG, or PNG files are allowed' });
+    }
   };
 
-  const handleFile = (e) => {
-    const { name, value } = e.target;
-    setFiles((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: "" }));
+  const handleHealthChange = (e) => {
+    setHealthInfo({ ...healthInfo, [e.target.name]: e.target.value });
   };
 
-  const handleModulesChange = (e) => {
-    setForm((prev) => ({ ...prev, modules: e.target.value }));
+  const handleAgriChange = (e) => {
+    setAgriInfo({ ...agriInfo, [e.target.name]: e.target.value });
   };
 
-  // Role-specific handlers
-  const handleTeacherChange = (e) => {
-    const { name, value } = e.target;
-    setTeacherFields((prev) => ({ ...prev, [name]: value }));
+  const handleEducationChange = (e) => {
+    setEducationInfo({ ...educationInfo, [e.target.name]: e.target.value });
   };
 
-  const handleDoctorChange = (e) => {
-    const { name, value } = e.target;
-    setDoctorFields((prev) => ({ ...prev, [name]: value }));
+  const handleITChange = (e) => {
+    setItInfo({ ...itInfo, [e.target.name]: e.target.value });
   };
 
-  const handleFarmerChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFarmerFields((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+  const handleSocialChange = (e) => {
+    setSocialInfo({ ...socialInfo, [e.target.name]: e.target.value });
   };
 
-  const handleAgentChange = (e) => {
-    const { name, value } = e.target;
-    setAgentFields((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleBankChange = (e) => {
-    const { name, value } = e.target;
-    setBankAccount((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setServerError("");
-
-    // Validate required common fields
-    const requiredFields = ["fullName", "email", "phone", "password"];
+  const validateStep1 = () => {
     const newErrors = {};
-    requiredFields.forEach((field) => {
-      const errorMsg = validateField(field, form[field]);
-      if (errorMsg) newErrors[field] = errorMsg;
-    });
-    if (form.aadhaarNumber && validateField("aadhaarNumber", form.aadhaarNumber))
-      newErrors.aadhaarNumber = validateField("aadhaarNumber", form.aadhaarNumber);
-    if (form.panNumber && validateField("panNumber", form.panNumber))
-      newErrors.panNumber = validateField("panNumber", form.panNumber);
+    if (!basicInfo.name) newErrors.name = "Name is required";
+    if (!basicInfo.email) newErrors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(basicInfo.email)) newErrors.email = "Email is invalid";
+    if (!basicInfo.password) newErrors.password = "Password is required";
+    else if (basicInfo.password.length < 6) newErrors.password = "Password must be at least 6 characters";
+    if (basicInfo.password !== basicInfo.confirmPassword) newErrors.confirmPassword = "Passwords don't match";
+    if (!basicInfo.mobile) newErrors.mobile = "Mobile number is required";
+    else if (!/^\d{10}$/.test(basicInfo.mobile)) newErrors.mobile = "Mobile number must be 10 digits";
+    if (!basicInfo.dob) newErrors.dob = "Date of birth is required";
+    if (!basicInfo.gender) newErrors.gender = "Gender is required";
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      requiredFields.forEach((f) => setTouched((prev) => ({ ...prev, [f]: true })));
-      setServerError("Please fix the errors before submitting.");
-      return;
+    setError(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNext = () => {
+    if (validateStep1()) {
+      setStep(2);
     }
+  };
 
+  const handleBackToBasic = () => {
+    setStep(1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSubmit = async () => {
     setLoading(true);
+    setError({});
+
+    const formData = new FormData();
+
+    // Basic info
+    formData.append('name', basicInfo.name);
+    formData.append('email', basicInfo.email);
+    formData.append('password', basicInfo.password);
+    formData.append('mobile', basicInfo.mobile);
+    formData.append('dob', basicInfo.dob);
+    formData.append('gender', basicInfo.gender);
+    formData.append('role', basicInfo.role);
+
+    // Finance
+    if (financeInfo.aadharFile) formData.append('aadharDocument', financeInfo.aadharFile);
+    if (financeInfo.panFile) formData.append('panDocument', financeInfo.panFile);
+    if (financeInfo.aadharCard) formData.append('aadharCard', financeInfo.aadharCard);
+    if (financeInfo.panCard) formData.append('panCard', financeInfo.panCard);
+    if (financeInfo.voterId) formData.append('voterId', financeInfo.voterId);
+    if (financeInfo.passportNumber) formData.append('passportNumber', financeInfo.passportNumber);
+
+    // Healthcare
+    Object.keys(healthInfo).forEach(key => {
+      if (healthInfo[key]) formData.append(key, healthInfo[key]);
+    });
+
+    // Agriculture
+    Object.keys(agriInfo).forEach(key => {
+      if (agriInfo[key]) formData.append(key, agriInfo[key]);
+    });
+
+    // Education
+    Object.keys(educationInfo).forEach(key => {
+      if (educationInfo[key]) formData.append(key, educationInfo[key]);
+    });
+
+    // IT
+    Object.keys(itInfo).forEach(key => {
+      if (itInfo[key]) formData.append(key, itInfo[key]);
+    });
+
+    // Social Media
+    if (socialInfo.profilePicture) formData.append('profilePicture', socialInfo.profilePicture);
+    if (socialInfo.username) formData.append('username', socialInfo.username);
+    if (socialInfo.bio) formData.append('bio', socialInfo.bio);
+    if (socialInfo.interests) formData.append('interests', socialInfo.interests);
 
     try {
-      const data = new FormData();
-
-      // Append common form fields
-      Object.keys(form).forEach((key) => {
-        if (key === "modules") {
-          if (form.modules.length) {
-            form.modules.forEach((m) => data.append("modules", m));
-          }
-        } else if (key !== "role") {
-          data.append(key, form[key] !== undefined && form[key] !== null ? form[key] : "");
-        }
+      const response = await axios.post(`${api}/users/register`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      // Append role-specific fields based on role
-      const mappedRole = role?.toUpperCase() || "USER";
-      data.append("role", mappedRole);
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify({
+        _id: response.data._id,
+        name: response.data.name,
+        email: response.data.email
+      }));
 
-      if (mappedRole === "TEACHER") {
-        if (teacherFields.specialization) data.append("specialization", teacherFields.specialization);
-        if (teacherFields.qualifications) data.append("qualifications", teacherFields.qualifications);
-        if (teacherFields.experienceYears) data.append("experienceYears", teacherFields.experienceYears);
-      } else if (mappedRole === "DOCTOR") {
-        if (doctorFields.doctorSpecialization) data.append("doctorSpecialization", doctorFields.doctorSpecialization);
-        if (doctorFields.doctorExperience) data.append("doctorExperience", doctorFields.doctorExperience);
-        if (doctorFields.consultationFee) data.append("consultationFee", doctorFields.consultationFee);
-        if (doctorFields.registrationNumber) data.append("registrationNumber", doctorFields.registrationNumber);
-      } else if (mappedRole === "AGENT") {
-        if (agentFields.commissionRate) data.append("commissionRate", agentFields.commissionRate);
-      }
+      setSuccess('Registration successful! Redirecting...');
+      setTimeout(() => {
+        navigate('/verify-otp', { state: { email: basicInfo.email } });
+      }, 2000);
 
-      // Farmer fields (if AGRICULTURE module selected)
-      if (form.modules.includes("AGRICULTURE")) {
-        if (farmerFields.landSize) data.append("landSize", farmerFields.landSize);
-        if (farmerFields.crops) data.append("crops", farmerFields.crops);
-        if (farmerFields.farmingType) data.append("farmingType", farmerFields.farmingType);
-        data.append("isContractFarmer", farmerFields.isContractFarmer);
-      }
-
-      // Bank account (if any field filled)
-      if (bankAccount.accountNumber || bankAccount.ifsc || bankAccount.bankName) {
-        data.append("bankAccount", JSON.stringify(bankAccount));
-      }
-
-      // Append files
-      Object.keys(files).forEach((key) => {
-        if (files[key]) data.append(key, files[key]);
-      });
-
-      const response = await api.post("/users/register", data, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      if (response.data.success) {
-        navigate("/verify-otp", { state: { email: form.email } });
-      } else {
-        setServerError(response.data.message || "Registration failed.");
-      }
     } catch (err) {
-      const message = err.response?.data?.message || "Registration failed. Please try again.";
-      setServerError(message);
+      setError({ submit: err.response?.data?.message || 'Registration failed' });
     } finally {
       setLoading(false);
     }
   };
 
-  const genderOptions = [
-    { value: "MALE", label: "Male" },
-    { value: "FEMALE", label: "Female" },
-    { value: "OTHER", label: "Other" },
-  ];
-
-  const moduleOptions = [
-    { value: "EDUCATION", label: "Education" },
-    { value: "AGRICULTURE", label: "Agriculture" },
-    { value: "FINANCE", label: "Finance" },
-    { value: "HEALTHCARE", label: "Healthcare" },
-    { value: "NEWS", label: "News" },
-    { value: "IT", label: "IT" },
-  ];
-
-  const mappedRole = role?.toUpperCase() || "USER";
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-8 px-4">
-      <div className="max-w-6xl mx-auto">
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 md:p-8 shadow-2xl"
-        >
-          {/* Header */}
-          <div className="text-center mb-8">
-            <img src="/logo.jpg" alt="Logo" className="w-16 h-16 mx-auto mb-3" />
-            <h2 className="text-2xl md:text-3xl font-bold text-white">
-              {role ? `${role.charAt(0).toUpperCase() + role.slice(1)} Registration` : "User Registration"}
-            </h2>
-            <p className="text-white/60 mt-2">Create your account to get started</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4">
+      <div className="max-w-5xl mx-auto">
+
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-5xl font-bold text-gray-800 mb-3">
+            Create <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Account</span>
+          </h1>
+          <p className="text-gray-500 text-lg">Join our platform - Fill in your details below</p>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mb-8">
+          <div className="flex justify-between mb-2 px-2">
+            <span className={`text-sm font-medium ${step === 1 ? 'text-blue-600' : 'text-gray-400'}`}>
+              Basic Information
+            </span>
+            <span className={`text-sm font-medium ${step === 2 ? 'text-blue-600' : 'text-gray-400'}`}>
+              Additional Details (Optional)
+            </span>
           </div>
+          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+            <div className={`bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-500 ${step === 1 ? 'w-1/2' : 'w-full'}`}></div>
+          </div>
+        </div>
 
-          {serverError && (
-            <div className="bg-red-500/20 border border-red-500/50 text-red-300 p-3 rounded-lg mb-6 text-center">
-              {serverError}
-            </div>
-          )}
+        {/* Success Message */}
+        {success && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
+            <FaCheckCircle className="text-green-500" />
+            {success}
+          </div>
+        )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
-            {/* LEFT COLUMN: Personal Details */}
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-white border-b border-white/20 pb-2 mb-4">
-                Personal Details
-              </h3>
-              <Input
-                label="Full Name"
-                name="fullName"
-                placeholder="Enter your full name"
-                value={form.fullName}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                required
-                error={touched.fullName ? errors.fullName : undefined}
-                icon="👤"
-              />
-              <Input
-                label="Email Address"
-                name="email"
-                type="email"
-                placeholder="you@example.com"
-                value={form.email}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                required
-                error={touched.email ? errors.email : undefined}
-                icon="📧"
-              />
-              <Input
-                label="Phone Number"
-                name="phone"
-                type="tel"
-                placeholder="10-digit mobile number"
-                value={form.phone}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                required
-                error={touched.phone ? errors.phone : undefined}
-                icon="📞"
-              />
-              <div className="relative">
-                <Input
-                  label="Password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="At least 6 characters"
-                  value={form.password}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  required
-                  error={touched.password ? errors.password : undefined}
-                  icon="🔒"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-[42px] text-white/50 hover:text-white/80"
+        {/* Step 1 - Basic Information */}
+        {step === 1 && (
+          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Basic Information</h2>
+            <p className="text-gray-400 mb-6">All fields marked with * are required</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-gray-700 text-sm font-semibold mb-2">
+                  <FaUser className="inline mr-2 text-blue-500" /> Full Name *
+                </label>
+                <input type="text" name="name" value={basicInfo.name} onChange={handleBasicChange}
+                  className={`w-full px-4 py-3 bg-gray-50 border rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${error.name ? 'border-red-400' : 'border-gray-200'}`}
+                  placeholder="Enter your full name" />
+                {error.name && <p className="text-red-500 text-xs mt-1">{error.name}</p>}
+              </div>
+
+              <div>
+                <label className="block text-gray-700 text-sm font-semibold mb-2">
+                  <FaEnvelope className="inline mr-2 text-blue-500" /> Email Address *
+                </label>
+                <input type="email" name="email" value={basicInfo.email} onChange={handleBasicChange}
+                  className={`w-full px-4 py-3 bg-gray-50 border rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${error.email ? 'border-red-400' : 'border-gray-200'}`}
+                  placeholder="you@example.com" />
+                {error.email && <p className="text-red-500 text-xs mt-1">{error.email}</p>}
+              </div>
+
+              <div>
+                <label className="block text-gray-700 text-sm font-semibold mb-2">
+                  <FaLock className="inline mr-2 text-blue-500" /> Password *
+                </label>
+                <div className="relative">
+                  <input type={showPassword ? "text" : "password"} name="password" value={basicInfo.password} onChange={handleBasicChange}
+                    className={`w-full px-4 py-3 bg-gray-50 border rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${error.password ? 'border-red-400' : 'border-gray-200'}`}
+                    placeholder="Min. 6 characters" />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+                {error.password && <p className="text-red-500 text-xs mt-1">{error.password}</p>}
+              </div>
+
+              <div>
+                <label className="block text-gray-700 text-sm font-semibold mb-2">
+                  <FaLock className="inline mr-2 text-blue-500" /> Confirm Password *
+                </label>
+                <div className="relative">
+                  <input type={showConfirmPassword ? "text" : "password"} name="confirmPassword" value={basicInfo.confirmPassword} onChange={handleBasicChange}
+                    className={`w-full px-4 py-3 bg-gray-50 border rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${error.confirmPassword ? 'border-red-400' : 'border-gray-200'}`}
+                    placeholder="Re-enter your password" />
+                  <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+                {error.confirmPassword && <p className="text-red-500 text-xs mt-1">{error.confirmPassword}</p>}
+              </div>
+
+              <div>
+                <label className="block text-gray-700 text-sm font-semibold mb-2">
+                  <FaMobile className="inline mr-2 text-blue-500" /> Mobile Number *
+                </label>
+                <input type="tel" name="mobile" value={basicInfo.mobile} onChange={handleBasicChange}
+                  className={`w-full px-4 py-3 bg-gray-50 border rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${error.mobile ? 'border-red-400' : 'border-gray-200'}`}
+                  placeholder="9876543210" />
+                {error.mobile && <p className="text-red-500 text-xs mt-1">{error.mobile}</p>}
+              </div>
+
+              <div>
+                <label className="block text-gray-700 text-sm font-semibold mb-2">
+                  <FaCalendarAlt className="inline mr-2 text-blue-500" /> Date of Birth *
+                </label>
+                <input type="date" name="dob" value={basicInfo.dob} onChange={handleBasicChange}
+                  className={`w-full px-4 py-3 bg-gray-50 border rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${error.dob ? 'border-red-400' : 'border-gray-200'}`} />
+                {error.dob && <p className="text-red-500 text-xs mt-1">{error.dob}</p>}
+              </div>
+
+              <div>
+                <label className="block text-gray-700 text-sm font-semibold mb-2">
+                  <FaVenusMars className="inline mr-2 text-blue-500" /> Gender *
+                </label>
+                <select name="gender" value={basicInfo.gender} onChange={handleBasicChange}
+                  className={`w-full px-4 py-3 bg-gray-50 border rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${error.gender ? 'border-red-400' : 'border-gray-200'}`}>
+                  <option value="">Select Gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
+                {error.gender && <p className="text-red-500 text-xs mt-1">{error.gender}</p>}
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-semibold mb-2">
+                  <FaUser className="inline mr-2 text-blue-500" /> Role *
+                </label>
+                <select
+                  name="role"
+                  value={basicInfo.role}
+                  onChange={handleBasicChange}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  {showPassword ? "🙈" : "👁️"}
-                </button>
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input
-                  label="Father's Name"
-                  name="fatherName"
-                  placeholder="Father's name"
-                  value={form.fatherName}
-                  onChange={handleChange}
-                />
-                <Input
-                  label="Mother's Name"
-                  name="motherName"
-                  placeholder="Mother's name"
-                  value={form.motherName}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input
-                  label="Date of Birth"
-                  name="dob"
-                  type="date"
-                  value={form.dob}
-                  onChange={handleChange}
-                />
-                <RadioGroup
-                  label="Gender"
-                  name="gender"
-                  options={genderOptions}
-                  value={form.gender}
-                  onChange={handleChange}
-                />
-              </div>
-
-              {/* Bank Account Section */}
-              <h3 className="text-lg font-semibold text-white border-b border-white/20 pb-2 mb-4 mt-6">
-                Bank Account (Optional)
-              </h3>
-              <Input
-                label="Account Number"
-                name="accountNumber"
-                placeholder="Bank account number"
-                value={bankAccount.accountNumber}
-                onChange={handleBankChange}
-              />
-              <Input
-                label="IFSC Code"
-                name="ifsc"
-                placeholder="IFSC code"
-                value={bankAccount.ifsc}
-                onChange={handleBankChange}
-              />
-              <Input
-                label="Bank Name"
-                name="bankName"
-                placeholder="Bank name"
-                value={bankAccount.bankName}
-                onChange={handleBankChange}
-              />
-              <Input
-                label="Account Holder Name"
-                name="accountHolderName"
-                placeholder="Name as on bank account"
-                value={bankAccount.accountHolderName}
-                onChange={handleBankChange}
-              />
             </div>
 
-            {/* RIGHT COLUMN: Address, Documents, Interests, Role-specific fields */}
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-white border-b border-white/20 pb-2 mb-4">
-                Address Details
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input label="State" name="state" placeholder="State" value={form.state} onChange={handleChange} />
-                <Input label="District" name="district" placeholder="District" value={form.district} onChange={handleChange} />
-                <Input label="Block" name="block" placeholder="Block" value={form.block} onChange={handleChange} />
-                <Input label="Village / City" name="village" placeholder="Village or city" value={form.village} onChange={handleChange} />
-                <Input label="Pincode" name="pincode" placeholder="Postal code" value={form.pincode} onChange={handleChange} />
-                <div className="sm:col-span-2">
-                  <Input label="Full Address" name="fullAddress" placeholder="House number, street, landmark" value={form.fullAddress} onChange={handleChange} />
-                </div>
-              </div>
-
-              <h3 className="text-lg font-semibold text-white border-b border-white/20 pb-2 mb-4 mt-6">
-                Identity Documents
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input
-                  label="Aadhaar Number"
-                  name="aadhaarNumber"
-                  placeholder="12-digit Aadhaar"
-                  value={form.aadhaarNumber}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.aadhaarNumber ? errors.aadhaarNumber : undefined}
-                />
-                <Input
-                  label="PAN Number"
-                  name="panNumber"
-                  placeholder="PAN (e.g., ABCDE1234F)"
-                  value={form.panNumber}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.panNumber ? errors.panNumber : undefined}
-                />
-              </div>
-
-              <h3 className="text-lg font-semibold text-white border-b border-white/20 pb-2 mb-4 mt-6">
-                Upload Documents
-              </h3>
-              <div className="space-y-3">
-                <FileInput label="Profile Photo" name="profileImage" onChange={handleFile} error={errors.profileImage} />
-                <FileInput label="Aadhaar Image" name="aadhaarImage" onChange={handleFile} error={errors.aadhaarImage} />
-                <FileInput label="PAN Image" name="panImage" onChange={handleFile} error={errors.panImage} />
-              </div>
-
-              <h3 className="text-lg font-semibold text-white border-b border-white/20 pb-2 mb-4 mt-6">
-                Interests (Modules)
-              </h3>
-              <CheckboxGroup
-                label="Select your areas of interest"
-                name="modules"
-                options={moduleOptions}
-                selectedValues={form.modules}
-                onChange={handleModulesChange}
-              />
-              {form.modules.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {form.modules.map((mod) => {
-                    const label = moduleOptions.find((opt) => opt.value === mod)?.label || mod;
-                    return (
-                      <span key={mod} className="bg-orange-500/20 text-orange-300 px-2 py-1 rounded-md text-xs">
-                        {label}
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Role-specific fields */}
-              {mappedRole === "TEACHER" && (
-                <>
-                  <h3 className="text-lg font-semibold text-white border-b border-white/20 pb-2 mb-4 mt-6">
-                    Teacher Profile Details
-                  </h3>
-                  <Input
-                    label="Specialization"
-                    name="specialization"
-                    placeholder="e.g., Mathematics, Physics, English"
-                    value={teacherFields.specialization}
-                    onChange={handleTeacherChange}
-                  />
-                  <Input
-                    label="Qualifications (comma separated)"
-                    name="qualifications"
-                    placeholder="e.g., B.Ed, M.Sc, PhD"
-                    value={teacherFields.qualifications}
-                    onChange={handleTeacherChange}
-                  />
-                  <Input
-                    label="Years of Experience"
-                    name="experienceYears"
-                    type="number"
-                    placeholder="e.g., 5"
-                    value={teacherFields.experienceYears}
-                    onChange={handleTeacherChange}
-                  />
-                </>
-              )}
-
-              {mappedRole === "DOCTOR" && (
-                <>
-                  <h3 className="text-lg font-semibold text-white border-b border-white/20 pb-2 mb-4 mt-6">
-                    Doctor Profile Details
-                  </h3>
-                  <Input
-                    label="Specialization"
-                    name="doctorSpecialization"
-                    placeholder="e.g., Cardiologist, Dermatologist"
-                    value={doctorFields.doctorSpecialization}
-                    onChange={handleDoctorChange}
-                  />
-                  <Input
-                    label="Years of Experience"
-                    name="doctorExperience"
-                    type="number"
-                    placeholder="e.g., 10"
-                    value={doctorFields.doctorExperience}
-                    onChange={handleDoctorChange}
-                  />
-                  <Input
-                    label="Consultation Fee (₹)"
-                    name="consultationFee"
-                    type="number"
-                    placeholder="e.g., 500"
-                    value={doctorFields.consultationFee}
-                    onChange={handleDoctorChange}
-                  />
-                  <Input
-                    label="Registration Number"
-                    name="registrationNumber"
-                    placeholder="Medical council registration"
-                    value={doctorFields.registrationNumber}
-                    onChange={handleDoctorChange}
-                  />
-                </>
-              )}
-
-              {mappedRole === "AGENT" && (
-                <>
-                  <h3 className="text-lg font-semibold text-white border-b border-white/20 pb-2 mb-4 mt-6">
-                    Agent / MLM Details
-                  </h3>
-                  <Input
-                    label="Commission Rate (%)"
-                    name="commissionRate"
-                    type="number"
-                    step="0.01"
-                    placeholder="e.g., 5"
-                    value={agentFields.commissionRate}
-                    onChange={handleAgentChange}
-                  />
-                </>
-              )}
-
-              {form.modules.includes("AGRICULTURE") && (
-                <>
-                  <h3 className="text-lg font-semibold text-white border-b border-white/20 pb-2 mb-4 mt-6">
-                    Farmer Profile Details
-                  </h3>
-                  <Input
-                    label="Land Size (in acres)"
-                    name="landSize"
-                    type="number"
-                    step="0.01"
-                    placeholder="e.g., 2.5"
-                    value={farmerFields.landSize}
-                    onChange={handleFarmerChange}
-                  />
-                  <Input
-                    label="Crops Grown (comma separated)"
-                    name="crops"
-                    placeholder="e.g., Wheat, Rice, Cotton"
-                    value={farmerFields.crops}
-                    onChange={handleFarmerChange}
-                  />
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-white/80 mb-1">Farming Type</label>
-                    <select
-                      name="farmingType"
-                      value={farmerFields.farmingType}
-                      onChange={handleFarmerChange}
-                      className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    >
-                      <option value="conventional">Conventional</option>
-                      <option value="organic">Organic</option>
-                      <option value="mixed">Mixed</option>
-                    </select>
-                  </div>
-                  <label className="flex items-center gap-2 text-white/80 mb-4">
-                    <input
-                      type="checkbox"
-                      name="isContractFarmer"
-                      checked={farmerFields.isContractFarmer}
-                      onChange={handleFarmerChange}
-                      className="text-orange-500 focus:ring-orange-500 rounded"
-                    />
-                    <span>Contract Farmer</span>
-                  </label>
-                </>
-              )}
+            <div className="flex justify-end mt-8">
+              <button onClick={handleNext}
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-8 rounded-xl transition duration-200 flex items-center gap-2 shadow-md">
+                Continue <FaChevronRight />
+              </button>
             </div>
           </div>
+        )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="mt-8 w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-          >
-            {loading ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Registering...
-              </>
-            ) : (
-              "Register"
-            )}
-          </button>
+        {/* Step 2 - 6 Modules */}
+        {step === 2 && (
+          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
 
-          <p className="text-center text-white/60 text-sm mt-6">
-            Already have an account?{" "}
-            <button
-              type="button"
-              onClick={() => navigate(`/login/${role || "user"}`)}
-              className="text-orange-400 hover:text-orange-300 font-medium transition"
-            >
-              Sign in
+            <button onClick={handleBackToBasic}
+              className="mb-6 flex items-center gap-2 text-gray-500 hover:text-gray-700 transition">
+              <FaArrowLeft /> Back to Basic Information
             </button>
+
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Additional Information</h2>
+            <p className="text-gray-400 mb-6">6 Modules Available - Click on sections to expand (All Optional)</p>
+
+            {error.submit && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
+                {error.submit}
+              </div>
+            )}
+
+            {/* Module 1: Finance */}
+            <div className="mb-4">
+              <button onClick={() => setShowFinance(!showFinance)}
+                className="w-full flex justify-between items-center p-5 bg-gray-50 rounded-xl hover:bg-gray-100 transition border border-gray-200">
+                <span className="text-gray-700 font-semibold text-lg flex items-center gap-3">
+                  <FaMoneyBillWave className="text-yellow-500" /> 1. Finance & Identity Documents
+                </span>
+                {showFinance ? <FaChevronUp className="text-gray-400" /> : <FaChevronDown className="text-gray-400" />}
+              </button>
+              {showFinance && (
+                <div className="mt-4 p-5 bg-gray-50/50 rounded-xl grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label className="block text-gray-600 text-sm mb-2">Aadhar Card (JPG/PDF)</label>
+                    <div className="flex items-center gap-3">
+                      <input type="text" name="aadharCard" placeholder="Aadhar Number" value={financeInfo.aadharCard} onChange={handleFinanceChange}
+                        className="flex-1 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                      <button onClick={() => aadharInputRef.current.click()} className="bg-gray-100 p-2 rounded-lg hover:bg-gray-200 border border-gray-200">
+                        <FaCloudUploadAlt className="text-blue-500" />
+                      </button>
+                      <input type="file" ref={aadharInputRef} onChange={(e) => handleFileChange(e, 'aadharFile')} accept=".jpg,.jpeg,.pdf" className="hidden" />
+                    </div>
+                    {financeInfo.aadharFile && <p className="text-green-600 text-xs mt-1">✓ File selected</p>}
+                  </div>
+                  <div>
+                    <label className="block text-gray-600 text-sm mb-2">PAN Card (JPG/PDF)</label>
+                    <div className="flex items-center gap-3">
+                      <input type="text" name="panCard" placeholder="PAN Number" value={financeInfo.panCard} onChange={handleFinanceChange}
+                        className="flex-1 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                      <button onClick={() => panInputRef.current.click()} className="bg-gray-100 p-2 rounded-lg hover:bg-gray-200 border border-gray-200">
+                        <FaCloudUploadAlt className="text-blue-500" />
+                      </button>
+                      <input type="file" ref={panInputRef} onChange={(e) => handleFileChange(e, 'panFile')} accept=".jpg,.jpeg,.pdf" className="hidden" />
+                    </div>
+                    {financeInfo.panFile && <p className="text-green-600 text-xs mt-1">✓ File selected</p>}
+                  </div>
+                  <input type="text" name="voterId" placeholder="Voter ID" value={financeInfo.voterId} onChange={handleFinanceChange}
+                    className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <input type="text" name="passportNumber" placeholder="Passport Number" value={financeInfo.passportNumber} onChange={handleFinanceChange}
+                    className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              )}
+            </div>
+
+            {/* Module 2: Healthcare */}
+            <div className="mb-4">
+              <button onClick={() => setShowHealth(!showHealth)}
+                className="w-full flex justify-between items-center p-5 bg-gray-50 rounded-xl hover:bg-gray-100 transition border border-gray-200">
+                <span className="text-gray-700 font-semibold text-lg flex items-center gap-3">
+                  <FaUserMd className="text-green-500" /> 2. Healthcare Information
+                </span>
+                {showHealth ? <FaChevronUp className="text-gray-400" /> : <FaChevronDown className="text-gray-400" />}
+              </button>
+              {showHealth && (
+                <div className="mt-4 p-5 bg-gray-50/50 rounded-xl grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <select name="bloodGroup" value={healthInfo.bloodGroup} onChange={handleHealthChange}
+                    className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Select Blood Group</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                  </select>
+                  <input type="text" name="allergies" placeholder="Any Allergies?" value={healthInfo.allergies} onChange={handleHealthChange}
+                    className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <textarea name="medicalHistory" placeholder="Medical History" value={healthInfo.medicalHistory} onChange={handleHealthChange}
+                    rows="2" className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 md:col-span-2" />
+                  <input type="text" name="emergencyContactName" placeholder="Emergency Contact Name" value={healthInfo.emergencyContactName} onChange={handleHealthChange}
+                    className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <input type="text" name="emergencyContactRelation" placeholder="Relation" value={healthInfo.emergencyContactRelation} onChange={handleHealthChange}
+                    className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <input type="tel" name="emergencyContactPhone" placeholder="Emergency Phone" value={healthInfo.emergencyContactPhone} onChange={handleHealthChange}
+                    className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              )}
+            </div>
+
+            {/* Module 3: Agriculture */}
+            <div className="mb-4">
+              <button onClick={() => setShowAgri(!showAgri)}
+                className="w-full flex justify-between items-center p-5 bg-gray-50 rounded-xl hover:bg-gray-100 transition border border-gray-200">
+                <span className="text-gray-700 font-semibold text-lg flex items-center gap-3">
+                  <GiFarmer className="text-green-600" /> 3. Agriculture Information
+                </span>
+                {showAgri ? <FaChevronUp className="text-gray-400" /> : <FaChevronDown className="text-gray-400" />}
+              </button>
+              {showAgri && (
+                <div className="mt-4 p-5 bg-gray-50/50 rounded-xl grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <input type="number" name="landSize" placeholder="Land Size (in acres)" value={agriInfo.landSize} onChange={handleAgriChange}
+                    className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <input type="text" name="cropType" placeholder="Crop Types (comma separated)" value={agriInfo.cropType} onChange={handleAgriChange}
+                    className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <input type="text" name="farmLocation" placeholder="Farm Location" value={agriInfo.farmLocation} onChange={handleAgriChange}
+                    className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <input type="text" name="irrigationType" placeholder="Irrigation Type" value={agriInfo.irrigationType} onChange={handleAgriChange}
+                    className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              )}
+            </div>
+
+            {/* Module 4: Education */}
+            <div className="mb-4">
+              <button onClick={() => setShowEducation(!showEducation)}
+                className="w-full flex justify-between items-center p-5 bg-gray-50 rounded-xl hover:bg-gray-100 transition border border-gray-200">
+                <span className="text-gray-700 font-semibold text-lg flex items-center gap-3">
+                  <FaGraduationCap className="text-blue-500" /> 4. Education Details
+                </span>
+                {showEducation ? <FaChevronUp className="text-gray-400" /> : <FaChevronDown className="text-gray-400" />}
+              </button>
+              {showEducation && (
+                <div className="mt-4 p-5 bg-gray-50/50 rounded-xl grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label className="block text-gray-600 text-sm mb-1">Class / Qualification</label>
+                    <input type="text" name="className" placeholder="e.g., 8th, 10th, 12th, Graduate"
+                      value={educationInfo.className} onChange={handleEducationChange}
+                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-gray-600 text-sm mb-1">School / College Name</label>
+                    <input type="text" name="schoolName" placeholder="Enter school or college name"
+                      value={educationInfo.schoolName} onChange={handleEducationChange}
+                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-gray-600 text-sm mb-1">Board / University</label>
+                    <input type="text" name="board" placeholder="e.g., CBSE, ICSE, State Board"
+                      value={educationInfo.board} onChange={handleEducationChange}
+                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-gray-600 text-sm mb-1">Percentage / CGPA</label>
+                    <input type="text" name="percentage" placeholder="e.g., 85%, 8.5 CGPA"
+                      value={educationInfo.percentage} onChange={handleEducationChange}
+                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Module 5: IT */}
+            <div className="mb-4">
+              <button onClick={() => setShowIT(!showIT)}
+                className="w-full flex justify-between items-center p-5 bg-gray-50 rounded-xl hover:bg-gray-100 transition border border-gray-200">
+                <span className="text-gray-700 font-semibold text-lg flex items-center gap-3">
+                  <FaCode className="text-purple-500" /> 5. IT / Development Requirements
+                </span>
+                {showIT ? <FaChevronUp className="text-gray-400" /> : <FaChevronDown className="text-gray-400" />}
+              </button>
+              {showIT && (
+                <div className="mt-4 p-5 bg-gray-50/50 rounded-xl grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <select name="projectType" value={itInfo.projectType} onChange={handleITChange}
+                    className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Select Project Type</option>
+                    {projectTypeOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                  <select name="techStack" value={itInfo.techStack} onChange={handleITChange}
+                    className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Select Preferred Tech Stack</option>
+                    {techStackOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                  <input type="text" name="experience" placeholder="Experience Level (Beginner/Intermediate/Expert)" value={itInfo.experience} onChange={handleITChange}
+                    className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 md:col-span-2" />
+                </div>
+              )}
+            </div>
+
+            {/* Module 6: Social Media */}
+            <div className="mb-4">
+              <button onClick={() => setShowSocial(!showSocial)}
+                className="w-full flex justify-between items-center p-5 bg-gray-50 rounded-xl hover:bg-gray-100 transition border border-gray-200">
+                <span className="text-gray-700 font-semibold text-lg flex items-center gap-3">
+                  <FaNewspaper className="text-pink-500" /> 6. Social / News Profile
+                </span>
+                {showSocial ? <FaChevronUp className="text-gray-400" /> : <FaChevronDown className="text-gray-400" />}
+              </button>
+              {showSocial && (
+                <div className="mt-4 p-5 bg-gray-50/50 rounded-xl grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="md:col-span-2 flex items-center gap-4">
+                    <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden border border-gray-200">
+                      {socialInfo.profilePicture ? (
+                        <img src={URL.createObjectURL(socialInfo.profilePicture)} alt="Profile" className="w-full h-full object-cover" />
+                      ) : (
+                        <FaUser className="text-gray-400 text-3xl" />
+                      )}
+                    </div>
+                    <div>
+                      <button onClick={() => profilePicInputRef.current.click()} className="bg-gray-100 px-4 py-2 rounded-lg hover:bg-gray-200 border border-gray-200">
+                        <FaCloudUploadAlt className="inline mr-2 text-blue-500" /> Upload Profile Picture
+                      </button>
+                      <input type="file" ref={profilePicInputRef} onChange={handleProfilePictureChange} accept=".jpg,.jpeg,.png" className="hidden" />
+                      <p className="text-gray-400 text-xs mt-1">JPG, PNG (Max 2MB)</p>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-gray-600 text-sm mb-1">Username</label>
+                    <input type="text" name="username" placeholder="@username" value={socialInfo.username} onChange={handleSocialChange}
+                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <p className="text-gray-400 text-xs mt-1">This will be your unique profile URL</p>
+                  </div>
+                  <div>
+                    <label className="block text-gray-600 text-sm mb-1">Bio</label>
+                    <textarea name="bio" placeholder="Tell something about yourself..." value={socialInfo.bio} onChange={handleSocialChange}
+                      rows="2" className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-gray-600 text-sm mb-1">Interests</label>
+                    <input type="text" name="interests" placeholder="Technology, Farming, Healthcare, etc." value={socialInfo.interests} onChange={handleSocialChange}
+                      className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-between mt-8 pt-4 border-t border-gray-100">
+              <button type="button" onClick={handleBackToBasic}
+                className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-8 rounded-xl transition duration-200 flex items-center gap-2">
+                <FaArrowLeft /> Back to Basic
+              </button>
+              <button type="button" onClick={handleSubmit} disabled={loading || success}
+                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-3 px-8 rounded-xl transition duration-200 disabled:opacity-50 flex items-center gap-2 shadow-md">
+                {loading ? 'Creating Account...' : 'Complete Registration'} <FaCheckCircle />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Login Link */}
+        <div className="text-center mt-8">
+          <p className="text-gray-500">
+            Already have an account?{' '}
+            <a href="/login" className="text-blue-500 hover:text-blue-600 underline transition">Sign In</a>
           </p>
-        </form>
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default Register;

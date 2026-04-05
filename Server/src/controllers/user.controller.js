@@ -6,6 +6,7 @@ const path = require('path');
 const fs = require('fs').promises;
 const { validationResult } = require('express-validator');
 
+// Complete roles list
 const VALID_ROLES = [
   'SUPER_ADMIN',
   'ADDITIONAL_DIRECTOR',
@@ -19,6 +20,7 @@ const VALID_ROLES = [
   'TEACHER',
   'AGENT',
   'USER',
+  'ADMIN'
 ];
 
 const uploadDir = path.join(__dirname, '../uploads');
@@ -46,7 +48,7 @@ const parseArray = (value) => {
 };
 
 // ======================
-// REGISTER (with role-specific fields)
+// REGISTER (Full version with all fields)
 // ======================
 exports.register = async (req, res) => {
   try {
@@ -56,29 +58,54 @@ exports.register = async (req, res) => {
     }
 
     const {
-      fullName, email, phone, password,
+      // Basic Info
+      fullName, name, email, phone, mobile, password,
       role, modules,
-      fatherName, motherName, dob, gender,
-      aadhaarNumber, panNumber,
+      fatherName, motherName, dob, dateOfBirth, gender,
+      aadhaarNumber, aadharCard, panNumber, panCard, voterId, passportNumber,
       state, district, block, village, pincode, fullAddress,
       reportsTo, sponsorId,
+
       // Teacher fields
       specialization, qualifications, experienceYears,
+
       // Doctor fields
-      doctorSpecialization, doctorExperience, consultationFee, registrationNumber,
-      // Farmer fields
-      landSize, crops, farmingType, isContractFarmer,
+      doctorSpecialization, doctorExperience, consultationFee, registrationNumber, bloodGroup,
+      allergies, medicalHistory,
+      emergencyContactName, emergencyContactRelation, emergencyContactPhone,
+
+      // Farmer/Agriculture fields
+      landSize, crops, cropType, farmingType, isContractFarmer, farmLocation, irrigationType,
+
+      // Education fields
+      className, schoolName, board, percentage,
+
+      // IT fields
+      projectType, techStack, experience,
+
+      // Social fields
+      username, bio, interests,
+
       // Bank account
       bankAccount,
+
       // Agent commission rate
       commissionRate,
     } = req.body;
 
-    if (!fullName || !email || !phone || !password) {
+    // Handle both field name variations
+    const finalName = fullName || name;
+    const finalEmail = email;
+    const finalPhone = phone || mobile;
+    const finalDob = dob || dateOfBirth;
+    const finalAadhaar = aadhaarNumber || aadharCard;
+    const finalPan = panNumber || panCard;
+
+    if (!finalName || !finalEmail || !finalPhone || !password) {
       return res.status(400).json({ success: false, message: 'Missing required fields' });
     }
 
-    const existingUser = await User.findOne({ $or: [{ email }, { phone }] });
+    const existingUser = await User.findOne({ $or: [{ email: finalEmail }, { phone: finalPhone }] });
     if (existingUser) {
       return res.status(400).json({ success: false, message: 'User already exists' });
     }
@@ -89,21 +116,41 @@ exports.register = async (req, res) => {
     let mappedRole = (role || 'USER').toUpperCase();
     if (!VALID_ROLES.includes(mappedRole)) mappedRole = 'USER';
 
+    // Parse modules
     let userModules = [];
     if (modules) {
       userModules = Array.isArray(modules) ? modules : [modules];
+    } else {
+      // Auto-detect modules from filled fields
+      if (finalAadhaar || finalPan || voterId || passportNumber) userModules.push('FINANCE');
+      if (bloodGroup || allergies || medicalHistory || emergencyContactName) userModules.push('HEALTHCARE');
+      if (landSize || crops || cropType || farmLocation || irrigationType) userModules.push('AGRICULTURE');
+      if (className || schoolName || board || percentage) userModules.push('EDUCATION');
+      if (projectType || techStack || experience) userModules.push('IT');
+      if (username || bio || interests) userModules.push('SOCIAL');
     }
 
     // Base user data
     const userData = {
-      fullName, email, phone, password,
+      fullName: finalName,
+      email: finalEmail,
+      phone: finalPhone,
+      password,
       role: mappedRole,
       modules: userModules,
       fatherName, motherName,
-      dob: dob ? new Date(dob) : undefined,
+      dob: finalDob ? new Date(finalDob) : undefined,
       gender: gender && gender !== '' ? gender : undefined,
-      aadhaarNumber, panNumber,
+      aadhaarNumber: finalAadhaar,
+      panNumber: finalPan,
+      voterId, passportNumber,
       state, district, block, village, pincode, fullAddress,
+      bloodGroup, allergies, medicalHistory,
+      emergencyContact: {
+        name: emergencyContactName,
+        relationship: emergencyContactRelation,
+        phone: emergencyContactPhone,
+      },
       otp: hashedOtp,
       otpExpire: Date.now() + 5 * 60 * 1000,
       reportsTo: reportsTo || null,
@@ -112,7 +159,7 @@ exports.register = async (req, res) => {
       updatedBy: req.user ? req.user.id : null,
     };
 
-    // Teacher profile (only if role is TEACHER or modules include EDUCATION)
+    // Teacher profile
     if (mappedRole === 'TEACHER' || userModules.includes('EDUCATION')) {
       userData.teacherProfile = {
         specialization: specialization || '',
@@ -121,7 +168,7 @@ exports.register = async (req, res) => {
       };
     }
 
-    // Doctor profile (only if role is DOCTOR or modules include HEALTHCARE)
+    // Doctor profile
     if (mappedRole === 'DOCTOR' || userModules.includes('HEALTHCARE')) {
       userData.doctorProfile = {
         specialization: doctorSpecialization || '',
@@ -131,17 +178,49 @@ exports.register = async (req, res) => {
       };
     }
 
-    // Farmer profile (only if modules include AGRICULTURE)
+    // Farmer profile
     if (userModules.includes('AGRICULTURE')) {
       userData.farmerProfile = {
         landSize: landSize ? parseFloat(landSize) : 0,
-        crops: parseArray(crops),
+        crops: parseArray(crops || cropType),
         farmingType: farmingType || 'conventional',
         isContractFarmer: isContractFarmer === 'true' || isContractFarmer === true,
+        farmLocation: farmLocation || '',
+        irrigationType: irrigationType || '',
       };
     }
 
-    // Bank account (if provided)
+    // Education profile
+    if (userModules.includes('EDUCATION')) {
+      userData.educationProfile = {
+        className: className || '',
+        schoolName: schoolName || '',
+        board: board || '',
+        percentage: percentage || '',
+      };
+    }
+
+    // IT profile
+    if (userModules.includes('IT')) {
+      userData.itProfile = {
+        projectType: projectType || '',
+        techStack: techStack || '',
+        experience: experience || '',
+      };
+    }
+
+    // Social profile
+    if (userModules.includes('SOCIAL')) {
+      userData.socialProfile = {
+        username: username || '',
+        bio: bio || '',
+        interests: interests || '',
+        followersCount: 0,
+        followingCount: 0,
+      };
+    }
+
+    // Bank account
     if (bankAccount) {
       try {
         userData.bankAccount = typeof bankAccount === 'string' ? JSON.parse(bankAccount) : bankAccount;
@@ -150,7 +229,7 @@ exports.register = async (req, res) => {
       }
     }
 
-    // Agent commission rate (only for AGENT role)
+    // Agent commission rate
     if (mappedRole === 'AGENT' && commissionRate !== undefined) {
       userData.commissionRate = parseFloat(commissionRate);
     }
@@ -170,12 +249,15 @@ exports.register = async (req, res) => {
         }
       };
       await moveFile('profileImage', 'profile');
+      await moveFile('profilePicture', 'profile');
       await moveFile('aadhaarImage', 'aadhaar');
+      await moveFile('aadharDocument', 'aadhaar');
       await moveFile('panImage', 'pan');
+      await moveFile('panDocument', 'pan');
     }
 
     await user.save();
-    sendEmail(email, otp).catch(err => console.error('Email error:', err));
+    sendEmail(finalEmail, otp).catch(err => console.error('Email error:', err));
 
     res.status(201).json({
       success: true,
@@ -187,7 +269,7 @@ exports.register = async (req, res) => {
     if (req.files) {
       for (const field in req.files) {
         for (const file of req.files[field]) {
-          await fs.unlink(file.path).catch(() => {});
+          await fs.unlink(file.path).catch(() => { });
         }
       }
     }
@@ -219,7 +301,19 @@ exports.verifyOTP = async (req, res) => {
     user.otp = null;
     user.otpExpire = null;
     await user.save();
-    res.json({ success: true, message: 'Account verified successfully' });
+
+    const token = jwt.sign(
+      { id: user._id, role: user.role, modules: user.modules },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRE || '7d' }
+    );
+
+    const userData = user.toObject();
+    delete userData.password;
+    delete userData.otp;
+    delete userData.otpExpire;
+
+    res.json({ success: true, message: 'Account verified successfully', token, user: userData });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -248,11 +342,11 @@ exports.resendOTP = async (req, res) => {
 };
 
 // ======================
-// LOGIN (role mismatch check removed)
+// LOGIN
 // ======================
 exports.login = async (req, res) => {
   try {
-    const { email, password, role } = req.body;
+    const { email, password } = req.body;
     if (!email || !password) {
       return res.status(400).json({ success: false, message: 'Email and password required' });
     }
@@ -261,10 +355,6 @@ exports.login = async (req, res) => {
     if (!user.isVerified) {
       return res.status(403).json({ success: false, message: 'Please verify your email first' });
     }
-    // Role mismatch check removed – user can log in from any role-specific page
-    // if (role && user.role !== role) {
-    //   return res.status(403).json({ success: false, message: 'Role mismatch' });
-    // }
     const isMatch = await user.comparePassword(password);
     if (!isMatch) return res.status(400).json({ success: false, message: 'Invalid credentials' });
 
@@ -293,7 +383,7 @@ exports.getProfile = async (req, res) => {
     const user = await User.findById(req.user.id)
       .select('-password -otp -otpExpire')
       .populate('reportsTo', 'fullName email role')
-      .populate('sponsorId', 'fullName email referralCode');
+      .populate('sponsorId', 'fullName email');
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
     res.json({ success: true, user });
   } catch (error) {
@@ -302,7 +392,7 @@ exports.getProfile = async (req, res) => {
 };
 
 // ======================
-// UPDATE PROFILE (supports all nested fields)
+// UPDATE PROFILE
 // ======================
 exports.updateProfile = async (req, res) => {
   try {
@@ -313,7 +403,7 @@ exports.updateProfile = async (req, res) => {
     if (req.file) {
       if (user.profileImage) {
         const oldPath = path.join(__dirname, '../', user.profileImage);
-        await fs.unlink(oldPath).catch(() => {});
+        await fs.unlink(oldPath).catch(() => { });
       }
       const ext = path.extname(req.file.originalname);
       const fileName = `${Date.now()}_profile_${Math.random().toString(36).substring(2)}${ext}`;
@@ -326,10 +416,20 @@ exports.updateProfile = async (req, res) => {
     const simpleFields = [
       'fullName', 'phone', 'fatherName', 'motherName', 'dob', 'gender',
       'state', 'district', 'block', 'village', 'pincode', 'fullAddress',
-      'aadhaarNumber', 'panNumber',
+      'aadhaarNumber', 'panNumber', 'bloodGroup', 'allergies', 'medicalHistory',
+      'voterId', 'passportNumber'
     ];
     for (const key of simpleFields) {
       if (req.body[key] !== undefined) user[key] = req.body[key];
+    }
+
+    // Emergency contact
+    if (req.body.emergencyContactName || req.body.emergencyContactRelation || req.body.emergencyContactPhone) {
+      user.emergencyContact = {
+        name: req.body.emergencyContactName || user.emergencyContact?.name,
+        relationship: req.body.emergencyContactRelation || user.emergencyContact?.relationship,
+        phone: req.body.emergencyContactPhone || user.emergencyContact?.phone,
+      };
     }
 
     // Teacher profile
@@ -356,6 +456,33 @@ exports.updateProfile = async (req, res) => {
       if (req.body.crops !== undefined) user.farmerProfile.crops = parseArray(req.body.crops);
       if (req.body.farmingType !== undefined) user.farmerProfile.farmingType = req.body.farmingType;
       if (req.body.isContractFarmer !== undefined) user.farmerProfile.isContractFarmer = req.body.isContractFarmer === 'true' || req.body.isContractFarmer === true;
+      if (req.body.farmLocation !== undefined) user.farmerProfile.farmLocation = req.body.farmLocation;
+      if (req.body.irrigationType !== undefined) user.farmerProfile.irrigationType = req.body.irrigationType;
+    }
+
+    // Education profile
+    if (req.body.className !== undefined || req.body.schoolName !== undefined || req.body.board !== undefined || req.body.percentage !== undefined) {
+      user.educationProfile = user.educationProfile || {};
+      if (req.body.className !== undefined) user.educationProfile.className = req.body.className;
+      if (req.body.schoolName !== undefined) user.educationProfile.schoolName = req.body.schoolName;
+      if (req.body.board !== undefined) user.educationProfile.board = req.body.board;
+      if (req.body.percentage !== undefined) user.educationProfile.percentage = req.body.percentage;
+    }
+
+    // IT profile
+    if (req.body.projectType !== undefined || req.body.techStack !== undefined || req.body.experience !== undefined) {
+      user.itProfile = user.itProfile || {};
+      if (req.body.projectType !== undefined) user.itProfile.projectType = req.body.projectType;
+      if (req.body.techStack !== undefined) user.itProfile.techStack = req.body.techStack;
+      if (req.body.experience !== undefined) user.itProfile.experience = req.body.experience;
+    }
+
+    // Social profile
+    if (req.body.username !== undefined || req.body.bio !== undefined || req.body.interests !== undefined) {
+      user.socialProfile = user.socialProfile || {};
+      if (req.body.username !== undefined) user.socialProfile.username = req.body.username;
+      if (req.body.bio !== undefined) user.socialProfile.bio = req.body.bio;
+      if (req.body.interests !== undefined) user.socialProfile.interests = req.body.interests;
     }
 
     // Bank account
@@ -382,7 +509,7 @@ exports.updateProfile = async (req, res) => {
 
     res.json({ success: true, message: 'Profile updated', user: userData });
   } catch (error) {
-    if (req.file) await fs.unlink(req.file.path).catch(() => {});
+    if (req.file) await fs.unlink(req.file.path).catch(() => { });
     if (error.name === 'ValidationError') {
       const messages = Object.values(error.errors).map(e => e.message);
       return res.status(400).json({ success: false, message: messages.join(', ') });
@@ -409,7 +536,7 @@ exports.assignReporting = async (req, res) => {
       const sponsor = await User.findById(sponsorId);
       if (!sponsor) return res.status(404).json({ success: false, message: 'Sponsor not found' });
       user.sponsorId = sponsorId;
-      user.mlmLevel = sponsor.mlmLevel + 1;
+      user.mlmLevel = (sponsor.mlmLevel || 0) + 1;
     }
     user.updatedBy = req.user.id;
     await user.save();
@@ -429,7 +556,7 @@ exports.getSubordinates = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
-    const subordinates = await User.find({ reportsTo: userId }).select('fullName email role hierarchyLevel');
+    const subordinates = await User.find({ reportsTo: userId }).select('fullName email role');
     const mlmDownlines = await User.find({ sponsorId: userId }).select('fullName email role mlmLevel');
 
     res.json({
@@ -479,7 +606,7 @@ exports.getUserById = async (req, res) => {
     const user = await User.findById(req.params.id)
       .select('-password -otp -otpExpire')
       .populate('reportsTo', 'fullName email role')
-      .populate('sponsorId', 'fullName email referralCode');
+      .populate('sponsorId', 'fullName email');
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
     res.json({ success: true, user });
   } catch (error) {
@@ -496,7 +623,7 @@ exports.deleteUser = async (req, res) => {
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
     if (user.profileImage) {
       const filePath = path.join(__dirname, '../', user.profileImage);
-      await fs.unlink(filePath).catch(() => {});
+      await fs.unlink(filePath).catch(() => { });
     }
     res.json({ success: true, message: 'User deleted' });
   } catch (error) {
@@ -505,11 +632,11 @@ exports.deleteUser = async (req, res) => {
 };
 
 // ======================
-// ADD/UPDATE WALLET (Bonus method for finance module)
+// UPDATE WALLET
 // ======================
 exports.updateWallet = async (req, res) => {
   try {
-    const { userId, amount, operation } = req.body; // operation: 'add' or 'deduct'
+    const { userId, amount, operation } = req.body;
     if (!userId || amount === undefined || !operation) {
       return res.status(400).json({ success: false, message: 'Missing required fields' });
     }
@@ -517,13 +644,13 @@ exports.updateWallet = async (req, res) => {
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
     if (operation === 'add') {
-      user.walletBalance += amount;
-      user.totalEarnings += amount;
+      user.walletBalance = (user.walletBalance || 0) + amount;
+      user.totalEarnings = (user.totalEarnings || 0) + amount;
     } else if (operation === 'deduct') {
-      if (user.walletBalance < amount) {
+      if ((user.walletBalance || 0) < amount) {
         return res.status(400).json({ success: false, message: 'Insufficient wallet balance' });
       }
-      user.walletBalance -= amount;
+      user.walletBalance = (user.walletBalance || 0) - amount;
     } else {
       return res.status(400).json({ success: false, message: 'Invalid operation. Use "add" or "deduct"' });
     }

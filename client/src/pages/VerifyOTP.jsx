@@ -15,7 +15,7 @@ export default function VerifyOTP() {
 
   useEffect(() => {
     if (inputRef.current) inputRef.current.focus();
-    if (!email) navigate("/login/user");
+    if (!email) navigate("/login");
   }, [email, navigate]);
 
   const handleVerify = async () => {
