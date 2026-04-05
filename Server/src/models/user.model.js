@@ -116,7 +116,7 @@ const userSchema = new mongoose.Schema(
     dob: Date,
     gender: {
       type: String,
-      enum: ['MALE', 'FEMALE', 'OTHER'],
+      enum: ['male', 'female', 'other'],
     },
 
     // ======================
@@ -266,7 +266,6 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    discriminatorKey: 'role'
   }
 );
 

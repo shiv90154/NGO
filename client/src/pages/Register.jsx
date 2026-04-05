@@ -25,8 +25,9 @@ const Register = () => {
     password: '',
     confirmPassword: '',
     mobile: '',
-    dateOfBirth: '',
-    gender: ''
+    dob: '',
+    gender: '',
+    role: 'user',
   });
 
   // Module 1: Finance/Identity
@@ -172,7 +173,7 @@ const Register = () => {
     if (basicInfo.password !== basicInfo.confirmPassword) newErrors.confirmPassword = "Passwords don't match";
     if (!basicInfo.mobile) newErrors.mobile = "Mobile number is required";
     else if (!/^\d{10}$/.test(basicInfo.mobile)) newErrors.mobile = "Mobile number must be 10 digits";
-    if (!basicInfo.dateOfBirth) newErrors.dateOfBirth = "Date of birth is required";
+    if (!basicInfo.dob) newErrors.dob = "Date of birth is required";
     if (!basicInfo.gender) newErrors.gender = "Gender is required";
 
     setError(newErrors);
@@ -197,9 +198,13 @@ const Register = () => {
     const formData = new FormData();
 
     // Basic info
-    Object.keys(basicInfo).forEach(key => {
-      if (basicInfo[key]) formData.append(key, basicInfo[key]);
-    });
+    formData.append('name', basicInfo.name);
+    formData.append('email', basicInfo.email);
+    formData.append('password', basicInfo.password);
+    formData.append('mobile', basicInfo.mobile);
+    formData.append('dob', basicInfo.dob);
+    formData.append('gender', basicInfo.gender);
+    formData.append('role', basicInfo.role);
 
     // Finance
     if (financeInfo.aadharFile) formData.append('aadharDocument', financeInfo.aadharFile);
@@ -249,7 +254,7 @@ const Register = () => {
 
       setSuccess('Registration successful! Redirecting...');
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate('/verify-otp', { state: { email: basicInfo.email } });
       }, 2000);
 
     } catch (err) {
@@ -367,9 +372,9 @@ const Register = () => {
                 <label className="block text-gray-700 text-sm font-semibold mb-2">
                   <FaCalendarAlt className="inline mr-2 text-blue-500" /> Date of Birth *
                 </label>
-                <input type="date" name="dateOfBirth" value={basicInfo.dateOfBirth} onChange={handleBasicChange}
-                  className={`w-full px-4 py-3 bg-gray-50 border rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${error.dateOfBirth ? 'border-red-400' : 'border-gray-200'}`} />
-                {error.dateOfBirth && <p className="text-red-500 text-xs mt-1">{error.dateOfBirth}</p>}
+                <input type="date" name="dob" value={basicInfo.dob} onChange={handleBasicChange}
+                  className={`w-full px-4 py-3 bg-gray-50 border rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${error.dob ? 'border-red-400' : 'border-gray-200'}`} />
+                {error.dob && <p className="text-red-500 text-xs mt-1">{error.dob}</p>}
               </div>
 
               <div>
@@ -384,6 +389,20 @@ const Register = () => {
                   <option value="other">Other</option>
                 </select>
                 {error.gender && <p className="text-red-500 text-xs mt-1">{error.gender}</p>}
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-semibold mb-2">
+                  <FaUser className="inline mr-2 text-blue-500" /> Role *
+                </label>
+                <select
+                  name="role"
+                  value={basicInfo.role}
+                  onChange={handleBasicChange}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
               </div>
             </div>
 
