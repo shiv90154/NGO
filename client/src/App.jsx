@@ -13,7 +13,6 @@ import Refund from "./pages/Refund";
 import Disclaimer from "./pages/Disclamier";
 import Privacy from "./pages/Privacy";
 import Faq from "./pages/Faq";
-
 // Import module dashboards
 import EducationRoutes from "./modules/education/routes/education.routes";
 import AgricultureDashboard from "./modules/agriculture/pages/Dashboard";
@@ -34,7 +33,8 @@ function App() {
         <Route path="/services" element={<ServicesSection />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/login/:role" element={<LoginForm />} />
+        <Route path="/login/" element={<LoginForm />} />
+        <Route path="/register/" element={<Register />} />
         <Route path="/register/:role" element={<Register />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
         <Route path="/profile" element={<Profile />} />
@@ -53,7 +53,7 @@ function App() {
 
         {/* Finance module routes (includes /finance/dashboard, /finance/wallet, etc.) */}
         {FinanceRoutes()}
-        
+
       </Routes>
     </BrowserRouter>
   );

@@ -1,148 +1,182 @@
-import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import api from "../config/api";
+import { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
 
-const Input = ({ type, name, placeholder, value, onChange, onBlur, error, showToggle, toggleShow, showPassword, icon }) => (
-  <div className="mb-4">
-    <div className="relative">
-      {icon && <div className="absolute left-3 top-2.5 text-white/50 text-sm">{icon}</div>}
-      <input
-        type={type}
-        name={name}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        onBlur={onBlur}
-        autoComplete={type === "password" ? "current-password" : "email"}
-        className={`w-full px-4 py-2 rounded-lg bg-white/10 border ${
-          error ? "border-red-500" : "border-white/20"
-        } text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-orange-500 ${icon ? "pl-8" : ""} ${
-          showToggle ? "pr-16" : ""
-        }`}
-      />
-      {showToggle && (
-        <button type="button" onClick={toggleShow} className="absolute right-3 top-2 text-white/70 text-sm">
-          {showPassword ? "🙈" : "👁️"}
-        </button>
-      )}
-    </div>
-    {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
-  </div>
-);
+const Login = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState({});
+  const [generalError, setGeneralError] = useState('');
 
-export default function LoginForm() {
-  const { role } = useParams();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [showPass, setShowPass] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [fieldError, setFieldError] = useState({});
-
   const validate = () => {
-    let errors = {};
-    if (!form.email.trim()) errors.email = "Email required";
-    else if (!/\S+@\S+\.\S+/.test(form.email)) errors.email = "Invalid email";
-    if (!form.password) errors.password = "Password required";
-    setFieldError(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  // Map module names to dashboard paths
-  const getDashboardPath = (modules) => {
-    if (modules.includes("EDUCATION")) return "/education/dashboard";
-    if (modules.includes("AGRICULTURE")) return "/agriculture/dashboard";
-    if (modules.includes("FINANCE")) return "/finance/dashboard";
-    if (modules.includes("HEALTHCARE")) return "/healthcare/dashboard";
-    if (modules.includes("NEWS")) return "/news/dashboard";
-    if (modules.includes("IT")) return "/it/dashboard";
-    return "/profile";
+    let err = {};
+    if (!email) err.email = "Email is required";
+    if (!password) err.password = "Password is required";
+    setError(err);
+    return Object.keys(err).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    if (!validate()) return;
-    setLoading(true);
-    try {
-      const res = await api.post("/users/login", {
-        email: form.email.trim(),
-        password: form.password,
-        // role intentionally omitted – backend no longer checks it
-      });
-      const { token, user } = res.data;
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
+    setGeneralError('');
 
-      // Redirect based on user's modules
-      const dashboardPath = getDashboardPath(user.modules || []);
-      navigate(dashboardPath);
+    if (!validate()) return;
+
+    setLoading(true);
+
+    try {
+      const response = await axios.post('http://localhost:5000/api/auth/login', {
+        email,
+        password
+      });
+
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify({
+        _id: response.data._id,
+        name: response.data.name,
+        email: response.data.email
+      }));
+
+      navigate('/dashboard');
+
     } catch (err) {
-      const message = err.response?.data?.message || err.message || "Login failed. Please try again.";
-      setError(message);
+      setGeneralError(err.response?.data?.message || 'Login failed');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 p-4">
-      <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl p-8 text-white">
-        <div className="flex flex-col items-center mb-6">
-          <img src="/logo.png" alt="Logo" className="w-14 mb-2" />
-          <h2 className="text-xl font-bold">{role ? role.toUpperCase() : "USER"} Login</h2>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4">
+      <div className="max-w-md mx-auto">
+
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-5xl font-bold text-gray-800 mb-3">
+            Welcome <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Back</span>
+          </h1>
+          <p className="text-gray-500 text-lg">Sign in to your account</p>
         </div>
-        {error && <div className="bg-red-500/20 text-red-300 p-2 rounded mb-4 text-center">{error}</div>}
-        <form onSubmit={handleSubmit}>
-          <Input
-            type="email"
-            name="email"
-            placeholder="Enter Email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-            error={fieldError.email}
-            icon="📧"
-          />
-          <Input
-            type={showPass ? "text" : "password"}
-            name="password"
-            placeholder="Enter Password"
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-            error={fieldError.password}
-            showToggle
-            toggleShow={() => setShowPass(!showPass)}
-            showPassword={showPass}
-            icon="🔒"
-          />
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 py-2 rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 disabled:opacity-50"
-          >
-            {loading ? "Logging in..." : "Login"}
-          </button>
-        </form>
-        <div className="flex justify-between items-center mt-4 text-sm">
-          <button
-            type="button"
-            onClick={() => alert("Forgot password functionality coming soon.")}
-            className="text-white/60 hover:text-orange-400"
-          >
-            Forgot Password?
-          </button>
-          <div>
-            Don’t have an account?{" "}
-            <span
-              onClick={() => navigate(`/register/${role || "user"}`)}
-              className="text-orange-400 cursor-pointer hover:underline"
+
+        {/* Login Card */}
+        <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+            User Login
+          </h2>
+
+          {/* General Error */}
+          {generalError && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
+              {generalError}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+
+            {/* Email */}
+            <div>
+              <label className="block text-gray-700 text-sm font-semibold mb-2">
+                <FaEnvelope className="inline mr-2 text-blue-500" /> Email Address
+              </label>
+              <div className="relative">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (error.email) setError({ ...error, email: '' });
+                  }}
+                  className={`w-full px-4 py-3 bg-gray-50 border rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition pl-11 ${error.email ? 'border-red-400' : 'border-gray-200'}`}
+                  placeholder="you@example.com"
+                />
+                <FaEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              </div>
+              {error.email && <p className="text-red-500 text-xs mt-1">{error.email}</p>}
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-gray-700 text-sm font-semibold mb-2">
+                <FaLock className="inline mr-2 text-blue-500" /> Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (error.password) setError({ ...error, password: '' });
+                  }}
+                  className={`w-full px-4 py-3 bg-gray-50 border rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition pl-11 pr-11 ${error.password ? 'border-red-400' : 'border-gray-200'}`}
+                  placeholder="Enter your password"
+                />
+                <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+              {error.password && <p className="text-red-500 text-xs mt-1">{error.password}</p>}
+            </div>
+
+            {/* Forgot Password Link */}
+            <div className="text-right">
+              <a href="/forgot-password" className="text-sm text-blue-500 hover:text-blue-600 transition">
+                Forgot Password?
+              </a>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 rounded-xl transition duration-200 disabled:opacity-50 shadow-md"
             >
-              Register
-            </span>
+              {loading ? 'Processing...' : 'Login'}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="flex items-center my-6">
+            <div className="flex-grow h-px bg-gray-200"></div>
+            <span className="px-3 text-gray-400 text-sm">OR</span>
+            <div className="flex-grow h-px bg-gray-200"></div>
+          </div>
+
+          {/* Register Link */}
+          <p className="text-center text-gray-600">
+            Don't have an account?{' '}
+            <a href="/register" className="text-blue-500 hover:text-blue-600 font-medium underline transition">
+              Create Account
+            </a>
+          </p>
+
+          {/* Back to Home */}
+          <div className="mt-6 text-center">
+            <a href="/" className="text-gray-400 hover:text-gray-500 text-sm flex items-center justify-center gap-2 transition">
+              <FaArrowLeft /> Back to Home
+            </a>
           </div>
         </div>
+
+        {/* Footer */}
+        <footer className="text-center mt-8">
+          <p className="text-gray-400 text-sm">
+            © 2026 Government Portal. All rights reserved.
+          </p>
+        </footer>
       </div>
     </div>
   );
-}
+};
+
+export default Login;
