@@ -190,11 +190,22 @@ const Home = () => {
         {/* Indian Village Background Image Overlay */}
         <div className="absolute inset-0 bg-black/40 z-0" />
         <div
-          className="absolute inset-0 bg-cover bg-center opacity-50 z-0"
-          style={{
-            backgroundImage: "url('https://imgs.search.brave.com/zJmFrBGhiSDl6m6bGbeLQCq9dXWzOJeuDmnS7plkdb4/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90aHVt/YnMuZHJlYW1zdGlt/ZS5jb20vYi9pbmRp/YW4tdmlsbGFnZS1w/ZW9wbGUtbGVhcm5p/bmctbGFwdG9wLXNj/aG9vbC1naXJsLW9w/ZW4tYmFja2dyb3Vu/ZC1pbmRpYS1qYW51/YXJ5LTE2OTE4ODA4/OS5qcGc')" // Indian village women working
-          }}
-        />
+  className="absolute inset-0 z-0"
+  
+/>
+<div className="absolute inset-0 z-0">
+  <div
+    className="absolute inset-0"
+    style={{
+      backgroundImage: "url('https://imgs.search.brave.com/BTRpm3WXCOtqvSfIx2IXb7vtC08YHVmp8480kyZ6BqY/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvMTIw/MDg3MDExOS9waG90/by9pbmRpYW4tdHJp/YmFsLXZpbGxhZ2Ut/YXQtYm9scHVyLXdl/c3QtYmVuZ2FsLWlu/ZGlhLXdpdGgtdmll/dy1vZi1tdWQtaHV0/LWFuZC11bnBhdmVk/LXZpbGxhZ2UuanBn/P3M9NjEyeDYxMiZ3/PTAmaz0yMCZjPXZa/YUo4MHpMbWI1aUQ3/dVN3dks1YU9rdFNy/SWJYbm1xdHlKalg5/cEFpVWs9')",
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+    }}
+  />
+  <div className="absolute inset-0 bg-black/40" />
+</div>
+      
 
         {/* Hero tricolor stripes */}
         <div className="absolute top-0 left-0 w-full h-2 flex z-10">
@@ -310,10 +321,10 @@ const Home = () => {
       </div>
 
       {/* ========== SECTION 3: ORANGE BACKGROUND (Subscription + Initiatives + Franchise) ========== */}
-      <div style={{ backgroundColor: COLORS.saffron }}>
+      <div style={{ backgroundColor: COLORS.whileHover }}>
         {/* Subscription Plans */}
         <section className="py-20 px-4">
-          <div className="container mx-auto">
+          <div className="container mx-auto ">
             <SectionHeading title="Membership & Subscription Plans" subtitle="Affordable plans for every citizen — Education, Health, Agriculture" light={true} />
             <motion.div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto" variants={ANIMATION_VARIANTS.staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}>
               {subscriptionPlans.map((plan, idx) => <SubscriptionCard key={idx} {...plan} onNavigate={handleNavigate} />)}

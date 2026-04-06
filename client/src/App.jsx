@@ -23,6 +23,8 @@ import ITDashboard from "./modules/it/pages/Dashboard";
 // Import Finance routes (includes dashboard + all sub‑pages)
 import FinanceRoutes from "./modules/finance/routes/finance.routes";
 
+import LoginPage from "./pages/LoginPage";
+
 function App() {
   return (
     <BrowserRouter>
@@ -43,6 +45,8 @@ function App() {
         <Route path="/disclamier" element={<Disclaimer />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/faq" element={<Faq />} />
+         <Route path="/loginpage" element={<LoginPage />} />
+
 
         {/* Module dashboard routes (standalone) */}
         <Route path="/education/*" element={<EducationRoutes />} />
@@ -50,6 +54,8 @@ function App() {
         <Route path="/healthcare/dashboard" element={<HealthcareDashboard />} />
         <Route path="/news/dashboard" element={<NewsDashboard />} />
         <Route path="/it/dashboard" element={<ITDashboard />} />
+      
+
 
         {/* Finance module routes (includes /finance/dashboard, /finance/wallet, etc.) */}
         {FinanceRoutes()}
