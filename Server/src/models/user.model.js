@@ -58,7 +58,7 @@ const userSchema = new mongoose.Schema(
     // ======================
     modules: {
       type: [String],
-      enum: ['EDUCATION', 'AGRICULTURE', 'FINANCE', 'HEALTHCARE', 'NEWS', 'IT'],
+      enum: ['EDUCATION', 'AGRICULTURE', 'FINANCE', 'HEALTHCARE', 'SOCIAL', 'IT'],
       default: [],
     },
 

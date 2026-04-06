@@ -22,6 +22,7 @@ import ITDashboard from "./modules/it/pages/Dashboard";
 
 // Import Finance routes (includes dashboard + all sub‑pages)
 import FinanceRoutes from "./modules/finance/routes/finance.routes";
+import ProtectedRoute from "./components/protectedRoute";
 
 function App() {
   return (
@@ -30,7 +31,7 @@ function App() {
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<Home />} />
-        <Route path="/services" element={<ServicesSection />} />
+        <Route path="/services" element={<ProtectedRoute><ServicesSection /></ProtectedRoute>} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/login/" element={<LoginForm />} />

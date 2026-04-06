@@ -2,8 +2,12 @@ import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
+import { useAuth } from "../contexts/AuthContext";
+
+const api = import.meta.env.VITE_API_URL;
 
 const Login = () => {
+  const { setUser, login } = useAuth(); // ✅ move here
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -30,21 +34,16 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
-        email,
-        password
-      });
+      const res = await login(email, password);
 
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify({
-        _id: response.data._id,
-        name: response.data.name,
-        email: response.data.email
-      }));
-
-      navigate('/dashboard');
+      if (!res.success) {
+        setGeneralError(res.error);
+        return;
+      }
+      navigate('/services');
 
     } catch (err) {
+      console.log(err.response); // ✅ debug
       setGeneralError(err.response?.data?.message || 'Login failed');
     } finally {
       setLoading(false);

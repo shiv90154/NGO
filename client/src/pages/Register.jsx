@@ -192,6 +192,7 @@ const Register = () => {
   };
 
   const handleSubmit = async () => {
+
     setLoading(true);
     setError({});
 
@@ -201,14 +202,14 @@ const Register = () => {
     formData.append('name', basicInfo.name);
     formData.append('email', basicInfo.email);
     formData.append('password', basicInfo.password);
-    formData.append('mobile', basicInfo.mobile);
+    formData.append('phone', basicInfo.mobile);
     formData.append('dob', basicInfo.dob);
     formData.append('gender', basicInfo.gender);
     formData.append('role', basicInfo.role);
 
     // Finance
-    if (financeInfo.aadharFile) formData.append('aadharDocument', financeInfo.aadharFile);
-    if (financeInfo.panFile) formData.append('panDocument', financeInfo.panFile);
+    if (financeInfo.aadharFile) formData.append('aadhaarImage', financeInfo.aadharFile);
+    if (financeInfo.panFile) formData.append('panImage', financeInfo.panFile);
     if (financeInfo.aadharCard) formData.append('aadharCard', financeInfo.aadharCard);
     if (financeInfo.panCard) formData.append('panCard', financeInfo.panCard);
     if (financeInfo.voterId) formData.append('voterId', financeInfo.voterId);
@@ -235,15 +236,12 @@ const Register = () => {
     });
 
     // Social Media
-    if (socialInfo.profilePicture) formData.append('profilePicture', socialInfo.profilePicture);
+    if (socialInfo.profilePicture) formData.append('profileImage', socialInfo.profilePicture);
     if (socialInfo.username) formData.append('username', socialInfo.username);
     if (socialInfo.bio) formData.append('bio', socialInfo.bio);
     if (socialInfo.interests) formData.append('interests', socialInfo.interests);
-
     try {
-      const response = await axios.post(`${api}/users/register`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const response = await axios.post(`${api}/users/register`, formData,);
 
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify({
@@ -258,6 +256,7 @@ const Register = () => {
       }, 2000);
 
     } catch (err) {
+      console.log(err.response?.data); // 👈 ADD THIS
       setError({ submit: err.response?.data?.message || 'Registration failed' });
     } finally {
       setLoading(false);
