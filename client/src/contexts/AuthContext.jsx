@@ -13,19 +13,30 @@ export const AuthProvider = ({ children }) => {
   // INIT
   // ======================
   useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem("user");
-      const token = localStorage.getItem("token");
+    const verifyUser = async () => {
+      try {
+        const token = localStorage.getItem("token");
 
-      if (storedUser && token) {
-        setUser(JSON.parse(storedUser));
+        if (!token) {
+          setLoading(false);
+          return;
+        }
+        const res = await api.get("/users/profile", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setUser(res.data.user);
+      } catch (err) {
+        console.error("Auth load error:", err);
+        localStorage.clear();
+        setUser(null);
       }
-    } catch (err) {
-      console.error("Auth load error:", err);
-    }
-    setLoading(false);
-  }, []);
 
+      setLoading(false);
+    };
+    verifyUser();
+  }, []);
   // ======================
   // REGISTER
   // ======================
@@ -33,9 +44,8 @@ export const AuthProvider = ({ children }) => {
     try {
       const res = await api.post("/auth/register", {
         ...formData,
-        role: role?.toUpperCase() || "USER",
+        role: role?.toUpperCase() || "user",
       });
-
       const { token, user } = res.data;
 
       localStorage.setItem("token", token);
@@ -50,7 +60,7 @@ export const AuthProvider = ({ children }) => {
         success: false,
         error: error.response?.data?.message || "Registration failed",
       };
-    }
+    };
   };
 
   // ======================
@@ -58,7 +68,7 @@ export const AuthProvider = ({ children }) => {
   // ======================
   const login = async (email, password, role) => {
     try {
-      const res = await api.post("/auth/login", {
+      const res = await api.post("/users/login", {
         email,
         password,
         role: role?.toUpperCase(),
@@ -91,6 +101,7 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    setUser,
     loading,
     register,
     login,
