@@ -3,7 +3,6 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import ServicesSection from "./pages/ServicesSection";
-import LoginForm from "./pages/LoginForm";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import VerifyOTP from "./pages/VerifyOTP";
@@ -36,7 +35,7 @@ function App() {
         <Route path="/services" element={<ProtectedRoute><ServicesSection /></ProtectedRoute>} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/login/" element={<LoginForm />} />
+       
         <Route path="/register/" element={<Register />} />
         <Route path="/register/:role" element={<Register />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
