@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const Header = () => {
@@ -10,167 +9,108 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
+    const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const closeMobileMenu = () => setMobileMenuOpen(false);
-
   const handleNav = (path) => {
     navigate(path);
-    closeMobileMenu();
+    setMobileMenuOpen(false);
   };
 
   const isActive = (path) => location.pathname === path;
 
   return (
-    <motion.header
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
+    <header
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-[#1e3a5f]/95 backdrop-blur-md shadow-xl"
-          : "bg-[#1e3a5f]"
-      } text-white`}
+          ? "bg-white shadow-md"
+          : "bg-white border-b"
+      }`}
     >
-      <div className="container mx-auto px-3 sm:px-4 py-3 flex justify-between items-center">
-        {/* LOGO - responsive text and image */}
+      <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+        
+        {/* LOGO */}
         <div
-          className="flex items-center gap-2 sm:gap-3 cursor-pointer flex-shrink-0"
+          className="flex items-center gap-2 cursor-pointer"
           onClick={() => handleNav("/")}
         >
           <img
             src="/logo.jpg"
-            alt="Samraddh Bharat Logo"
-            className="w-8 h-8 sm:w-10 sm:h-10 object-contain rounded-md shadow"
+            alt="Logo"
+            className="w-9 h-9 rounded-md"
           />
-          <span className="text-sm sm:text-base md:text-lg font-bold tracking-wide whitespace-nowrap">
+          <span className="text-lg font-bold text-gray-800">
             SAMRADDH BHARAT
           </span>
         </div>
 
-        {/* DESKTOP NAV - hidden on tablet/mobile, visible from md breakpoint */}
-        <nav className="hidden md:flex gap-4 lg:gap-6 items-center">
-          <button
-            onClick={() => handleNav("/")}
-            className={`hover:text-orange-400 transition-colors text-sm lg:text-base ${
-              isActive("/") ? "text-orange-400" : ""
-            }`}
-          >
-            Home
-          </button>
+        {/* DESKTOP NAV */}
+        <nav className="hidden md:flex gap-6 items-center">
+          {["/", "/services", "/about", "/contact"].map((path, i) => {
+            const names = ["Home", "Modules", "About", "Contact"];
+            return (
+              <button
+                key={i}
+                onClick={() => handleNav(path)}
+                className={`text-gray-700 hover:text-blue-600 transition ${
+                  isActive(path) ? "text-blue-600 font-semibold" : ""
+                }`}
+              >
+                {names[i]}
+              </button>
+            );
+          })}
 
           <button
             onClick={() => handleNav("/services")}
-            className={`hover:text-orange-400 transition-colors text-sm lg:text-base ${
-              isActive("/services") ? "text-orange-400" : ""
-            }`}
-          >
-            Modules
-          </button>
-
-          <button
-            onClick={() => handleNav("/about")}
-            className={`hover:text-orange-400 transition-colors text-sm lg:text-base ${
-              isActive("/about") ? "text-orange-400" : ""
-            }`}
-          >
-            About
-          </button>
-
-          <button
-            onClick={() => handleNav("/contact")}
-            className={`hover:text-orange-400 transition-colors text-sm lg:text-base ${
-              isActive("/contact") ? "text-orange-400" : ""
-            }`}
-          >
-            Contact
-          </button>
-
-          <button
-            onClick={() => handleNav("/services")}
-            className="bg-orange-500 px-4 py-1.5 lg:px-5 lg:py-2 rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm lg:text-base"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
           >
             Login / Register
           </button>
         </nav>
 
-        {/* MOBILE MENU BUTTON - larger tap area */}
+        {/* MOBILE BUTTON */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden text-2xl sm:text-3xl p-2 -mr-2"
-          aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+          className="md:hidden text-2xl text-gray-800"
         >
           {mobileMenuOpen ? "✕" : "☰"}
         </button>
       </div>
 
-      {/* MOBILE MENU - with improved touch sizing */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="bg-[#1e3a5f] md:hidden overflow-hidden shadow-lg"
-          >
-            <div className="flex flex-col gap-2 p-4 pt-2">
-              <button
-                onClick={() => handleNav("/")}
-                className={`text-left py-3 px-4 rounded-lg text-base ${
-                  isActive("/")
-                    ? "bg-orange-500/20 text-orange-400"
-                    : "hover:bg-white/10"
-                }`}
-              >
-                Home
-              </button>
+      {/* MOBILE MENU */}
+      {mobileMenuOpen && (
+        <div className="bg-white md:hidden shadow-md border-t">
+          <div className="flex flex-col gap-2 p-4">
+            {["/", "/services", "/about", "/contact"].map((path, i) => {
+              const names = ["Home", "Modules", "About", "Contact"];
+              return (
+                <button
+                  key={i}
+                  onClick={() => handleNav(path)}
+                  className={`text-left py-2 px-3 rounded ${
+                    isActive(path)
+                      ? "bg-blue-100 text-blue-600"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  {names[i]}
+                </button>
+              );
+            })}
 
-              <button
-                onClick={() => handleNav("/services")}
-                className={`text-left py-3 px-4 rounded-lg text-base ${
-                  isActive("/services")
-                    ? "bg-orange-500/20 text-orange-400"
-                    : "hover:bg-white/10"
-                }`}
-              >
-                Modules
-              </button>
-
-              <button
-                onClick={() => handleNav("/about")}
-                className={`text-left py-3 px-4 rounded-lg text-base ${
-                  isActive("/about")
-                    ? "bg-orange-500/20 text-orange-400"
-                    : "hover:bg-white/10"
-                }`}
-              >
-                About
-              </button>
-
-              <button
-                onClick={() => handleNav("/contact")}
-                className={`text-left py-3 px-4 rounded-lg text-base ${
-                  isActive("/contact")
-                    ? "bg-orange-500/20 text-orange-400"
-                    : "hover:bg-white/10"
-                }`}
-              >
-                Contact
-              </button>
-
-              <button
-                onClick={() => handleNav("/services")}
-                className="bg-orange-500 text-white py-3 px-4 rounded-lg font-semibold mt-2 text-base"
-              >
-                Login / Register
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.header>
+            <button
+              onClick={() => handleNav("/services")}
+              className="bg-blue-600 text-white py-2 px-3 rounded mt-2"
+            >
+              Login / Register
+            </button>
+          </div>
+        </div>
+      )}
+    </header>
   );
 };
 

@@ -1,124 +1,121 @@
 import React from 'react';
-import { Link } from 'react-router-dom'; // if using React Router; otherwise replace with <a>
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gradient-to-br from-[#1a2a3a] to-[#0f1a24] text-gray-400 pt-12 pb-6 px-4">
+    <footer className="bg-white text-gray-600 pt-14 pb-6 px-4 border-t">
       <div className="container mx-auto max-w-6xl">
-        {/* Responsive grid: 1 column on mobile, 2 on small/medium, 4 on large screens */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
 
-          {/* Logo & Mission */}
+        {/* TOP GRID */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-10">
+
+          {/* LOGO + ABOUT */}
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#ff8c42] to-[#ff6b22] rounded-xl flex items-center justify-center text-white font-bold shadow-lg shrink-0">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-11 h-11 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold shadow-md">
                 🇮🇳
               </div>
               <div>
-                <span className="text-white font-semibold text-base sm:text-lg">
+                <h2 className="text-gray-900 font-semibold text-lg">
                   SAMRADDH BHARAT
-                </span>
-                <p className="text-xs text-gray-400">Foundation · Digital India</p>
+                </h2>
+                <p className="text-xs text-gray-500">
+                  Digital India Initiative
+                </p>
               </div>
             </div>
-            <p className="text-sm text-gray-400 mb-4 leading-relaxed">
-              Empowering citizens through technology-driven governance and transparent service delivery.
+
+            <p className="text-sm leading-relaxed text-gray-600">
+              Empowering citizens through transparent digital services and smart governance solutions.
             </p>
-            <p className="text-xs text-gray-500">Government of India Initiative</p>
           </div>
 
-          {/* Quick Links */}
+          {/* LINKS */}
           <div>
-            <h3 className="text-white font-semibold text-lg mb-4">Quick Links</h3>
-            <ul className="space-y-2 text-sm">
+            <h3 className="text-gray-900 font-semibold mb-4">Quick Links</h3>
+            <ul className="space-y-3 text-sm">
               {[
                 { name: 'Home', path: '/' },
-                { name: 'About Us', path: '/about' },
+                { name: 'About', path: '/about' },
                 { name: 'Services', path: '/services' },
-                { name: 'Student Dashboard', path: '/education' },
-                { name: 'News', path: '/news' },
-              ].map((link, idx) => (
-                <li key={idx}>
+                { name: 'Dashboard', path: '/education' },
+              ].map((link, i) => (
+                <li key={i}>
                   <Link
                     to={link.path}
-                    className="hover:text-white transition-colors duration-200 flex items-center gap-2 py-1"
+                    className="hover:text-blue-600 hover:translate-x-1 transition-all flex items-center gap-2"
                   >
-                    <span className="text-[#ff8c42]">›</span> {link.name}
+                    <span className="text-blue-600">›</span>
+                    {link.name}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Policies & Legal (fixed duplicate heading) */}
+          {/* POLICIES */}
           <div>
-            <h3 className="text-white font-semibold text-lg mb-4">Policies & Legal</h3>
-            <ul className="space-y-2 text-sm">
+            <h3 className="text-gray-900 font-semibold mb-4">Legal</h3>
+            <ul className="space-y-3 text-sm">
               {[
+                { name: 'Privacy Policy', path: '/privacy' },
                 { name: 'Refund Policy', path: '/refund' },
                 { name: 'Disclaimer', path: '/disclaimer' },
-                { name: 'Privacy Policy', path: '/privacy' },
                 { name: 'FAQ', path: '/faq' },
-              ].map((link, idx) => (
-                <li key={idx}>
+              ].map((link, i) => (
+                <li key={i}>
                   <Link
                     to={link.path}
-                    className="hover:text-white transition-colors duration-200 flex items-center gap-2 py-1"
+                    className="hover:text-blue-600 hover:translate-x-1 transition-all flex items-center gap-2"
                   >
-                    <span className="text-[#ff8c42]">›</span> {link.name}
+                    <span className="text-blue-600">›</span>
+                    {link.name}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Contact & Social */}
+          {/* CONTACT */}
           <div>
-            <h3 className="text-white font-semibold text-lg mb-4">Get in Touch</h3>
+            <h3 className="text-gray-900 font-semibold mb-4">Contact</h3>
+
             <div className="space-y-3 text-sm">
-              <div className="flex items-center gap-3 flex-wrap">
-                <span className="text-[#ff8c42]">📞</span>
-                <a href="tel:18001234567" className="hover:text-white break-all">
-                  1800-123-4567 (Toll Free)
-                </a>
-              </div>
-              <div className="flex items-center gap-3 flex-wrap">
-                <span className="text-[#ff8c42]">✉️</span>
-                <a href="mailto:support@samraddhbharat.gov.in" className="hover:text-white break-all">
-                  support@samraddhbharat.gov.in
-                </a>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-[#ff8c42] shrink-0">📍</span>
-                <span className="text-sm">
-                  Samraddh Bharat Foundation,<br />New Delhi - 110001, India
-                </span>
-              </div>
+              <p className="flex items-center gap-2">
+                📞 <span className="hover:text-blue-600">1800-123-4567</span>
+              </p>
+
+              <p className="flex items-center gap-2 break-all">
+                ✉️ <span className="hover:text-blue-600">support@samraddhbharat.gov.in</span>
+              </p>
+
+              <p className="flex items-start gap-2">
+                📍 New Delhi, India
+              </p>
             </div>
 
-            {/* Social Icons - wrap on small screens */}
-            <div className="mt-4 flex flex-wrap gap-3">
-              {['📘', '🐦', '📷', '🔗'].map((icon, idx) => (
-                <a
-                  key={idx}
-                  href="#"
-                  className="w-9 h-9 rounded-full bg-gray-700 hover:bg-[#ff8c42] flex items-center justify-center text-white transition-colors duration-200"
-                  aria-label={`Social media link ${idx + 1}`}
+            {/* SOCIAL */}
+            <div className="mt-5 flex gap-3">
+              {['📘', '🐦', '📷', '🔗'].map((icon, i) => (
+                <div
+                  key={i}
+                  className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-blue-600 hover:text-white cursor-pointer transition-all"
                 >
                   {icon}
-                </a>
+                </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar - fully responsive */}
-        <div className="border-t border-gray-700 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-center">
-          <p>© {currentYear} Samraddh Bharat Foundation. All rights reserved.</p>
-          <p className="text-gray-500">A Digital India Initiative</p>
+        {/* BOTTOM */}
+        <div className="border-t pt-5 flex flex-col sm:flex-row justify-between items-center gap-3 text-sm text-gray-500 text-center">
+          <p>© {currentYear} Samraddh Bharat Foundation</p>
+          <p className="text-xs sm:text-sm">Built with ❤️ in India</p>
         </div>
+
       </div>
     </footer>
   );
