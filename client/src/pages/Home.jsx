@@ -98,7 +98,7 @@ const StatsBar = React.memo(() => (
     viewport={{ once: true }}
   >
     <div className="container mx-auto px-4">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center font-bold text-white">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center font-bold text-black">
         <div><p className="text-xs font-semibold">LIVE USERS</p><p className="text-sm">2,34,567+</p></div>
         <div><p className="text-xs font-semibold">TODAY'S SERVICES</p><p className="text-sm">1,23,456</p></div>
         <div><p className="text-xs font-semibold">SATISFACTION</p><p className="text-sm">98.5%</p></div>
@@ -190,22 +190,22 @@ const Home = () => {
         {/* Indian Village Background Image Overlay */}
         <div className="absolute inset-0 bg-black/40 z-0" />
         <div
-  className="absolute inset-0 z-0"
-  
-/>
-<div className="absolute inset-0 z-0">
-  <div
-    className="absolute inset-0"
-    style={{
-      backgroundImage: "url('https://imgs.search.brave.com/BTRpm3WXCOtqvSfIx2IXb7vtC08YHVmp8480kyZ6BqY/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvMTIw/MDg3MDExOS9waG90/by9pbmRpYW4tdHJp/YmFsLXZpbGxhZ2Ut/YXQtYm9scHVyLXdl/c3QtYmVuZ2FsLWlu/ZGlhLXdpdGgtdmll/dy1vZi1tdWQtaHV0/LWFuZC11bnBhdmVk/LXZpbGxhZ2UuanBn/P3M9NjEyeDYxMiZ3/PTAmaz0yMCZjPXZa/YUo4MHpMbWI1aUQ3/dVN3dks1YU9rdFNy/SWJYbm1xdHlKalg5/cEFpVWs9')",
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      backgroundRepeat: "no-repeat",
-    }}
-  />
-  <div className="absolute inset-0 bg-black/40" />
-</div>
-      
+          className="absolute inset-0 z-0"
+
+        />
+        <div className="absolute inset-0 z-0">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: "url('https://imgs.search.brave.com/BTRpm3WXCOtqvSfIx2IXb7vtC08YHVmp8480kyZ6BqY/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvMTIw/MDg3MDExOS9waG90/by9pbmRpYW4tdHJp/YmFsLXZpbGxhZ2Ut/YXQtYm9scHVyLXdl/c3QtYmVuZ2FsLWlu/ZGlhLXdpdGgtdmll/dy1vZi1tdWQtaHV0/LWFuZC11bnBhdmVk/LXZpbGxhZ2UuanBn/P3M9NjEyeDYxMiZ3/PTAmaz0yMCZjPXZa/YUo4MHpMbWI1aUQ3/dVN3dks1YU9rdFNy/SWJYbm1xdHlKalg5/cEFpVWs9')",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+            }}
+          />
+          <div className="absolute inset-0 bg-black/40" />
+        </div>
+
 
         {/* Hero tricolor stripes */}
         <div className="absolute top-0 left-0 w-full h-2 flex z-10">

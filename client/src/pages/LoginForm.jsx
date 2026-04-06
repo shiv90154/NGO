@@ -1,21 +1,18 @@
-import { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import { useAuth } from "../contexts/AuthContext";
 
-const api = import.meta.env.VITE_API_URL;
-
 const Login = () => {
-  const { setUser, login } = useAuth(); // ✅ move here
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState({});
-  const [generalError, setGeneralError] = useState('');
-
-  const navigate = useNavigate();
+  const [generalError, setGeneralError] = useState("");
 
   const validate = () => {
     let err = {};
@@ -27,7 +24,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setGeneralError('');
+    setGeneralError("");
 
     if (!validate()) return;
 
@@ -40,141 +37,123 @@ const Login = () => {
         setGeneralError(res.error);
         return;
       }
-      navigate('/services');
-
+      navigate("/services");
     } catch (err) {
-      console.log(err.response); // ✅ debug
-      setGeneralError(err.response?.data?.message || 'Login failed');
+      console.log(err.response);
+      setGeneralError(err.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4">
-      <div className="max-w-md mx-auto">
+    <div className="fixed inset-0 overflow-hidden flex items-center justify-center bg-gray-50">
+      {/* Floating soft background glow */}
+
+      {/* CARD - Glassmorphism */}
+      <div className="relative w-full max-w-sm bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl rounded-2xl p-6">
 
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-gray-800 mb-3">
-            Welcome <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Back</span>
-          </h1>
-          <p className="text-gray-500 text-lg">Sign in to your account</p>
+        <div className="text-center mb-5">
+          <span className="text-2xl">🔐</span>
+          <h1 className="text-2xl font-bold text-gray-800">Welcome Back</h1>
+          <p className="text-sm text-gray-500">Login to continue your journey</p>
         </div>
 
-        {/* Login Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+        {/* General Error */}
+        {generalError && (
+          <div className="mb-3 text-sm text-red-600 bg-red-50 p-2.5 rounded-lg">
+            {generalError}
+          </div>
+        )}
 
-          <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-            User Login
-          </h2>
+        {/* FORM */}
+        <form onSubmit={handleSubmit} className="space-y-3">
 
-          {/* General Error */}
-          {generalError && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
-              {generalError}
+          {/* Email */}
+          <div>
+            <label className="text-xs text-gray-500">Email</label>
+            <div className="relative mt-1">
+              <input
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (error.email) setError({ ...error, email: "" });
+                }}
+                className={`w-full p-3 rounded-lg border focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none transition pl-10 ${error.email ? "border-red-400" : "border-gray-200"
+                  }`}
+              />
+              <FaEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
             </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-
-            {/* Email */}
-            <div>
-              <label className="block text-gray-700 text-sm font-semibold mb-2">
-                <FaEnvelope className="inline mr-2 text-blue-500" /> Email Address
-              </label>
-              <div className="relative">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (error.email) setError({ ...error, email: '' });
-                  }}
-                  className={`w-full px-4 py-3 bg-gray-50 border rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition pl-11 ${error.email ? 'border-red-400' : 'border-gray-200'}`}
-                  placeholder="you@example.com"
-                />
-                <FaEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              </div>
-              {error.email && <p className="text-red-500 text-xs mt-1">{error.email}</p>}
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="block text-gray-700 text-sm font-semibold mb-2">
-                <FaLock className="inline mr-2 text-blue-500" /> Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (error.password) setError({ ...error, password: '' });
-                  }}
-                  className={`w-full px-4 py-3 bg-gray-50 border rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition pl-11 pr-11 ${error.password ? 'border-red-400' : 'border-gray-200'}`}
-                  placeholder="Enter your password"
-                />
-                <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
-                </button>
-              </div>
-              {error.password && <p className="text-red-500 text-xs mt-1">{error.password}</p>}
-            </div>
-
-            {/* Forgot Password Link */}
-            <div className="text-right">
-              <a href="/forgot-password" className="text-sm text-blue-500 hover:text-blue-600 transition">
-                Forgot Password?
-              </a>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 rounded-xl transition duration-200 disabled:opacity-50 shadow-md"
-            >
-              {loading ? 'Processing...' : 'Login'}
-            </button>
-          </form>
-
-          {/* Divider */}
-          <div className="flex items-center my-6">
-            <div className="flex-grow h-px bg-gray-200"></div>
-            <span className="px-3 text-gray-400 text-sm">OR</span>
-            <div className="flex-grow h-px bg-gray-200"></div>
+            {error.email && <p className="text-xs text-red-500 mt-1">{error.email}</p>}
           </div>
 
-          {/* Register Link */}
-          <p className="text-center text-gray-600">
-            Don't have an account?{' '}
-            <a href="/register" className="text-blue-500 hover:text-blue-600 font-medium underline transition">
-              Create Account
-            </a>
-          </p>
+          {/* Password */}
+          <div>
+            <label className="text-xs text-gray-500">Password</label>
+            <div className="relative mt-1">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (error.password) setError({ ...error, password: "" });
+                }}
+                className={`w-full p-3 rounded-lg border focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none transition pl-10 pr-10 ${error.password ? "border-red-400" : "border-gray-200"
+                  }`}
+              />
+              <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
+              </button>
+            </div>
+            {error.password && <p className="text-xs text-red-500 mt-1">{error.password}</p>}
+          </div>
 
-          {/* Back to Home */}
-          <div className="mt-6 text-center">
-            <a href="/" className="text-gray-400 hover:text-gray-500 text-sm flex items-center justify-center gap-2 transition">
-              <FaArrowLeft /> Back to Home
-            </a>
+          {/* Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full mt-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-2.5 rounded-lg font-medium shadow-md hover:shadow-lg hover:scale-[1.01] transition disabled:opacity-50"
+          >
+            {loading ? (
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Signing in...</span>
+              </div>
+            ) : (
+              "Login"
+            )}
+          </button>
+        </form>
+
+        {/* Links */}
+        <div className="text-center mt-5 text-sm">
+          <Link to="/register" className="text-indigo-600 hover:underline">
+            Create new account
+          </Link>
+
+          <div className="mt-2">
+            <Link to="/forgot-password" className="text-gray-500 text-xs hover:underline">
+              Forgot Password?
+            </Link>
+          </div>
+
+          <div className="mt-2">
+            <Link to="/" className="text-gray-500 text-xs hover:underline">
+              Back to home
+            </Link>
           </div>
         </div>
-
-        {/* Footer */}
-        <footer className="text-center mt-8">
-          <p className="text-gray-400 text-sm">
-            © 2026 Government Portal. All rights reserved.
-          </p>
-        </footer>
       </div>
-    </div>
+    </div >
   );
 };
 

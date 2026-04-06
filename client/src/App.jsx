@@ -24,7 +24,6 @@ import ITDashboard from "./modules/it/pages/Dashboard";
 import FinanceRoutes from "./modules/finance/routes/finance.routes";
 import ProtectedRoute from "./components/protectedRoute";
 
-import LoginPage from "./pages/LoginPage";
 
 function App() {
   return (
@@ -46,7 +45,6 @@ function App() {
         <Route path="/disclamier" element={<Disclaimer />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/faq" element={<Faq />} />
-         <Route path="/loginpage" element={<LoginPage />} />
 
 
         {/* Module dashboard routes (standalone) */}
@@ -55,7 +53,7 @@ function App() {
         <Route path="/healthcare/dashboard" element={<HealthcareDashboard />} />
         <Route path="/news/dashboard" element={<NewsDashboard />} />
         <Route path="/it/dashboard" element={<ITDashboard />} />
-      
+
 
 
         {/* Finance module routes (includes /finance/dashboard, /finance/wallet, etc.) */}
