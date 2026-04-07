@@ -1,5 +1,6 @@
 import { Search, Plus, BookOpen, Clock, Users, ChevronRight } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom"; // ← import Link
 
 export default function Courses() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -103,9 +104,13 @@ export default function Courses() {
                 </div>
               </div>
 
-              <button className="mt-4 w-full py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition flex items-center justify-center gap-1">
+              {/* Link to ViewCourse */}
+              <Link
+                to={`/education/courses/${course.id}`}
+                className="mt-4 w-full py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition flex items-center justify-center gap-1"
+              >
                 Continue <ChevronRight size={16} />
-              </button>
+              </Link>
             </div>
           </div>
         ))}

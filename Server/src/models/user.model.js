@@ -1,16 +1,24 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
+const roleLevelMap = {
+  SUPER_ADMIN: 0,
+  ADDITIONAL_DIRECTOR: 1,
+  STATE_OFFICER: 2,
+  DISTRICT_MANAGER: 3,
+  DISTRICT_PRESIDENT: 4,
+  FIELD_OFFICER: 5,
+  BLOCK_OFFICER: 6,
+  VILLAGE_OFFICER: 7,
+  DOCTOR: 8,
+  TEACHER: 8,
+  AGENT: 8,
+  USER: 9,
+};
+
 const userSchema = new mongoose.Schema(
   {
-    // ======================
-    // BASIC INFO
-    // ======================
-    fullName: {
-      type: String,
-      required: [true, 'Full name is required'],
-      trim: true,
-    },
+    fullName: { type: String, required: [true, 'Full name is required'], trim: true },
     email: {
       type: String,
       required: [true, 'Email is required'],
@@ -30,10 +38,6 @@ const userSchema = new mongoose.Schema(
       required: [true, 'Password is required'],
       minlength: [6, 'Password must be at least 6 characters'],
     },
-
-    // ======================
-    // USER ROLE (Hierarchy)
-    // ======================
     role: {
       type: String,
       enum: [
@@ -52,76 +56,23 @@ const userSchema = new mongoose.Schema(
       ],
       default: 'USER',
     },
-
-    // ======================
-    // MODULE ACCESS
-    // ======================
     modules: {
       type: [String],
       enum: ['EDUCATION', 'AGRICULTURE', 'FINANCE', 'HEALTHCARE', 'SOCIAL', 'IT'],
       default: [],
     },
-
-    // ======================
-    // OFFICIAL HIERARCHY
-    // ======================
-    reportsTo: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      default: null,
-    },
-    hierarchyLevel: {
-      type: Number,
-      default: 0,
-      min: 0,
-    },
-
-    // ======================
-    // MLM / FRANCHISE TREE
-    // ======================
-    sponsorId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      default: null,
-    },
-    referralCode: {
-      type: String,
-      unique: true,
-      sparse: true,
-    },
-    mlmLevel: {
-      type: Number,
-      default: 0,
-    },
-    leftChild: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      default: null,
-    },
-    rightChild: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      default: null,
-    },
-    teamSize: {
-      type: Number,
-      default: 0,
-    },
-
-    // ======================
-    // PERSONAL DETAILS
-    // ======================
+    reportsTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    hierarchyLevel: { type: Number, default: 0, min: 0 },
+    sponsorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    referralCode: { type: String, unique: true, sparse: true },
+    mlmLevel: { type: Number, default: 0 },
+    leftChild: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    rightChild: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    teamSize: { type: Number, default: 0 },
     fatherName: { type: String, trim: true },
     motherName: { type: String, trim: true },
     dob: Date,
-    gender: {
-      type: String,
-      enum: ['male', 'female', 'other'],
-    },
-
-    // ======================
-    // KYC / DOCUMENTS (FIXED)
-    // ======================
+    gender: { type: String, enum: ['male', 'female', 'other'] },
     aadhaarNumber: {
       type: String,
       match: [/^\d{12}$/, 'Aadhaar must be 12 digits'],
@@ -141,29 +92,14 @@ const userSchema = new mongoose.Schema(
     },
     aadhaarImage: String,
     panImage: String,
-
-    // ======================
-    // ADDRESS
-    // ======================
     state: { type: String, trim: true },
     district: { type: String, trim: true },
     block: { type: String, trim: true },
     village: { type: String, trim: true },
-    pincode: {
-      type: String,
-      match: [/^\d{6}$/, 'Pincode must be 6 digits'],
-    },
+    pincode: { type: String, match: [/^\d{6}$/, 'Pincode must be 6 digits'] },
     fullAddress: { type: String, trim: true },
-
-    // ======================
-    // PROFILE
-    // ======================
     profileImage: String,
     signature: String,
-
-    // ======================
-    // EDUCATION MODULE
-    // ======================
     teacherProfile: {
       specialization: { type: String, trim: true },
       qualifications: [String],
@@ -178,10 +114,6 @@ const userSchema = new mongoose.Schema(
         enrolledAt: { type: Date, default: Date.now },
       },
     ],
-
-    // ======================
-    // HEALTHCARE MODULE
-    // ======================
     doctorProfile: {
       specialization: { type: String, trim: true },
       experienceYears: { type: Number, min: 0, default: 0 },
@@ -191,29 +123,14 @@ const userSchema = new mongoose.Schema(
     },
     patients: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     appointments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Appointment' }],
-
-    // ======================
-    // AGRICULTURE MODULE
-    // ======================
     farmerProfile: {
       landSize: { type: Number, min: 0, default: 0 },
       crops: [String],
       farmingType: { type: String, enum: ['organic', 'conventional', 'mixed'], default: 'conventional' },
       isContractFarmer: { type: Boolean, default: false },
     },
-
-    // ======================
-    // FINANCE MODULE
-    // ======================
-    walletBalance: {
-      type: Number,
-      default: 0,
-      min: 0,
-    },
-    totalEarnings: {
-      type: Number,
-      default: 0,
-    },
+    walletBalance: { type: Number, default: 0, min: 0 },
+    totalEarnings: { type: Number, default: 0 },
     bankAccount: {
       accountNumber: { type: String, trim: true },
       ifsc: { type: String, trim: true },
@@ -221,57 +138,26 @@ const userSchema = new mongoose.Schema(
       accountHolderName: { type: String, trim: true },
     },
     transactions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Transaction' }],
-
-    // ======================
-    // AGENT / MLM SPECIFIC
-    // ======================
-    commissionRate: {
-      type: Number,
-      default: 0,
-      min: 0,
-      max: 100,
-    },
-    totalCommissionEarned: {
-      type: Number,
-      default: 0,
-    },
-
-    // ======================
-    // OTP VERIFICATION
-    // ======================
+    commissionRate: { type: Number, default: 0, min: 0, max: 100 },
+    totalCommissionEarned: { type: Number, default: 0 },
     otp: String,
     otpExpire: Date,
-    isVerified: {
-      type: Boolean,
-      default: false,
+    isVerified: { type: Boolean, default: false },
+    activeSubscription: {
+      plan: { type: String, enum: ['EDUCATION', 'HEALTH', 'AGRICULTURE', 'NONE'], default: 'NONE' },
+      expiresAt: { type: Date, default: null },
+      autoRenew: { type: Boolean, default: false },
     },
-
-    // ======================
-    // STATUS & TRACKING
-    // ======================
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      default: null,
-    },
-    updatedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      default: null,
-    },
+    lastLogin: { type: Date, default: null },
+    lastLoginIP: { type: String, trim: true, default: null },
+    deviceInfo: { type: String, trim: true, default: null },
+    isActive: { type: Boolean, default: true },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-// ======================
-// INDEXES (only non‑unique or composite)
-// ======================
 userSchema.index({ role: 1 });
 userSchema.index({ modules: 1 });
 userSchema.index({ isVerified: 1 });
@@ -280,55 +166,44 @@ userSchema.index({ sponsorId: 1 });
 userSchema.index({ 'doctorProfile.specialization': 1 });
 userSchema.index({ 'teacherProfile.specialization': 1 });
 userSchema.index({ 'farmerProfile.crops': 1 });
+userSchema.index({ 'activeSubscription.plan': 1 });
+userSchema.index({ 'activeSubscription.expiresAt': 1 });
+userSchema.index({ lastLogin: -1 });
 
-// ======================
-// PRE-SAVE HOOK (async, no `next` parameter)
-// ======================
 userSchema.pre('save', async function () {
-  // Hash password if modified
   if (this.isModified('password')) {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
   }
-
-  // Generate referral code if not present
   if (!this.referralCode) {
     this.referralCode = Math.random().toString(36).substring(2, 8).toUpperCase();
   }
-
-  // Auto-set hierarchyLevel based on role (only for new documents)
-  const roleLevelMap = {
-    SUPER_ADMIN: 0,
-    ADDITIONAL_DIRECTOR: 1,
-    STATE_OFFICER: 2,
-    DISTRICT_MANAGER: 3,
-    DISTRICT_PRESIDENT: 4,
-    FIELD_OFFICER: 5,
-    BLOCK_OFFICER: 6,
-    VILLAGE_OFFICER: 7,
-    DOCTOR: 8,
-    TEACHER: 8,
-    AGENT: 8,
-    USER: 9,
-  };
   if (this.isNew && !this.hierarchyLevel) {
     this.hierarchyLevel = roleLevelMap[this.role] || 9;
   }
 });
 
-// ======================
-// METHOD: COMPARE PASSWORD
-// ======================
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// ======================
-// VIRTUAL: Full address as string
-// ======================
+userSchema.methods.isSubscriptionActive = function () {
+  return this.activeSubscription.plan !== 'NONE' && this.activeSubscription.expiresAt > new Date();
+};
+
+userSchema.methods.updateLastLogin = function (ip, device) {
+  this.lastLogin = new Date();
+  this.lastLoginIP = ip || null;
+  this.deviceInfo = device || null;
+  return this.save();
+};
+
 userSchema.virtual('fullAddressString').get(function () {
   const parts = [this.fullAddress, this.village, this.block, this.district, this.state, this.pincode].filter(Boolean);
   return parts.join(', ');
 });
+
+userSchema.set('toJSON', { virtuals: true });
+userSchema.set('toObject', { virtuals: true });
 
 module.exports = mongoose.model('User', userSchema);
