@@ -61,7 +61,7 @@ const Header = () => {
   };
 
   const handleDashboard = () => {
-    navigate("/dashboard");
+    navigate("/services");
     setMobileMenuOpen(false);
   };
 

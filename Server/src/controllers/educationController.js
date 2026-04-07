@@ -7,7 +7,7 @@ const {
   Certificate,
   Note,
   TeacherEarning
-} = require('../models/educationModels');
+} = require('../models/education.model');
 const User = require('../models/user.model');
 
 // ======================

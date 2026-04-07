@@ -6,13 +6,15 @@ const router = express.Router();
 const userRoutes = require('./user.routes.js');
 const studentRoutes = require("./student.routes");
 
-// Education module routes
-const educationRoutes = require('./educationRoutes'); // adjust path as needed
+// Module routes
+const educationRoutes = require('./educationRoutes');
+const agricultureRoutes = require("./agricultureRoutes.js");
 
 // Mount routes
 router.use("/students", studentRoutes);
 router.use('/users', userRoutes);
-router.use('/education', educationRoutes);   // 👈 Education module endpoints
+router.use('/education', educationRoutes);
+router.use('/agriculture', agricultureRoutes);
 
 // Health check endpoint
 router.get('/health', (req, res) => {
