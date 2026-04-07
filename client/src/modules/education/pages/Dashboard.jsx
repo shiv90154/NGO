@@ -1,200 +1,182 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import {
+  BookOpen,
+  CheckCircle,
+  Clock,
+  TrendingUp,
+  Calendar,
+  FileText,
+  Award,
+} from "lucide-react";
 
-const EducationDashboard = () => {
-    // State
-    const [dashboard, setDashboard] = useState({
-        student: null,
-        courses: [],
-        liveSessions: [],
-        resources: []
-    });
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    // Get user data from localStorage
-    const user = JSON.parse(localStorage.getItem("user"));
-    const studentId = user?._id;
-    const API_URL = import.meta.env.VITE_API_URL;
-
-    // Axios instance with base config
-    const api = axios.create({
-        baseURL: API_URL,
-        headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
-    });
-
-    useEffect(() => {
-        if (!studentId) {
-            setError("No student ID found. Please login again.");
-            setLoading(false);
-            return; x
-        }
-
-        const fetchData = async () => {
-            try {
-                // Parallel requests for better performance
-                const [dashboardRes, notesRes] = await Promise.all([
-                    api.get(`/student/dashboard/${studentId}`),
-                    api.get(`/student/notes/${studentId}`)
-                ]);
-
-                setDashboard({
-                    student: {
-                        name: dashboardRes.data.data?.name || user?.name || "Student",
-                        stats: dashboardRes.data.data?.stats || {
-                            courses: 0,
-                            completed: 0,
-                            hours: 0
-                        }
-                    },
-                    courses: dashboardRes.data.data?.courses || [],
-                    liveSessions: (dashboardRes.data.data?.classes || []).map(cls => ({
-                        id: cls._id,
-                        title: cls.title,
-                        time: cls.time,
-                        attended: cls.attended
-                    })),
-                    resources: (notesRes.data.data || []).map(note => ({
-                        id: note._id,
-                        title: note.title,
-                        url: note.fileUrl
-                    }))
-                });
-            } catch (err) {
-                setError(err.response?.data?.message || err.message || "Failed to load data");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
-    }, [studentId]);
-
-    // Sub-components
-    const StatCard = ({ label, value }) => (
-        <div className="bg-white p-5 rounded-xl shadow-sm hover:shadow-md transition border border-gray-100">
-            <h3 className="text-sm text-gray-500 capitalize">{label}</h3>
-            <p className="text-2xl font-bold text-[#ff6b22]">{value}</p>
+// Helper component – defined before usage
+function StatCard({ title, value, change, icon: Icon, color }) {
+  return (
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow duration-200">
+      <div className="flex items-center justify-between mb-3">
+        <div className={`p-2 rounded-xl ${color}`}>
+          <Icon size={20} />
         </div>
-    );
-
-    const ProgressBar = ({ progress = 0 }) => (
-        <div className="w-full bg-gray-200 h-2 rounded-full mb-2">
-            <div
-                className="bg-[#ff8c42] h-2 rounded-full transition-all duration-500"
-                style={{ width: `${progress}%` }}
-            />
-        </div>
-    );
-
-    // Render states
-    if (loading) return <div className="text-center py-10">Loading dashboard...</div>;
-    if (error) return <ErrorView error={error} />;
-    if (!dashboard.student) return <NoDataView />;
-
-    return (
-        <div className="space-y-8 p-4">
-            <h1 className="text-2xl font-bold text-[#1e3a5f]">
-                Welcome back, {dashboard.student.name} 👋
-            </h1>
-
-            {/* Stats Section */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {Object.entries(dashboard.student.stats).map(([key, value]) => (
-                    <StatCard key={key} label={key} value={value} />
-                ))}
-            </div>
-
-            {/* Courses Section */}
-            <Section
-                title="Your Courses"
-                items={dashboard.courses}
-                renderItem={course => (
-                    <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-lg transition border border-gray-100">
-                        <h3 className="font-semibold text-lg text-[#1e3a5f]">{course.title}</h3>
-                        <p className="text-gray-500 text-sm mb-3">{course.instructor || "Unknown Instructor"}</p>
-                        <ProgressBar progress={course.progress} />
-                        <p className="text-sm text-gray-600 mb-4">{course.progress || 0}% Complete</p>
-                        <button className="px-4 py-1 rounded-md bg-[#1e3a5f] text-white hover:bg-[#162d48]">
-                            Continue
-                        </button>
-                    </div>
-                )}
-            />
-
-            {/* Live Sessions Section */}
-            <Section
-                title="Live Sessions"
-                items={dashboard.liveSessions}
-                renderItem={session => (
-                    <div className="bg-white p-5 rounded-xl shadow-sm hover:shadow-lg transition border border-gray-100">
-                        <h3 className="font-semibold text-[#1e3a5f]">{session.title}</h3>
-                        <p className="text-gray-500 text-sm mb-3">{session.time}</p>
-                        <button
-                            className={`px-4 py-1 rounded-md border transition ${session.attended
-                                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                                : "border-[#ff6b22] text-[#ff6b22] hover:bg-[#ff6b22] hover:text-white"
-                                }`}
-                            disabled={session.attended}
-                        >
-                            {session.attended ? "Attended" : "Join Now"}
-                        </button>
-                    </div>
-                )}
-            />
-
-            {/* Resources Section */}
-            <Section
-                title="Learning Resources"
-                items={dashboard.resources}
-                renderItem={resource => (
-                    <div className="bg-white p-5 rounded-xl shadow-sm hover:shadow-lg transition border border-gray-100">
-                        <h3 className="font-semibold mb-3 text-[#1e3a5f]">{resource.title}</h3>
-                        <button
-                            onClick={() => window.open(resource.url, "_blank")}
-                            className="text-[#ff8c42] hover:text-[#ff6b22] hover:underline"
-                        >
-                            View Resource →
-                        </button>
-                    </div>
-                )}
-            />
-        </div>
-    );
-};
-
-// Reusable components
-const Section = ({ title, items, renderItem }) => (
-    <div>
-        <h2 className="text-xl font-semibold mb-4 text-[#1e3a5f]">{title}</h2>
-        {items.length === 0 ? (
-            <p className="text-gray-500">No data available</p>
-        ) : (
-            <div className="grid md:grid-cols-2 gap-6">
-                {items.map((item, index) => (
-                    <React.Fragment key={item.id || index}>
-                        {renderItem(item)}
-                    </React.Fragment>
-                ))}
-            </div>
-        )}
+        <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-medium">
+          {change}
+        </span>
+      </div>
+      <h3 className="text-2xl font-bold text-gray-800">{value}</h3>
+      <p className="text-sm text-gray-500 mt-1">{title}</p>
     </div>
-);
+  );
+}
 
-const ErrorView = ({ error }) => (
-    <div className="text-center text-red-500 py-10">
-        Error: {error}
-        <button
-            onClick={() => window.location.reload()}
-            className="block mx-auto mt-4 px-4 py-2 bg-[#1e3a5f] text-white rounded"
-        >
-            Retry
-        </button>
+export default function Dashboard() {
+  // Mock data for recent activities
+  const recentActivities = [
+    { id: 1, text: "Completed 'React Fundamentals' quiz", time: "2 hours ago", icon: CheckCircle },
+    { id: 2, text: "Submitted essay for 'UX Design Principles'", time: "Yesterday", icon: FileText },
+    { id: 3, text: "Started new course: 'Advanced TypeScript'", time: "2 days ago", icon: BookOpen },
+  ];
+
+  const upcomingTasks = [
+    { id: 1, task: "Midterm Exam - Mathematics", due: "Tomorrow, 10:00 AM", priority: "high" },
+    { id: 2, task: "Group Project Submission", due: "Oct 25, 11:59 PM", priority: "medium" },
+    { id: 3, task: "Code Review Assignment", due: "Oct 28, 6:00 PM", priority: "low" },
+  ];
+
+  const coursesProgress = [
+    { name: "Frontend Development", progress: 75, color: "bg-indigo-600" },
+    { name: "Data Science Basics", progress: 45, color: "bg-emerald-500" },
+    { name: "UX/UI Design", progress: 90, color: "bg-amber-500" },
+  ];
+
+  return (
+    <div className="space-y-8">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          title="Total Courses"
+          value="12"
+          change="+2 this month"
+          icon={BookOpen}
+          color="bg-indigo-50 text-indigo-600"
+        />
+        <StatCard
+          title="Completed"
+          value="8"
+          change="66% completion rate"
+          icon={CheckCircle}
+          color="bg-emerald-50 text-emerald-600"
+        />
+        <StatCard
+          title="Pending Tests"
+          value="3"
+          change="2 this week"
+          icon={Clock}
+          color="bg-amber-50 text-amber-600"
+        />
+        <StatCard
+          title="Study Streak"
+          value="15"
+          change="days 🔥"
+          icon={TrendingUp}
+          color="bg-rose-50 text-rose-600"
+        />
+      </div>
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Course Progress Section */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold text-gray-800">Course Progress</h2>
+              <button className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+                View All
+              </button>
+            </div>
+            <div className="space-y-5">
+              {coursesProgress.map((course) => (
+                <div key={course.name}>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="font-medium text-gray-700">{course.name}</span>
+                    <span className="text-gray-500">{course.progress}%</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-2">
+                    <div
+                      className={`${course.color} h-2 rounded-full transition-all duration-500`}
+                      style={{ width: `${course.progress}%` }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Recent Activity */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Recent Activity</h2>
+            <div className="space-y-4">
+              {recentActivities.map((activity) => (
+                <div key={activity.id} className="flex items-start gap-3">
+                  <div className="p-1.5 bg-gray-50 rounded-lg">
+                    <activity.icon size={16} className="text-gray-500" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-700">{activity.text}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{activity.time}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Sidebar - Upcoming Tasks */}
+        <div className="space-y-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-800">Upcoming Tasks</h2>
+              <Calendar size={18} className="text-gray-400" />
+            </div>
+            <div className="space-y-4">
+              {upcomingTasks.map((task) => (
+                <div key={task.id} className="border-b border-gray-50 pb-3 last:border-0">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-800">{task.task}</p>
+                      <p className="text-xs text-gray-400 mt-1">{task.due}</p>
+                    </div>
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                        task.priority === "high"
+                          ? "bg-red-50 text-red-600"
+                          : task.priority === "medium"
+                          ? "bg-amber-50 text-amber-600"
+                          : "bg-blue-50 text-blue-600"
+                      }`}
+                    >
+                      {task.priority}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button className="mt-5 w-full py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-colors">
+              View All Tasks
+            </button>
+          </div>
+
+          {/* Achievements Card */}
+          <div className="bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl shadow-lg p-6 text-white">
+            <div className="flex items-center gap-3 mb-3">
+              <Award size={24} />
+              <h3 className="font-semibold">Next Milestone</h3>
+            </div>
+            <p className="text-2xl font-bold mb-1">Complete 10 courses</p>
+            <p className="text-indigo-100 text-sm mb-4">2 more to go!</p>
+            <div className="w-full bg-indigo-400/30 rounded-full h-2">
+              <div className="bg-white h-2 rounded-full w-4/5"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-);
-
-const NoDataView = () => (
-    <div className="text-center text-red-500 py-10">No student data available</div>
-);
-
-export default EducationDashboard;
+  );
+}

@@ -2,13 +2,17 @@
 const express = require('express');
 const router = express.Router();
 
-// Import only the routes that actually exist
+// Existing routes
 const userRoutes = require('./user.routes.js');
 const studentRoutes = require("./student.routes");
-router.use("/students", studentRoutes);
 
-// Mount user routes
+// Education module routes
+const educationRoutes = require('./educationRoutes'); // adjust path as needed
+
+// Mount routes
+router.use("/students", studentRoutes);
 router.use('/users', userRoutes);
+router.use('/education', educationRoutes);   // 👈 Education module endpoints
 
 // Health check endpoint
 router.get('/health', (req, res) => {
@@ -19,13 +23,15 @@ router.get('/health', (req, res) => {
   });
 });
 
-// Optional: root API info
+// Root API info
 router.get('/', (req, res) => {
   res.json({
     name: 'Samraddh Bharat Foundation API',
     version: '1.0.0',
     endpoints: {
       users: '/api/users',
+      students: '/api/students',
+      education: '/api/education',
       health: '/api/health',
     },
   });
