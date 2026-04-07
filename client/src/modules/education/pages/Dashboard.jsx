@@ -27,15 +27,15 @@ const EducationDashboard = () => {
         if (!studentId) {
             setError("No student ID found. Please login again.");
             setLoading(false);
-            return; x
+            return;
         }
 
         const fetchData = async () => {
             try {
                 // Parallel requests for better performance
                 const [dashboardRes, notesRes] = await Promise.all([
-                    api.get(`/student/dashboard/${studentId}`),
-                    api.get(`/student/notes/${studentId}`)
+                    api.get(`/students/dashboard/${studentId}`),
+                    api.get(`/students/notes/${studentId}`)
                 ]);
 
                 setDashboard({

@@ -18,7 +18,7 @@ const throwIfNotFound = (resource, message = 'Not found') => {
 // ======================
 router.get('/dashboard/:studentId', protect, asyncHandler(async (req, res) => {
     const student = await Student.findById(req.params.studentId)
-        .select('learningStats enrolledCourses classAttendances academicRecords.notes')
+        .select('name learningStats enrolledCourses classAttendances academicRecords.notes')
         .populate([
             { path: 'enrolledCourses.courseId' },
             { path: 'classAttendances.classId' },
@@ -29,10 +29,36 @@ router.get('/dashboard/:studentId', protect, asyncHandler(async (req, res) => {
     throwIfNotFound(student, 'Student not found');
 
     res.json({
-        stats: student.learningStats,
-        courses: student.enrolledCourses,
-        classes: student.classAttendances,
-        notes: student.academicRecords.notes
+        success: true,
+        data: {
+            name: student.name,
+
+            // ✅ stats
+            stats: student.learningStats,
+
+            // ✅ flatten courses for frontend
+            courses: student.enrolledCourses.map(c => ({
+                _id: c._id,
+                title: c.courseId?.title,
+                instructor: c.courseId?.instructor,
+                progress: c.progress || 0
+            })),
+
+            // ✅ flatten classes
+            classes: student.classAttendances.map(cls => ({
+                _id: cls._id,
+                title: cls.classId?.title,
+                time: cls.classId?.time,
+                attended: cls.attended
+            })),
+
+            // ✅ notes
+            notes: student.academicRecords.notes.map(note => ({
+                _id: note._id,
+                title: note.title,
+                fileUrl: note.fileUrl
+            }))
+        }
     });
 }));
 
@@ -83,7 +109,10 @@ router.route('/profile/:studentId')
         ).select('-password');
 
         throwIfNotFound(updatedStudent, 'Student not found');
-        res.json(updatedStudent);
+        res.json({
+            success: true,
+            data: updatedStudent
+        });
     }));
 router.post('/courses/enroll', protect, asyncHandler(async (req, res) => {
     const { studentId, courseId } = req.body;

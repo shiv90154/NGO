@@ -400,7 +400,18 @@ const Register = () => {
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="user">User</option>
-                  <option value="admin">Admin</option>
+                  <option value="ADMIN">Admin</option>
+                  <option value="SUPER_ADMIN">Super Admin</option>
+                  <option value="ADDITIONAL_DIRECTOR">Additional Director</option>
+                  <option value="STATE_OFFICER">State Officer</option>
+                  <option value="DISTRICT_MANAGER">District Manager</option>
+                  <option value="DISTRICT_PRESIDENT">District President</option>
+                  <option value="FIELD_OFFICER">Field Officer</option>
+                  <option value="BLOCK_OFFICER">Block Officer</option>
+                  <option value="VILLAGE_OFFICER">Village Officer</option>
+                  <option value="DOCTOR">Doctor</option>
+                  <option value="TEACHER">Teacher</option>
+                  <option value="AGENT">Agent</option>
                 </select>
               </div>
             </div>

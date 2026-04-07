@@ -11,7 +11,7 @@ const EducationRoutes = () => {
   return (
     <Routes>
 
-      <Route path="/" element={<DynamcdicDashboard />}>
+      <Route path="/" element={<DynamicDashboard />}>
 
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
