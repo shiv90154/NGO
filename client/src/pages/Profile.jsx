@@ -61,7 +61,7 @@ const Profile = () => {
       console.error("Fetch profile error:", err);
       if (err.response?.status === 401) {
         localStorage.removeItem("token");
-        navigate("/login/user");
+        navigate("/ogin/uselr");
       } else {
         setError(err.response?.data?.message || "Failed to load profile");
       }
@@ -427,9 +427,8 @@ const Profile = () => {
             <button
               onClick={handleUpdate}
               disabled={loading}
-              className={`px-6 py-2 rounded text-white ${
-                loading ? "bg-gray-400" : "bg-green-500 hover:bg-green-600"
-              }`}
+              className={`px-6 py-2 rounded text-white ${loading ? "bg-gray-400" : "bg-green-500 hover:bg-green-600"
+                }`}
             >
               {loading ? "Saving..." : "Save Changes"}
             </button>

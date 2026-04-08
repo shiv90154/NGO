@@ -50,7 +50,7 @@ const studentSchema = new mongoose.Schema({
         notificationSettings: { courseUpdates: { type: Boolean, default: true }, classReminders: { type: Boolean, default: true }, assignmentDeadlines: { type: Boolean, default: true } },
         learningStyle: { type: String, enum: ['visual', 'auditory', 'kinesthetic', 'mixed'], default: 'mixed' }
     }
-}, { timestamps: true, discriminatorKey: 'role' });
+}, { timestamps: true });
 
 /* ================= INDEXES ================= */
 studentSchema.index({ 'enrolledCourses.courseId': 1 });
