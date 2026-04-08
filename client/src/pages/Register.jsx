@@ -120,7 +120,7 @@ const Register = () => {
     const newErrors = {};
     if (!basicInfo.name) newErrors.name = "Name is required";
     if (!basicInfo.email) newErrors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(basicInfo.email)) newErrors.email = "Email is invalid";
+    else if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(basicInfo.email)) newErrors.email = "Only Gmail addresses are allowed";
     if (!basicInfo.password) newErrors.password = "Password is required";
     else if (basicInfo.password.length < 6) newErrors.password = "Password must be at least 6 characters";
     if (basicInfo.password !== basicInfo.confirmPassword) newErrors.confirmPassword = "Passwords don't match";
