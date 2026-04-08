@@ -144,13 +144,12 @@ export default function Dashboard() {
                       <p className="text-xs text-gray-400 mt-1">{task.due}</p>
                     </div>
                     <span
-                      className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                        task.priority === "high"
+                      className={`text-xs px-2 py-0.5 rounded-full font-medium ${task.priority === "high"
                           ? "bg-red-50 text-red-600"
                           : task.priority === "medium"
-                          ? "bg-amber-50 text-amber-600"
-                          : "bg-blue-50 text-blue-600"
-                      }`}
+                            ? "bg-amber-50 text-amber-600"
+                            : "bg-blue-50 text-blue-600"
+                        }`}
                     >
                       {task.priority}
                     </span>

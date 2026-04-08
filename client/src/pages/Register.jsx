@@ -316,7 +316,18 @@ const Register = () => {
                 <select name="role" value={basic.role} onChange={handleBasic}
                   className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
                   <option value="user">User</option>
-                  <option value="admin">Admin</option>
+                  <option value="ADMIN">Admin</option>
+                  <option value="SUPER_ADMIN">Super Admin</option>
+                  <option value="ADDITIONAL_DIRECTOR">Additional Director</option>
+                  <option value="STATE_OFFICER">State Officer</option>
+                  <option value="DISTRICT_MANAGER">District Manager</option>
+                  <option value="DISTRICT_PRESIDENT">District President</option>
+                  <option value="FIELD_OFFICER">Field Officer</option>
+                  <option value="BLOCK_OFFICER">Block Officer</option>
+                  <option value="VILLAGE_OFFICER">Village Officer</option>
+                  <option value="DOCTOR">Doctor</option>
+                  <option value="TEACHER">Teacher</option>
+                  <option value="AGENT">Agent</option>
                 </select>
               </div>
             </div>

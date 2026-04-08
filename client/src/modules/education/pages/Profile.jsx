@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 const Profile = () => {
-    const studentId = localStorage.getItem("studentId");
+
     const [editMode, setEditMode] = useState(false);
     const [user, setUser] = useState({
         name: "",
@@ -10,7 +10,12 @@ const Profile = () => {
         role: "Student",
         joined: "",
     });
+    useEffect(() => {
+        const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+        setUser(storedUser);
+    }, []);
 
+    const studentId = user?.studentId;
     useEffect(() => {
         const fetchProfile = async () => {
             try {
@@ -37,6 +42,7 @@ const Profile = () => {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
                 },
                 body: JSON.stringify(user),
             });

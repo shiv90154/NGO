@@ -20,7 +20,7 @@ const {
   getTeacherEarnings
 } = require('../controllers/educationController');
 
-const { protect, authorize } = require('../middleware/auth'); // Placeholder middleware
+const { protect, authorize } = require('../middleware/auth.middleware');
 
 // ======================
 // COURSE ROUTES
