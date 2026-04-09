@@ -1,12 +1,7 @@
-// Home.jsx - Three Color Division (Green, White, Orange) | Indian Village & People Theme
-// Changes:
-// 1. Page divided into three distinct color sections: Green (Hero+Stats), White (Mission+Core Modules), Orange (Plans+Initiatives+Franchise)
-// 2. All images replaced with Indian village / rural people related visuals
-// 3. Adjusted text colors for readability on each background
-// 4. Maintained all original functionality and responsiveness
+// Home.jsx - Modern UI with Tricolor Theme (Saffron, White, Green)
+// Indian Village & People Theme | Fully Responsive | No External Animation Libs
 
 import React, { useCallback } from 'react';
-import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -18,57 +13,43 @@ const COLORS = {
   green: '#138808',
   darkGreen: '#0a4a2f',
   darkSaffron: '#8B3A00',
+  lightSaffron: '#FFE5CC',
+  lightGreen: '#E8F5E9',
 };
 
-const ANIMATION_VARIANTS = {
-  fadeInUp: {
-    hidden: { opacity: 0, y: 60 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
-  },
-  staggerContainer: {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
-  },
-  card: (delay = 0) => ({
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { delay, duration: 0.5 } },
-  }),
-};
-
-// Data arrays (unchanged)
 const coreModules = [
-  { icon: '🎓', title: 'Education', desc: 'Online courses, live classes, test series, certificates, and teacher earnings dashboard.', path: '/services/education' },
-  { icon: '🏥', title: 'Healthcare', desc: 'Doctor search, video consultation, health records, prescription & AI disease detection.', path: '/services/healthcare' },
-  { icon: '🌾', title: 'Agriculture', desc: 'Farmer registration, crop management, product selling, AI crop disease detection.', path: '/services/agriculture' },
-  { icon: '💰', title: 'Finance', desc: 'Digital wallet, money transfer, AEPS, bill payments, loans & EMI system.', path: '/services/finance' },
-  { icon: '📺', title: 'News & Media', desc: 'News posting, video editing, live streaming, ads & monetization platform.', path: '/services/media' },
-  { icon: '💼', title: 'CRM & IT', desc: 'Client management, GST billing, project tracking, and team management tools.', path: '/services/crm' },
-  { icon: '🏪', title: 'Village Store', desc: 'Ayurvedic products, agricultural goods, digital services, product exchange system.', path: '/services/store' },
-  { icon: '🤝', title: 'Franchise & MLM', desc: 'Multi-level income distribution, weekly payouts, team hierarchy earnings.', path: '/services/franchise' },
+  { icon: '🎓', title: 'Education', desc: 'Online courses, live classes, test series, certificates, and teacher earnings dashboard.', color: '#FF9933', path: '/services/education' },
+  { icon: '🏥', title: 'Healthcare', desc: 'Doctor search, video consultation, health records, prescription & AI disease detection.', color: '#138808', path: '/services/healthcare' },
+  { icon: '🌾', title: 'Agriculture', desc: 'Farmer registration, crop management, product selling, AI crop disease detection.', color: '#FF9933', path: '/services/agriculture' },
+  { icon: '💰', title: 'Finance', desc: 'Digital wallet, money transfer, AEPS, bill payments, loans & EMI system.', color: '#138808', path: '/services/finance' },
+  { icon: '📺', title: 'News & Media', desc: 'News posting, video editing, live streaming, ads & monetization platform.', color: '#FF9933', path: '/services/media' },
+  { icon: '💼', title: 'CRM & IT', desc: 'Client management, GST billing, project tracking, and team management tools.', color: '#138808', path: '/services/crm' },
+  { icon: '🏪', title: 'Village Store', desc: 'Ayurvedic products, agricultural goods, digital services, product exchange system.', color: '#FF9933', path: '/services/store' },
+  { icon: '🤝', title: 'Franchise & MLM', desc: 'Multi-level income distribution, weekly payouts, team hierarchy earnings.', color: '#138808', path: '/services/franchise' },
 ];
 
 const subscriptionPlans = [
-  { name: 'Education Plan', price: '₹300 - ₹600', features: ['Full course access', 'Live classes', 'Test series', 'Certificates'], cta: '/subscribe/education' },
-  { name: 'Health Plan', price: '₹200 - ₹2200', features: ['Doctor consultations', 'Health records', 'AI diagnostics', 'Medicine delivery'], cta: '/subscribe/health' },
-  { name: 'Agriculture Plan', price: '₹1200+', features: ['Crop advisory', 'Market linkage', 'AI disease detection', 'Contract farming'], cta: '/subscribe/agriculture' },
+  { name: 'Education Plan', price: '₹300 - ₹600', features: ['Full course access', 'Live classes', 'Test series', 'Certificates'], icon: '📚', popular: false },
+  { name: 'Health Plan', price: '₹200 - ₹2200', features: ['Doctor consultations', 'Health records', 'AI diagnostics', 'Medicine delivery'], icon: '🩺', popular: true },
+  { name: 'Agriculture Plan', price: '₹1200+', features: ['Crop advisory', 'Market linkage', 'AI disease detection', 'Contract farming'], icon: '🌾', popular: false },
 ];
 
 const initiatives = [
-  { title: 'Digital Literacy Mission', desc: 'Empowering rural India with digital skills and computer education.', tag: 'Education', cta: '/initiatives/digital-literacy' },
-  { title: 'Ayushman Telehealth', desc: 'Affordable healthcare consultations via video and AI support.', tag: 'Healthcare', cta: '/initiatives/ayushman' },
-  { title: 'Smart Kisan Samriddhi', desc: 'Real-time crop advisories and direct market access for farmers.', tag: 'Agriculture', cta: '/initiatives/smart-kisan' },
-  { title: 'Jan Dhan Fintech', desc: 'Banking, AEPS, and micro-loans for every village citizen.', tag: 'Finance', cta: '/initiatives/jan-dhan' },
-  { title: 'Gramin Media Network', desc: 'Local news, live events, and monetization for content creators.', tag: 'Media', cta: '/initiatives/gramin-media' },
-  { title: 'e-Panchayat ERP', desc: 'GST billing, project tracking, and digital governance for local bodies.', tag: 'CRM & IT', cta: '/initiatives/panchayat-erp' },
+  { title: 'Digital Literacy Mission', desc: 'Empowering rural India with digital skills and computer education.', tag: 'Education', icon: '💻' },
+  { title: 'Ayushman Telehealth', desc: 'Affordable healthcare consultations via video and AI support.', tag: 'Healthcare', icon: '🏥' },
+  { title: 'Smart Kisan Samriddhi', desc: 'Real-time crop advisories and direct market access for farmers.', tag: 'Agriculture', icon: '🚜' },
+  { title: 'Jan Dhan Fintech', desc: 'Banking, AEPS, and micro-loans for every village citizen.', tag: 'Finance', icon: '💰' },
+  { title: 'Gramin Media Network', desc: 'Local news, live events, and monetization for content creators.', tag: 'Media', icon: '📡' },
+  { title: 'e-Panchayat ERP', desc: 'GST billing, project tracking, and digital governance for local bodies.', tag: 'CRM & IT', icon: '🏛️' },
 ];
 
 const testimonials = [
-  { name: 'Ramesh Kumar', role: 'Farmer, Uttar Pradesh', text: 'Samraddh Bharat\'s agriculture module helped me get real-time weather alerts and sell my produce directly. My income has increased by 30%!', rating: 5, avatar: '👨‍🌾' },
-  { name: 'Priya Sharma', role: 'Student, Bihar', text: 'The education plan is a game-changer! I access live classes and study materials for free. The digital literacy mission empowered my entire village.', rating: 5, avatar: '👩‍🎓' },
+  { name: 'Ramesh Kumar', role: 'Farmer, Uttar Pradesh', text: 'The agriculture module helped me get real-time weather alerts and sell my produce directly. My income has increased by 30%!', rating: 5, avatar: '👨‍🌾' },
+  { name: 'Priya Sharma', role: 'Student, Bihar', text: 'Education plan is a game-changer! I access live classes and study materials easily.', rating: 5, avatar: '👩‍🎓' },
   { name: 'Dr. Anil Mehta', role: 'Doctor, Rajasthan', text: 'Ayushman Telehealth allows me to consult patients in remote areas. The platform is intuitive and reliable.', rating: 4, avatar: '👨‍⚕️' },
 ];
 
-// ----------------------------- HELPER COMPONENTS (Optimized) -----------------------------
+// ----------------------------- HELPER COMPONENTS -----------------------------
 const TricolorBar = React.memo(() => (
   <div className="fixed top-0 left-0 w-full h-1.5 flex z-50">
     <div className="w-1/3 h-full" style={{ backgroundColor: COLORS.saffron }} />
@@ -78,94 +59,131 @@ const TricolorBar = React.memo(() => (
 ));
 
 const ScrollIndicator = React.memo(() => (
-  <motion.div
-    className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-    animate={{ y: [0, 10, 0] }}
-    transition={{ repeat: Infinity, duration: 1.5 }}
-  >
+  <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
     <div className="w-6 h-10 border-2 border-white rounded-full flex justify-center">
       <div className="w-1 h-2 bg-white rounded-full mt-2" />
     </div>
-  </motion.div>
+  </div>
 ));
 
-const StatsBar = React.memo(() => (
-  <motion.div
-    className="py-3 bg-white/10 backdrop-blur-sm"
-    initial={{ opacity: 0 }}
-    whileInView={{ opacity: 1 }}
-    transition={{ duration: 0.5 }}
-    viewport={{ once: true }}
-  >
-    <div className="container mx-auto px-4">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center font-bold text-black">
-        <div><p className="text-xs font-semibold">LIVE USERS</p><p className="text-sm">2,34,567+</p></div>
-        <div><p className="text-xs font-semibold">TODAY'S SERVICES</p><p className="text-sm">1,23,456</p></div>
-        <div><p className="text-xs font-semibold">SATISFACTION</p><p className="text-sm">98.5%</p></div>
-        <div><p className="text-xs font-semibold">VILLAGES COVERED</p><p className="text-sm">1,25,000+</p></div>
+const StatsBar = React.memo(() => {
+  const stats = [
+    { label: 'LIVE USERS', value: '2,34,567+', icon: '👥' },
+    { label: 'TODAY\'S SERVICES', value: '1,23,456', icon: '⚡' },
+    { label: 'SATISFACTION', value: '98.5%', icon: '😊' },
+    { label: 'VILLAGES COVERED', value: '1,25,000+', icon: '🏘️' },
+  ];
+  return (
+    <div className="relative -mt-12 z-20 container mx-auto px-4">
+      <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-xl p-4 md:p-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {stats.map((stat, idx) => (
+            <div key={idx} className="text-center group">
+              <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">{stat.icon}</div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{stat.label}</p>
+              <p className="text-xl md:text-2xl font-bold" style={{ color: COLORS.darkGreen }}>{stat.value}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
-  </motion.div>
-));
+  );
+});
 
 const SectionHeading = React.memo(({ title, subtitle, light = false }) => (
-  <motion.div variants={ANIMATION_VARIANTS.fadeInUp} className="text-center mb-12">
-    <h2 className={`text-4xl md:text-5xl font-bold mb-4 ${light ? 'text-white' : ''}`} style={!light ? { color: COLORS.darkGreen } : {}}>{title}</h2>
-    {subtitle && <p className={`max-w-2xl mx-auto ${light ? 'text-gray-100' : 'text-gray-600'}`}>{subtitle}</p>}
-    <div className="w-24 h-1 mx-auto mt-4 flex">
-      <div className="w-1/3 h-full" style={{ backgroundColor: COLORS.saffron }} />
-      <div className="w-1/3 h-full" style={{ backgroundColor: COLORS.white }} />
-      <div className="w-1/3 h-full" style={{ backgroundColor: COLORS.green }} />
+  <div className="text-center mb-12">
+    <div className="inline-block mb-4">
+      <div className="flex gap-1">
+        <div className="w-8 h-1 rounded-full" style={{ backgroundColor: COLORS.saffron }} />
+        <div className="w-8 h-1 rounded-full" style={{ backgroundColor: COLORS.white }} />
+        <div className="w-8 h-1 rounded-full" style={{ backgroundColor: COLORS.green }} />
+      </div>
     </div>
-  </motion.div>
+    <h2 className={`text-3xl md:text-5xl font-bold mb-4 ${light ? 'text-white' : 'text-gray-800'}`}>
+      {title}
+    </h2>
+    {subtitle && (
+      <p className={`max-w-2xl mx-auto text-base md:text-lg ${light ? 'text-gray-100' : 'text-gray-600'}`}>
+        {subtitle}
+      </p>
+    )}
+  </div>
 ));
 
-const CoreModuleCard = React.memo(({ icon, title, desc }) => (
-  <motion.div
-    variants={ANIMATION_VARIANTS.card}
-    whileHover={{ scale: 1.03 }}
-    className="bg-white rounded-2xl shadow-lg p-6 text-center hover:shadow-2xl transition-all border-t-4"
-    style={{ borderTopColor: COLORS.saffron }}
-  >
-    <motion.div className="text-5xl mb-4 inline-block" whileHover={{ scale: 1.1, rotate: 5 }}>{icon}</motion.div>
-    <h3 className="text-xl font-semibold mb-2" style={{ color: COLORS.darkSaffron }}>{title}</h3>
-    <p className="text-gray-600 text-sm">{desc}</p>
-  </motion.div>
+const CoreModuleCard = React.memo(({ icon, title, desc, color }) => (
+  <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden">
+    <div className="h-2 w-full" style={{ backgroundColor: color }} />
+    <div className="p-6 text-center">
+      <div className="text-5xl mb-4 inline-block transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+        {icon}
+      </div>
+      <h3 className="text-xl font-bold mb-2" style={{ color: COLORS.darkSaffron }}>{title}</h3>
+      <p className="text-gray-600 text-sm leading-relaxed">{desc}</p>
+      <button className="mt-4 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: color }}>
+        Explore →
+      </button>
+    </div>
+  </div>
 ));
 
-const SubscriptionCard = React.memo(({ name, price, features, cta, onNavigate }) => (
-  <motion.div variants={ANIMATION_VARIANTS.card} whileHover={{ y: -8 }} className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-6 shadow-xl border border-gray-200">
-    <h3 className="text-2xl font-bold mb-2" style={{ color: COLORS.darkSaffron }}>{name}</h3>
-    <div className="text-3xl font-bold my-3" style={{ color: COLORS.saffron }}>{price}</div>
-    <ul className="text-gray-600 space-y-2 my-4">
-      {features.map((feature, i) => <li key={i} className="flex items-center gap-2">✓ {feature}</li>)}
-    </ul>
-    <button onClick={() => onNavigate(cta)} className="w-full text-white py-2 rounded-lg hover:opacity-90 transition-opacity" style={{ background: `linear-gradient(90deg, ${COLORS.green})` }}>
-      Subscribe Now
-    </button>
-  </motion.div>
+const SubscriptionCard = React.memo(({ name, price, features, icon, popular, onNavigate, cta }) => (
+  <div className={`relative bg-white rounded-2xl overflow-hidden shadow-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl ${popular ? 'ring-2 ring-[#FF9933]' : ''}`}>
+    {popular && (
+      <div className="absolute top-0 right-0 bg-[#FF9933] text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
+        POPULAR
+      </div>
+    )}
+    <div className="p-6 text-center">
+      <div className="text-5xl mb-4">{icon}</div>
+      <h3 className="text-2xl font-bold mb-2" style={{ color: COLORS.darkSaffron }}>{name}</h3>
+      <div className="text-3xl font-bold my-3" style={{ color: COLORS.saffron }}>{price}</div>
+      <ul className="text-gray-600 space-y-2 my-4 text-left">
+        {features.map((feature, i) => (
+          <li key={i} className="flex items-center gap-2 text-sm">
+            <span className="text-green-600">✓</span> {feature}
+          </li>
+        ))}
+      </ul>
+      <button
+        onClick={() => onNavigate(cta)}
+        className="w-full py-2.5 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg transform hover:scale-[1.02]"
+        style={{ background: `linear-gradient(135deg, ${COLORS.saffron}, ${COLORS.darkSaffron})`, color: 'white' }}
+      >
+        Subscribe Now
+      </button>
+    </div>
+  </div>
 ));
 
-const InitiativeCard = React.memo(({ title, desc, tag }) => (
-  <motion.div variants={ANIMATION_VARIANTS.fadeInUp} whileHover={{ scale: 1.02 }} className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition border-l-4" style={{ borderLeftColor: COLORS.green }}>
-    <span className="text-xs font-bold uppercase" style={{ color: COLORS.saffron }}>{tag}</span>
-    <h3 className="text-xl font-semibold my-2" style={{ color: COLORS.darkSaffron }}>{title}</h3>
-    <p className="text-gray-600">{desc}</p>
-  </motion.div>
+const InitiativeCard = React.memo(({ title, desc, tag, icon }) => (
+  <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer">
+    <div className="flex items-start gap-4">
+      <div className="text-3xl group-hover:scale-110 transition-transform">{icon}</div>
+      <div className="flex-1">
+        <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ backgroundColor: COLORS.lightSaffron, color: COLORS.darkSaffron }}>
+          {tag}
+        </span>
+        <h3 className="text-lg font-bold mt-2 mb-1" style={{ color: COLORS.darkGreen }}>{title}</h3>
+        <p className="text-gray-600 text-sm">{desc}</p>
+      </div>
+    </div>
+  </div>
 ));
 
 const TestimonialCard = React.memo(({ name, role, text, rating, avatar }) => (
-  <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }} viewport={{ once: true }} className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition">
+  <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-all duration-300">
     <div className="flex items-center gap-3 mb-4">
       <div className="text-4xl">{avatar}</div>
       <div>
-        <div className="font-bold" style={{ color: COLORS.darkGreen }}>{name}</div>
+        <div className="font-bold text-gray-800">{name}</div>
         <div className="text-xs text-gray-500">{role}</div>
       </div>
     </div>
-    <p className="text-gray-600 italic mb-3">"{text}"</p>
-    <div style={{ color: COLORS.saffron }}>{'★'.repeat(rating)}{'☆'.repeat(5 - rating)}</div>
-  </motion.div>
+    <p className="text-gray-600 italic text-sm leading-relaxed">"{text}"</p>
+    <div className="mt-3 flex" style={{ color: COLORS.saffron }}>
+      {'★'.repeat(rating)}{'☆'.repeat(5 - rating)}
+    </div>
+  </div>
 ));
 
 // ----------------------------- MAIN COMPONENT -----------------------------
@@ -181,244 +199,256 @@ const Home = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-white">
       <TricolorBar />
       <Header />
 
-      {/* ========== SECTION 1: GREEN BACKGROUND (Hero + Stats) ========== */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20" style={{ backgroundColor: COLORS.green }}>
-        {/* Indian Village Background Image Overlay */}
-        <div className="absolute inset-0 bg-black/40 z-0" />
-        <div
-          className="absolute inset-0 z-0"
-
-        />
-        <div className="absolute inset-0 z-0">
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: "url('https://imgs.search.brave.com/BTRpm3WXCOtqvSfIx2IXb7vtC08YHVmp8480kyZ6BqY/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvMTIw/MDg3MDExOS9waG90/by9pbmRpYW4tdHJp/YmFsLXZpbGxhZ2Ut/YXQtYm9scHVyLXdl/c3QtYmVuZ2FsLWlu/ZGlhLXdpdGgtdmll/dy1vZi1tdWQtaHV0/LWFuZC11bnBhdmVk/LXZpbGxhZ2UuanBn/P3M9NjEyeDYxMiZ3/PTAmaz0yMCZjPXZa/YUo4MHpMbWI1aUQ3/dVN3dks1YU9rdFNy/SWJYbm1xdHlKalg5/cEFpVWs9')",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              backgroundRepeat: "no-repeat",
-            }}
+      {/* Hero Section - Green Background */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden" style={{ backgroundColor: COLORS.green }}>
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-black/50 z-10" />
+          <img
+            src="https://images.pexels.com/photos/1261728/pexels-photo-1261728.jpeg?auto=compress&cs=tinysrgb&w=1600"
+            alt="Indian village landscape"
+            className="w-full h-full object-cover"
+            loading="eager"
           />
-          <div className="absolute inset-0 bg-black/40" />
         </div>
-
-
-        {/* Hero tricolor stripes */}
-        <div className="absolute top-0 left-0 w-full h-2 flex z-10">
-          <div className="w-1/3 h-full bg-[#FF9933]" />
-          <div className="w-1/3 h-full bg-white" />
-          <div className="w-1/3 h-full bg-[#138808]" />
-        </div>
-
-        <div className="container mx-auto px-4 text-center relative z-10">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-            <span className="text-white font-bold text-lg tracking-wider inline-block px-4 py-1 bg-black/30 backdrop-blur-sm rounded-full mb-4">
-              🇮🇳 GOVERNMENT OF INDIA INITIATIVE 🇮🇳
+        
+        <div className="container mx-auto px-4 text-center relative z-20">
+          <div className="max-w-4xl mx-auto">
+            <span className="inline-block px-4 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-semibold mb-6 tracking-wider">
+              🇮🇳 GOVERNMENT OF INDIA INITIATIVE
             </span>
-            <h1 className="text-5xl md:text-7xl font-bold mt-2 mb-4 text-white drop-shadow-lg">
+            <h1 className="text-5xl md:text-7xl font-bold text-white drop-shadow-lg mb-4">
               Samraddh Bharat
             </h1>
-            <p className="text-3xl md:text-4xl font-light text-white mb-4 drop-shadow">समृद्ध भारत · विकसित भारत</p>
-            <p className="text-xl md:text-2xl mb-4 text-gray-100">Integrated Digital Management System</p>
-            <p className="text-lg mb-8 text-gray-200">Web Portal + Mobile Application | Village to State Level Digital Governance</p>
-          </motion.div>
-
-          <motion.div className="flex gap-4 justify-center flex-col sm:flex-row" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.3 }}>
-            <motion.button whileHover={{ scale: 1.05, boxShadow: '0 20px 25px -5px rgba(11, 11, 11, 0.2)' }} whileTap={{ scale: 0.95 }} onClick={handleExplore} className="px-10 py-4 rounded-xl font-semibold text-lg shadow-2xl text-white" style={{ background: `linear-gradient(90deg, ${COLORS.saffron})`, backgroundSize: '150% auto' }}>
-              Explore Modules
-            </motion.button>
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => handleNavigate('/register')} className="border-2 border-white px-10 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:text-green-800 backdrop-blur-sm transition-all text-white">
-              Get Started
-            </motion.button>
-          </motion.div>
+            <p className="text-2xl md:text-4xl font-light text-white mb-4">समृद्ध भारत · विकसित भारत</p>
+            <p className="text-xl text-gray-100 mb-2">Integrated Digital Management System</p>
+            <p className="text-lg text-gray-200 mb-8">Web Portal + Mobile Application | Village to State Level Digital Governance</p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={handleExplore}
+                className="px-8 py-3 rounded-xl font-semibold text-lg shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 bg-white text-green-700 hover:bg-gray-100"
+              >
+                Explore Modules
+              </button>
+              <button
+                onClick={() => handleNavigate('/register')}
+                className="px-8 py-3 rounded-xl font-semibold text-lg border-2 border-white text-white hover:bg-white hover:text-green-700 transition-all duration-300"
+              >
+                Get Started
+              </button>
+            </div>
+          </div>
         </div>
         <ScrollIndicator />
       </section>
 
-      {/* Stats bar attached to green section */}
+      {/* Stats Bar */}
       <StatsBar />
 
-      {/* ========== SECTION 2: WHITE BACKGROUND (Mission + Core Modules) ========== */}
-      <div className="bg-white">
-        {/* Mission Section */}
-        <motion.section className="py-20 px-4" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={ANIMATION_VARIANTS.fadeInUp}>
-          <div className="container mx-auto max-w-6xl">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ color: COLORS.darkGreen }}>Welcome to Samraddh Bharat Foundation</h2>
-                <div className="w-24 h-1 flex mb-6">
-                  <div className="w-1/3 h-full" style={{ backgroundColor: COLORS.saffron }} />
-                  <div className="w-1/3 h-full" style={{ backgroundColor: COLORS.white }} />
-                  <div className="w-1/3 h-full" style={{ backgroundColor: COLORS.green }} />
-                </div>
-                <p className="text-lg text-gray-600 leading-relaxed">
-                  Samraddh Bharat Foundation is a unified digital ecosystem integrating Education, Healthcare, Agriculture,
-                  Finance, NGO operations, and Media into a single platform. Our mission is to provide seamless, transparent,
-                  and efficient delivery of services from village to state level, ensuring "Sabka Saath, Sabka Vikas, Sabka Vishwas"
-                  through technology-driven governance.
-                </p>
+      {/* Mission Section - White Background */}
+      <section className="py-20 px-4 bg-white">
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="flex gap-1 mb-4">
+                <div className="w-12 h-1 rounded-full" style={{ backgroundColor: COLORS.saffron }} />
+                <div className="w-12 h-1 rounded-full" style={{ backgroundColor: COLORS.green }} />
               </div>
-              <div className="rounded-2xl overflow-hidden shadow-xl">
-                <img
-                  src="https://imgs.search.brave.com/w5tzcyaZm4SW-YO-YPz8cVcuup-Xz8UMYRnxo6_fHfo/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvOTE0/ODc4NTgvcGhvdG8v/aW5kaWFuLWZsb29k/LXZpY3RpbXMtb24t/YS1idWxsb2NrLWNh/cnQtbGVhdmUtdGhl/LWZsb29kLWVmZmVj/dGVkLXRhbG1hcmkt/dmlsbGFnZS1pbi1y/YWljaHVyLmpwZz9z/PTYxMng2MTImdz0w/Jms9MjAmYz1OS2xt/X2xtMF9tWThkVFlD/Ui1keGF4V0EwUWND/TXdkLWF5UHpleG1L/dDVNPQ" // Indian farmer with bullock cart
-                  alt="Indian farmer with bullock cart in village"
-                  className="w-full h-auto object-cover transition-transform duration-500 hover:scale-105"
-                  loading="lazy"
-                />
-              </div>
+              <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ color: COLORS.darkGreen }}>
+                Welcome to Samraddh Bharat Foundation
+              </h2>
+              <p className="text-gray-600 leading-relaxed text-lg">
+                Samraddh Bharat Foundation is a unified digital ecosystem integrating Education, Healthcare, Agriculture,
+                Finance, NGO operations, and Media into a single platform. Our mission is to provide seamless, transparent,
+                and efficient delivery of services from village to state level, ensuring <strong>"Sabka Saath, Sabka Vikas, Sabka Vishwas"</strong>
+                through technology-driven governance.
+              </p>
+            </div>
+            <div className="rounded-2xl overflow-hidden shadow-2xl">
+              <img
+                src="https://images.pexels.com/photos/2284166/pexels-photo-2284166.jpeg?auto=compress&cs=tinysrgb&w=1600"
+                alt="Indian village community"
+                className="w-full h-auto object-cover transition-transform duration-500 hover:scale-105"
+                loading="lazy"
+              />
             </div>
           </div>
-        </motion.section>
+        </div>
+      </section>
 
-        {/* Core Modules Section */}
-        <section id="modules" className="py-20 px-4 bg-gray-50">
-          <div className="container mx-auto">
-            <SectionHeading title="Integrated Core Modules" subtitle="Complete digital ecosystem for governance and citizen services" />
-            <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" variants={ANIMATION_VARIANTS.staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-              {coreModules.map((module, idx) => <CoreModuleCard key={idx} {...module} />)}
-            </motion.div>
+      {/* Core Modules Section */}
+      <section id="modules" className="py-20 px-4 bg-gray-50">
+        <div className="container mx-auto">
+          <SectionHeading 
+            title="Integrated Core Modules" 
+            subtitle="Complete digital ecosystem for governance and citizen services" 
+          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {coreModules.map((module, idx) => (
+              <CoreModuleCard key={idx} {...module} />
+            ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* How It Works Section */}
-        <section className="py-20 px-4 bg-white">
-          <div className="container mx-auto max-w-6xl">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <SectionHeading title="How It Works" subtitle="Simple steps to access government services online" />
-                <div className="space-y-4">
-                  {[
-                    { step: 1, title: 'Register', desc: 'Sign up with your mobile number or Aadhaar', icon: '📝' },
-                    { step: 2, title: 'Choose Service', desc: 'Select from 50+ digital services', icon: '🔍' },
-                    { step: 3, title: 'Get Benefits', desc: 'Receive certificates, payments, or assistance', icon: '🎁' },
-                  ].map((item, idx) => (
-                    <motion.div key={idx} initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.1 }} viewport={{ once: true }} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl shadow-md">
-                      <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl" style={{ backgroundColor: `${COLORS.saffron}20` }}>{item.icon}</div>
-                      <div>
-                        <div className="text-lg font-bold" style={{ color: COLORS.saffron }}>Step {item.step}</div>
-                        <h3 className="text-xl font-semibold" style={{ color: COLORS.darkGreen }}>{item.title}</h3>
-                        <p className="text-gray-600">{item.desc}</p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-              <div className="rounded-2xl overflow-hidden shadow-xl">
-                <img
-                  src="https://images.pexels.com/photos/4100010/pexels-photo-4100010.jpeg?auto=compress&cs=tinysrgb&w=1600" // Indian farmer using smartphone in field
-                  alt="Indian farmer using smartphone in village field"
-                  className="w-full h-auto object-cover transition-transform duration-500 hover:scale-105"
-                  loading="lazy"
-                />
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      {/* ========== SECTION 3: ORANGE BACKGROUND (Subscription + Initiatives + Franchise) ========== */}
-      <div style={{ backgroundColor: COLORS.whileHover }}>
-        {/* Subscription Plans */}
-        <section className="py-20 px-4">
-          <div className="container mx-auto ">
-            <SectionHeading title="Membership & Subscription Plans" subtitle="Affordable plans for every citizen — Education, Health, Agriculture" light={true} />
-            <motion.div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto" variants={ANIMATION_VARIANTS.staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-              {subscriptionPlans.map((plan, idx) => <SubscriptionCard key={idx} {...plan} onNavigate={handleNavigate} />)}
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Initiatives Section */}
-        <section id="initiatives" className="py-20 px-4">
-          <div className="container mx-auto">
-            <SectionHeading title="Flagship Initiatives" subtitle="Transforming India — One initiative at a time" light={true} />
-            <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto" variants={ANIMATION_VARIANTS.staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-              {initiatives.map((item, idx) => <InitiativeCard key={idx} {...item} />)}
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Franchise & MLM Highlight */}
-        <section className="py-16 px-4 text-center bg-white/10 backdrop-blur-sm rounded-t-3xl mx-4 md:mx-8 mb-8">
-          <div className="container mx-auto max-w-4xl">
-            <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} viewport={{ once: true }}>
-              <div className="inline-block p-3 bg-white/30 rounded-full mb-4 text-3xl">🤝</div>
-              <h2 className="text-3xl md:text-4xl font-bold mb-3 text-white drop-shadow">Franchise & MLM System</h2>
-              <p className="text-lg mb-6 font-semibold text-white">Multi-level income distribution · Weekly payouts · Team hierarchy earnings</p>
-              <button onClick={() => handleNavigate('/franchise')} className="bg-[#0a4a2f] text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition">Become a Partner →</button>
-            </motion.div>
-          </div>
-        </section>
-      </div>
-
-      {/* ========== REMAINING SECTIONS (White background for clarity, but maintain Indian images) ========== */}
-      <div className="bg-white">
-        {/* Testimonials */}
-        <section className="py-20 px-4 bg-gray-50">
-          <div className="container mx-auto max-w-5xl">
-            <SectionHeading title="What Citizens Say" />
-            <div className="grid md:grid-cols-3 gap-8">
-              {testimonials.map((t, idx) => <TestimonialCard key={idx} {...t} />)}
-            </div>
-          </div>
-        </section>
-
-        {/* About Section - Rural Development Image */}
-        <section id="about" className="py-20 px-4">
-          <div className="container mx-auto max-w-6xl">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div className="rounded-2xl overflow-hidden shadow-xl order-2 md:order-1">
-                <img
-                  src="https://bl-i.thgim.com/public/incoming/i46u8q/article69889262.ece/alternates/LANDSCAPE_1200/BL17_Rural_digital.jpg" // Indian rural family together
-                  alt="Indian rural family in village"
-                  className="w-full h-auto object-cover transition-transform duration-500 hover:scale-105"
-                  loading="lazy"
-                />
-              </div>
-              <div className="order-1 md:order-2">
-                <h2 className="text-4xl md:text-5xl font-bold mb-8" style={{ color: COLORS.darkGreen }}>About Samraddh Bharat Foundation</h2>
-                <div className="space-y-6">
-                  <div className="bg-gray-50 p-6 rounded-2xl shadow-md border-l-4" style={{ borderLeftColor: COLORS.saffron }}>
-                    <div className="text-4xl mb-2">🎯</div>
-                    <h3 className="text-2xl font-semibold mb-2" style={{ color: COLORS.darkSaffron }}>Our Vision</h3>
-                    <p className="text-gray-600">To create a "Samraddh Bharat" (Prosperous India) where every citizen has equal access to government services, opportunities, and benefits through technology-driven governance.</p>
+      {/* How It Works Section */}
+      <section className="py-20 px-4 bg-white">
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <SectionHeading title="How It Works" subtitle="Simple steps to access government services online" />
+              <div className="space-y-4">
+                {[
+                  { step: 1, title: 'Register', desc: 'Sign up with your mobile number or Aadhaar', icon: '📝', color: COLORS.saffron },
+                  { step: 2, title: 'Choose Service', desc: 'Select from 50+ digital services', icon: '🔍', color: COLORS.green },
+                  { step: 3, title: 'Get Benefits', desc: 'Receive certificates, payments, or assistance', icon: '🎁', color: COLORS.saffron },
+                ].map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-all group">
+                    <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition-transform" style={{ backgroundColor: `${item.color}20` }}>
+                      {item.icon}
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold" style={{ color: item.color }}>Step {item.step}</div>
+                      <h3 className="text-xl font-bold text-gray-800">{item.title}</h3>
+                      <p className="text-gray-600">{item.desc}</p>
+                    </div>
                   </div>
-                  <div className="bg-gray-50 p-6 rounded-2xl shadow-md border-l-4" style={{ borderLeftColor: COLORS.green }}>
-                    <div className="text-4xl mb-2">🚀</div>
-                    <h3 className="text-2xl font-semibold mb-2" style={{ color: COLORS.darkGreen }}>Our Mission</h3>
-                    <p className="text-gray-600">Leveraging digital infrastructure to deliver citizen-centric services, promote transparency, and ensure last-mile delivery of government schemes and foundation programs.</p>
-                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-2xl overflow-hidden shadow-2xl">
+              <img
+                src="https://images.pexels.com/photos/4100010/pexels-photo-4100010.jpeg?auto=compress&cs=tinysrgb&w=1600"
+                alt="Farmer using smartphone"
+                className="w-full h-auto object-cover transition-transform duration-500 hover:scale-105"
+                loading="lazy"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Subscription Plans - Saffron Background */}
+      <section className="py-20 px-4" style={{ backgroundColor: COLORS.saffron }}>
+        <div className="container mx-auto">
+          <SectionHeading 
+            title="Membership & Subscription Plans" 
+            subtitle="Affordable plans for every citizen — Education, Health, Agriculture" 
+            light={true}
+          />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {subscriptionPlans.map((plan, idx) => (
+              <SubscriptionCard key={idx} {...plan} onNavigate={handleNavigate} cta={plan.cta} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Initiatives Section */}
+      <section className="py-20 px-4 bg-white">
+        <div className="container mx-auto">
+          <SectionHeading title="Flagship Initiatives" subtitle="Transforming India — One initiative at a time" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {initiatives.map((item, idx) => (
+              <InitiativeCard key={idx} {...item} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Franchise Highlight */}
+      <section className="py-16 px-4" style={{ backgroundColor: COLORS.lightGreen }}>
+        <div className="container mx-auto max-w-4xl text-center">
+          <div className="bg-white rounded-2xl p-8 shadow-xl">
+            <div className="inline-block p-3 bg-[#FF9933]/10 rounded-full mb-4">
+              <span className="text-4xl">🤝</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3" style={{ color: COLORS.darkGreen }}>Franchise & MLM System</h2>
+            <p className="text-lg text-gray-600 mb-6">Multi-level income distribution · Weekly payouts · Team hierarchy earnings</p>
+            <button
+              onClick={() => handleNavigate('/franchise')}
+              className="px-8 py-3 rounded-xl font-semibold text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              style={{ background: `linear-gradient(135deg, ${COLORS.green}, ${COLORS.darkGreen})` }}
+            >
+              Become a Partner →
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-20 px-4 bg-gray-50">
+        <div className="container mx-auto max-w-5xl">
+          <SectionHeading title="What Citizens Say" subtitle="Real stories from real people" />
+          <div className="grid md:grid-cols-3 gap-6">
+            {testimonials.map((t, idx) => (
+              <TestimonialCard key={idx} {...t} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section className="py-20 px-4 bg-white">
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="order-2 md:order-1 rounded-2xl overflow-hidden shadow-xl">
+              <img
+                src="https://images.pexels.com/photos/2664834/pexels-photo-2664834.jpeg?auto=compress&cs=tinysrgb&w=1600"
+                alt="Indian rural family"
+                className="w-full h-auto object-cover transition-transform duration-500 hover:scale-105"
+                loading="lazy"
+              />
+            </div>
+            <div className="order-1 md:order-2">
+              <h2 className="text-4xl md:text-5xl font-bold mb-8" style={{ color: COLORS.darkGreen }}>About Samraddh Bharat Foundation</h2>
+              <div className="space-y-6">
+                <div className="bg-gray-50 p-6 rounded-2xl shadow-md hover:shadow-lg transition-all border-l-4" style={{ borderLeftColor: COLORS.saffron }}>
+                  <div className="text-4xl mb-2">🎯</div>
+                  <h3 className="text-2xl font-bold mb-2" style={{ color: COLORS.darkSaffron }}>Our Vision</h3>
+                  <p className="text-gray-600">To create a "Samraddh Bharat" (Prosperous India) where every citizen has equal access to government services, opportunities, and benefits through technology-driven governance.</p>
+                </div>
+                <div className="bg-gray-50 p-6 rounded-2xl shadow-md hover:shadow-lg transition-all border-l-4" style={{ borderLeftColor: COLORS.green }}>
+                  <div className="text-4xl mb-2">🚀</div>
+                  <h3 className="text-2xl font-bold mb-2" style={{ color: COLORS.darkGreen }}>Our Mission</h3>
+                  <p className="text-gray-600">Leveraging digital infrastructure to deliver citizen-centric services, promote transparency, and ensure last-mile delivery of government schemes and foundation programs.</p>
                 </div>
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Contact Section */}
-        <section id="contact" className="py-20 px-4 bg-gray-50">
-          <div className="container mx-auto max-w-4xl">
-            <SectionHeading title="Need Assistance?" subtitle="Samraddh Bharat Helpline is available 24/7 to assist you with any government services" />
-            <motion.div className="bg-gradient-to-br from-white to-gray-100 rounded-2xl p-8 shadow-xl" initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }} viewport={{ once: true }}>
-              <div className="grid md:grid-cols-2 gap-6">
-                <a href="tel:18001234567" className="text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all text-center" style={{ background: `linear-gradient(90deg, ${COLORS.saffron}` }}>
-                  📞 Call Helpline: 1800-123-4567
-                </a>
-                <a href="mailto:support@samraddhbharat.gov.in" className="border-2 px-8 py-4 rounded-xl font-semibold text-lg transition-all text-center" style={{ borderColor: COLORS.darkGreen, color: COLORS.darkGreen }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = COLORS.darkGreen; e.currentTarget.style.color = COLORS.white; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = COLORS.darkGreen; }}>
-                  ✉️ Send Email
-                </a>
-              </div>
-              <div className="mt-8 text-center text-gray-500">
-                <p className="font-semibold">Samraddh Bharat Foundation - Government of India Initiative</p>
-                <p>support@samraddhbharat.gov.in</p>
-              </div>
-            </motion.div>
+      {/* Contact Section */}
+      <section className="py-20 px-4 bg-gray-50">
+        <div className="container mx-auto max-w-4xl">
+          <SectionHeading title="Need Assistance?" subtitle="Samraddh Bharat Helpline is available 24/7" />
+          <div className="bg-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all">
+            <div className="grid md:grid-cols-2 gap-6">
+              <a
+                href="tel:18001234567"
+                className="flex items-center justify-center gap-3 bg-[#FF9933] text-white px-6 py-4 rounded-xl font-semibold text-lg hover:bg-[#e68900] transition-all hover:scale-105"
+              >
+                📞 Call Helpline: 1800-123-4567
+              </a>
+              <a
+                href="mailto:support@samraddhbharat.gov.in"
+                className="flex items-center justify-center gap-3 border-2 border-[#138808] text-[#138808] px-6 py-4 rounded-xl font-semibold text-lg hover:bg-[#138808] hover:text-white transition-all hover:scale-105"
+              >
+                ✉️ Send Email
+              </a>
+            </div>
+            <div className="mt-8 text-center text-gray-500">
+              <p className="font-semibold">Samraddh Bharat Foundation - Government of India Initiative</p>
+              <p className="text-sm">support@samraddhbharat.gov.in</p>
+            </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
       <Footer />
     </div>

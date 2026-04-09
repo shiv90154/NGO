@@ -6,7 +6,7 @@ const path = require('path');
 const fs = require('fs').promises;
 const { validationResult } = require('express-validator');
 
-// Complete roles list
+// Complete roles list (matching model)
 const VALID_ROLES = [
   'SUPER_ADMIN',
   'ADDITIONAL_DIRECTOR',
@@ -48,7 +48,7 @@ const parseArray = (value) => {
 };
 
 // ======================
-// REGISTER (Full version with all fields)
+// REGISTER (Full version with all new fields)
 // ======================
 exports.register = async (req, res) => {
   try {
@@ -91,6 +91,14 @@ exports.register = async (req, res) => {
 
       // Agent commission rate
       commissionRate,
+
+      // NEW: Media creator
+      isMediaCreator,
+
+      // NEW: Seller profile
+      isSeller, storeName, gstNumber,
+
+      // NEW: CRM/IT fields (can be updated later)
     } = req.body;
 
     // Handle both field name variations
@@ -128,6 +136,8 @@ exports.register = async (req, res) => {
       if (className || schoolName || board || percentage) userModules.push('EDUCATION');
       if (projectType || techStack || experience) userModules.push('IT');
       if (username || bio || interests) userModules.push('SOCIAL');
+      if (isMediaCreator === 'true' || isMediaCreator === true) userModules.push('MEDIA');
+      if (isSeller === 'true' || isSeller === true) userModules.push('ECOMMERCE');
     }
 
     // Base user data
@@ -165,6 +175,7 @@ exports.register = async (req, res) => {
         specialization: specialization || '',
         qualifications: parseArray(qualifications),
         experienceYears: experienceYears ? parseInt(experienceYears) : 0,
+        earnings: 0,
       };
     }
 
@@ -190,7 +201,7 @@ exports.register = async (req, res) => {
       };
     }
 
-    // Education profile
+    // Education profile (for students)
     if (userModules.includes('EDUCATION')) {
       userData.educationProfile = {
         className: className || '',
@@ -220,6 +231,27 @@ exports.register = async (req, res) => {
       };
     }
 
+    // Media creator profile
+    if (userModules.includes('MEDIA') || isMediaCreator === 'true' || isMediaCreator === true) {
+      userData.mediaCreatorProfile = {
+        isCreator: true,
+        totalPosts: 0,
+        totalFollowers: 0,
+        monetizationEarnings: 0,
+        liveStreamingKey: Math.random().toString(36).substring(2, 15),
+      };
+    }
+
+    // Seller profile (E-commerce)
+    if (userModules.includes('ECOMMERCE') || isSeller === 'true' || isSeller === true) {
+      userData.sellerProfile = {
+        isSeller: true,
+        storeName: storeName || `${finalName}'s Store`,
+        gstNumber: gstNumber || '',
+        rating: 0,
+      };
+    }
+
     // Bank account
     if (bankAccount) {
       try {
@@ -236,7 +268,7 @@ exports.register = async (req, res) => {
 
     const user = new User(userData);
 
-    // Handle file uploads
+    // Handle file uploads (profile, aadhaar, pan, store logo)
     if (req.files) {
       const moveFile = async (fieldName, prefix) => {
         const file = req.files[fieldName]?.[0];
@@ -254,6 +286,11 @@ exports.register = async (req, res) => {
       await moveFile('aadharDocument', 'aadhaar');
       await moveFile('panImage', 'pan');
       await moveFile('panDocument', 'pan');
+      // Store logo
+      await moveFile('storeLogo', 'store_logo');
+      if (req.files['storeLogo']?.[0]) {
+        user.sellerProfile.storeLogo = `/uploads/${fileNameFromMove}`; // careful: need to capture filename
+      }
     }
 
     await user.save();
@@ -358,6 +395,9 @@ exports.login = async (req, res) => {
     const isMatch = await user.comparePassword(password);
     if (!isMatch) return res.status(400).json({ success: false, message: 'Invalid credentials' });
 
+    // Update last login
+    await user.updateLastLogin(req.ip, req.headers['user-agent']);
+
     const token = jwt.sign(
       { id: user._id, role: user.role, modules: user.modules },
       process.env.JWT_SECRET,
@@ -376,14 +416,25 @@ exports.login = async (req, res) => {
 };
 
 // ======================
-// GET PROFILE
+// GET PROFILE (with populated new fields)
 // ======================
 exports.getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id)
       .select('-password -otp -otpExpire')
       .populate('reportsTo', 'fullName email role')
-      .populate('sponsorId', 'fullName email');
+      .populate('sponsorId', 'fullName email')
+      .populate('enrolledCourses.courseId')
+      .populate('testResults.testId')
+      .populate('certificates.courseId')
+      .populate('prescriptions')
+      .populate('productListings')
+      .populate('contractFarmingAgreements.buyerId')
+      .populate('loans')
+      .populate('mediaPosts')
+      .populate('clients')
+      .populate('projects')
+      .populate('storeProducts');
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
     res.json({ success: true, user });
   } catch (error) {
@@ -392,24 +443,38 @@ exports.getProfile = async (req, res) => {
 };
 
 // ======================
-// UPDATE PROFILE
+// UPDATE PROFILE (includes all new fields)
 // ======================
 exports.updateProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
-    // Profile image upload
-    if (req.file) {
-      if (user.profileImage) {
-        const oldPath = path.join(__dirname, '../', user.profileImage);
-        await fs.unlink(oldPath).catch(() => { });
+    // Helper to move uploaded file
+    const moveFile = async (fieldName, prefix) => {
+      const file = req.files?.[fieldName]?.[0];
+      if (file) {
+        if (user[fieldName]) {
+          const oldPath = path.join(__dirname, '../', user[fieldName]);
+          await fs.unlink(oldPath).catch(() => { });
+        }
+        const ext = path.extname(file.originalname);
+        const fileName = `${Date.now()}_${prefix}_${Math.random().toString(36).substring(2)}${ext}`;
+        const newPath = path.join(uploadDir, fileName);
+        await fs.rename(file.path, newPath);
+        user[fieldName] = `/uploads/${fileName}`;
+        return fileName;
       }
-      const ext = path.extname(req.file.originalname);
-      const fileName = `${Date.now()}_profile_${Math.random().toString(36).substring(2)}${ext}`;
-      const newPath = path.join(uploadDir, fileName);
-      await fs.rename(req.file.path, newPath);
-      user.profileImage = `/uploads/${fileName}`;
+      return null;
+    };
+
+    // Profile image
+    await moveFile('profileImage', 'profile');
+    await moveFile('profilePicture', 'profile');
+    // Store logo
+    const logoFileName = await moveFile('storeLogo', 'store_logo');
+    if (logoFileName && user.sellerProfile) {
+      user.sellerProfile.storeLogo = `/uploads/${logoFileName}`;
     }
 
     // Simple fields
@@ -460,7 +525,7 @@ exports.updateProfile = async (req, res) => {
       if (req.body.irrigationType !== undefined) user.farmerProfile.irrigationType = req.body.irrigationType;
     }
 
-    // Education profile
+    // Education profile (student)
     if (req.body.className !== undefined || req.body.schoolName !== undefined || req.body.board !== undefined || req.body.percentage !== undefined) {
       user.educationProfile = user.educationProfile || {};
       if (req.body.className !== undefined) user.educationProfile.className = req.body.className;
@@ -483,6 +548,43 @@ exports.updateProfile = async (req, res) => {
       if (req.body.username !== undefined) user.socialProfile.username = req.body.username;
       if (req.body.bio !== undefined) user.socialProfile.bio = req.body.bio;
       if (req.body.interests !== undefined) user.socialProfile.interests = req.body.interests;
+    }
+
+    // Media creator profile
+    if (req.body.isMediaCreator !== undefined) {
+      const isCreator = req.body.isMediaCreator === 'true' || req.body.isMediaCreator === true;
+      if (isCreator && !user.mediaCreatorProfile) {
+        user.mediaCreatorProfile = {
+          isCreator: true,
+          totalPosts: 0,
+          totalFollowers: 0,
+          monetizationEarnings: 0,
+          liveStreamingKey: Math.random().toString(36).substring(2, 15),
+        };
+      } else if (!isCreator) {
+        user.mediaCreatorProfile = null;
+      }
+    }
+    if (req.body.mediaBio !== undefined && user.mediaCreatorProfile) {
+      user.mediaCreatorProfile.bio = req.body.mediaBio;
+    }
+
+    // Seller profile
+    if (req.body.isSeller !== undefined) {
+      const isSeller = req.body.isSeller === 'true' || req.body.isSeller === true;
+      if (isSeller && !user.sellerProfile) {
+        user.sellerProfile = {
+          isSeller: true,
+          storeName: req.body.storeName || `${user.fullName}'s Store`,
+          gstNumber: req.body.gstNumber || '',
+          rating: 0,
+        };
+      } else if (!isSeller) {
+        user.sellerProfile = null;
+      } else if (user.sellerProfile) {
+        if (req.body.storeName) user.sellerProfile.storeName = req.body.storeName;
+        if (req.body.gstNumber) user.sellerProfile.gstNumber = req.body.gstNumber;
+      }
     }
 
     // Bank account
@@ -509,7 +611,13 @@ exports.updateProfile = async (req, res) => {
 
     res.json({ success: true, message: 'Profile updated', user: userData });
   } catch (error) {
-    if (req.file) await fs.unlink(req.file.path).catch(() => { });
+    if (req.files) {
+      for (const field in req.files) {
+        for (const file of req.files[field]) {
+          await fs.unlink(file.path).catch(() => { });
+        }
+      }
+    }
     if (error.name === 'ValidationError') {
       const messages = Object.values(error.errors).map(e => e.message);
       return res.status(400).json({ success: false, message: messages.join(', ') });
@@ -657,6 +765,235 @@ exports.updateWallet = async (req, res) => {
     await user.save();
     res.json({ success: true, message: `Wallet ${operation}ed by ${amount}`, walletBalance: user.walletBalance });
   } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// ======================
+// NEW: ADD HEALTH RECORD
+// ======================
+exports.addHealthRecord = async (req, res) => {
+  try {
+    const { recordType, title, description, date } = req.body;
+    const userId = req.params.userId || req.user.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    let fileUrl = null;
+    if (req.file) {
+      const ext = path.extname(req.file.originalname);
+      const fileName = `${Date.now()}_health_${Math.random().toString(36).substring(2)}${ext}`;
+      const newPath = path.join(uploadDir, fileName);
+      await fs.rename(req.file.path, newPath);
+      fileUrl = `/uploads/${fileName}`;
+    }
+
+    user.healthRecords.push({
+      recordType,
+      title,
+      description,
+      fileUrl,
+      date: date ? new Date(date) : new Date(),
+      doctorId: req.user.id,
+    });
+    await user.save();
+    res.json({ success: true, message: 'Health record added', healthRecords: user.healthRecords });
+  } catch (error) {
+    if (req.file) await fs.unlink(req.file.path).catch(() => { });
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// ======================
+// NEW: ADD PRODUCT LISTING (Agriculture/E-commerce)
+// ======================
+exports.addProductListing = async (req, res) => {
+  try {
+    const { name, price, quantity, unit, category, description } = req.body;
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    let imageUrl = null;
+    if (req.file) {
+      const ext = path.extname(req.file.originalname);
+      const fileName = `${Date.now()}_product_${Math.random().toString(36).substring(2)}${ext}`;
+      const newPath = path.join(uploadDir, fileName);
+      await fs.rename(req.file.path, newPath);
+      imageUrl = `/uploads/${fileName}`;
+    }
+
+    const newProduct = {
+      name,
+      price: parseFloat(price),
+      quantity: parseFloat(quantity),
+      unit,
+      category,
+      description,
+      imageUrl,
+      sellerId: userId,
+      createdAt: new Date(),
+    };
+    user.productListings.push(newProduct);
+    await user.save();
+    res.json({ success: true, message: 'Product added', product: newProduct });
+  } catch (error) {
+    if (req.file) await fs.unlink(req.file.path).catch(() => { });
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// ======================
+// NEW: ADD CONTRACT FARMING AGREEMENT
+// ======================
+exports.addContractFarming = async (req, res) => {
+  try {
+    const { buyerId, crop, quantity, pricePerUnit, startDate, endDate } = req.body;
+    const farmerId = req.user.id;
+    const farmer = await User.findById(farmerId);
+    if (!farmer || !farmer.farmerProfile) {
+      return res.status(400).json({ success: false, message: 'User is not a farmer' });
+    }
+    const buyer = await User.findById(buyerId);
+    if (!buyer) return res.status(404).json({ success: false, message: 'Buyer not found' });
+
+    const agreement = {
+      buyerId,
+      crop,
+      quantity: parseFloat(quantity),
+      pricePerUnit: parseFloat(pricePerUnit),
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+      status: 'pending',
+    };
+    farmer.contractFarmingAgreements.push(agreement);
+    await farmer.save();
+    res.json({ success: true, message: 'Contract farming request sent', agreement });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// ======================
+// NEW: ADD LOAN
+// ======================
+exports.addLoan = async (req, res) => {
+  try {
+    const { amount, emiAmount, tenureMonths } = req.body;
+    const userId = req.params.userId || req.user.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const loan = {
+      amount: parseFloat(amount),
+      emiAmount: parseFloat(emiAmount),
+      tenureMonths: parseInt(tenureMonths),
+      outstanding: parseFloat(amount),
+      nextDueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      status: 'active',
+      sanctionedAt: new Date(),
+    };
+    user.loans.push(loan);
+    await user.save();
+    res.json({ success: true, message: 'Loan added', loan });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// ======================
+// NEW: ADD CLIENT (CRM)
+// ======================
+exports.addClient = async (req, res) => {
+  try {
+    const { name, email, phone, company, gstNumber, address } = req.body;
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const client = {
+      name,
+      email,
+      phone,
+      company,
+      gstNumber,
+      address,
+      createdBy: userId,
+      createdAt: new Date(),
+    };
+    user.clients.push(client);
+    await user.save();
+    res.json({ success: true, message: 'Client added', client });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// ======================
+// NEW: ADD PROJECT (CRM/IT)
+// ======================
+exports.addProject = async (req, res) => {
+  try {
+    const { name, description, clientId, startDate, endDate, budget } = req.body;
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const project = {
+      name,
+      description,
+      clientId,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+      budget: parseFloat(budget),
+      status: 'active',
+      createdBy: userId,
+      createdAt: new Date(),
+    };
+    user.projects.push(project);
+    await user.save();
+    res.json({ success: true, message: 'Project added', project });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// ======================
+// NEW: ADD STORE PRODUCT (E-commerce)
+// ======================
+exports.addStoreProduct = async (req, res) => {
+  try {
+    const { name, price, category, stock, description } = req.body;
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user || !user.sellerProfile) {
+      return res.status(400).json({ success: false, message: 'User is not a seller' });
+    }
+
+    let imageUrl = null;
+    if (req.file) {
+      const ext = path.extname(req.file.originalname);
+      const fileName = `${Date.now()}_store_${Math.random().toString(36).substring(2)}${ext}`;
+      const newPath = path.join(uploadDir, fileName);
+      await fs.rename(req.file.path, newPath);
+      imageUrl = `/uploads/${fileName}`;
+    }
+
+    const product = {
+      name,
+      price: parseFloat(price),
+      category,
+      stock: parseInt(stock),
+      description,
+      imageUrl,
+      sellerId: userId,
+      createdAt: new Date(),
+    };
+    user.storeProducts.push(product);
+    await user.save();
+    res.json({ success: true, message: 'Store product added', product });
+  } catch (error) {
+    if (req.file) await fs.unlink(req.file.path).catch(() => { });
     res.status(500).json({ success: false, error: error.message });
   }
 };

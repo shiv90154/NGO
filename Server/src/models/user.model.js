@@ -58,9 +58,11 @@ const userSchema = new mongoose.Schema(
     },
     modules: {
       type: [String],
-      enum: ['EDUCATION', 'AGRICULTURE', 'FINANCE', 'HEALTHCARE', 'SOCIAL', 'IT'],
+      enum: ['EDUCATION', 'AGRICULTURE', 'FINANCE', 'HEALTHCARE', 'SOCIAL', 'IT', 'MEDIA', 'CRM', 'ECOMMERCE'],
       default: [],
     },
+
+    // ========== HIERARCHY & MLM ==========
     reportsTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     hierarchyLevel: { type: Number, default: 0, min: 0 },
     sponsorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
@@ -69,10 +71,14 @@ const userSchema = new mongoose.Schema(
     leftChild: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     rightChild: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     teamSize: { type: Number, default: 0 },
+
+    // ========== PERSONAL DETAILS ==========
     fatherName: { type: String, trim: true },
     motherName: { type: String, trim: true },
     dob: Date,
     gender: { type: String, enum: ['male', 'female', 'other'] },
+
+    // ========== KYC & ADDRESS ==========
     aadhaarNumber: {
       type: String,
       match: [/^\d{12}$/, 'Aadhaar must be 12 digits'],
@@ -100,11 +106,14 @@ const userSchema = new mongoose.Schema(
     fullAddress: { type: String, trim: true },
     profileImage: String,
     signature: String,
+
+    // ========== EDUCATION MODULE ==========
     teacherProfile: {
       specialization: { type: String, trim: true },
       qualifications: [String],
       experienceYears: { type: Number, min: 0, default: 0 },
       taughtCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
+      earnings: { type: Number, default: 0 }, // Teacher earnings from courses
     },
     enrolledCourses: [
       {
@@ -112,8 +121,34 @@ const userSchema = new mongoose.Schema(
         progress: { type: Number, default: 0, min: 0, max: 100 },
         completed: { type: Boolean, default: false },
         enrolledAt: { type: Date, default: Date.now },
+        lastAccessed: Date,
       },
     ],
+    testResults: [
+      {
+        testId: { type: mongoose.Schema.Types.ObjectId, ref: 'Test' },
+        score: Number,
+        percentage: Number,
+        certificateUrl: String,
+        takenAt: { type: Date, default: Date.now },
+      },
+    ],
+    certificates: [
+      {
+        courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
+        certificateUrl: String,
+        issuedAt: Date,
+        verificationCode: String,
+      },
+    ],
+    liveClassAttendance: [
+      {
+        classId: { type: mongoose.Schema.Types.ObjectId, ref: 'LiveClass' },
+        attendedAt: Date,
+      },
+    ],
+
+    // ========== HEALTHCARE MODULE ==========
     doctorProfile: {
       specialization: { type: String, trim: true },
       experienceYears: { type: Number, min: 0, default: 0 },
@@ -123,12 +158,39 @@ const userSchema = new mongoose.Schema(
     },
     patients: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     appointments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Appointment' }],
+    healthRecords: [
+      {
+        recordType: { type: String, enum: ['lab_report', 'diagnosis', 'vaccination', 'surgery'] },
+        title: String,
+        description: String,
+        fileUrl: String,
+        date: Date,
+        doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      },
+    ],
+    prescriptions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Prescription' }],
+
+    // ========== AGRICULTURE MODULE ==========
     farmerProfile: {
       landSize: { type: Number, min: 0, default: 0 },
       crops: [String],
       farmingType: { type: String, enum: ['organic', 'conventional', 'mixed'], default: 'conventional' },
       isContractFarmer: { type: Boolean, default: false },
     },
+    productListings: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
+    contractFarmingAgreements: [
+      {
+        buyerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        crop: String,
+        quantity: Number,
+        pricePerUnit: Number,
+        startDate: Date,
+        endDate: Date,
+        status: { type: String, enum: ['pending', 'active', 'completed', 'cancelled'], default: 'pending' },
+      },
+    ],
+
+    // ========== FINANCE MODULE ==========
     walletBalance: { type: Number, default: 0, min: 0 },
     totalEarnings: { type: Number, default: 0 },
     bankAccount: {
@@ -138,8 +200,49 @@ const userSchema = new mongoose.Schema(
       accountHolderName: { type: String, trim: true },
     },
     transactions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Transaction' }],
+    loans: [
+      {
+        amount: Number,
+        emiAmount: Number,
+        tenureMonths: Number,
+        outstanding: Number,
+        nextDueDate: Date,
+        status: { type: String, enum: ['active', 'closed', 'defaulted'], default: 'active' },
+        sanctionedAt: Date,
+      },
+    ],
+    billPayments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'BillPayment' }],
+
+    // ========== MLM / COMMISSION ==========
     commissionRate: { type: Number, default: 0, min: 0, max: 100 },
     totalCommissionEarned: { type: Number, default: 0 },
+
+    // ========== NEWS & MEDIA MODULE ==========
+    mediaCreatorProfile: {
+      isCreator: { type: Boolean, default: false },
+      totalPosts: { type: Number, default: 0 },
+      totalFollowers: { type: Number, default: 0 },
+      monetizationEarnings: { type: Number, default: 0 },
+      liveStreamingKey: String,
+    },
+    mediaPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MediaPost' }],
+
+    // ========== CRM & IT MODULE ==========
+    clients: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Client' }],
+    projects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project' }],
+
+    // ========== E‑COMMERCE / VILLAGE STORE ==========
+    sellerProfile: {
+      isSeller: { type: Boolean, default: false },
+      storeName: String,
+      gstNumber: String,
+      storeLogo: String,
+      rating: { type: Number, default: 0, min: 0, max: 5 },
+    },
+    storeProducts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'StoreProduct' }],
+    exchangeRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'ExchangeRequest' }],
+
+    // ========== SUBSCRIPTION & OTP ==========
     otp: String,
     otpExpire: Date,
     isVerified: { type: Boolean, default: false },
@@ -148,6 +251,8 @@ const userSchema = new mongoose.Schema(
       expiresAt: { type: Date, default: null },
       autoRenew: { type: Boolean, default: false },
     },
+
+    // ========== AUDIT & SESSION ==========
     lastLogin: { type: Date, default: null },
     lastLoginIP: { type: String, trim: true, default: null },
     deviceInfo: { type: String, trim: true, default: null },
@@ -158,6 +263,7 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// ========== INDEXES ==========
 userSchema.index({ role: 1 });
 userSchema.index({ modules: 1 });
 userSchema.index({ isVerified: 1 });
@@ -169,7 +275,10 @@ userSchema.index({ 'farmerProfile.crops': 1 });
 userSchema.index({ 'activeSubscription.plan': 1 });
 userSchema.index({ 'activeSubscription.expiresAt': 1 });
 userSchema.index({ lastLogin: -1 });
+userSchema.index({ 'mediaCreatorProfile.isCreator': 1 });
+userSchema.index({ 'sellerProfile.isSeller': 1 });
 
+// ========== PRE‑SAVE HOOKS ==========
 userSchema.pre('save', async function () {
   if (this.isModified('password')) {
     const salt = await bcrypt.genSalt(10);
@@ -183,6 +292,7 @@ userSchema.pre('save', async function () {
   }
 });
 
+// ========== INSTANCE METHODS ==========
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
@@ -198,6 +308,7 @@ userSchema.methods.updateLastLogin = function (ip, device) {
   return this.save();
 };
 
+// ========== VIRTUAL FIELDS ==========
 userSchema.virtual('fullAddressString').get(function () {
   const parts = [this.fullAddress, this.village, this.block, this.district, this.state, this.pincode].filter(Boolean);
   return parts.join(', ');

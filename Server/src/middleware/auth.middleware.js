@@ -1,5 +1,6 @@
+// src/middleware/auth.middleware.js
 const jwt = require('jsonwebtoken');
-const User = require('../models/user.model'); // Adjust path to your User model
+const User = require('../models/user.model');
 
 // Protect routes - verify JWT and attach user to request
 exports.protect = async (req, res, next) => {
@@ -27,9 +28,9 @@ exports.protect = async (req, res, next) => {
       });
     }
 
-    // Attach user to request with both _id and id for convenience
+    // Attach user to request (both `user` and `user.id` for convenience)
     req.user = user;
-    req.user.id = user._id; // Alias for controller usage
+    req.user.id = user._id; // alias for controller usage
 
     next();
   } catch (err) {
@@ -40,7 +41,7 @@ exports.protect = async (req, res, next) => {
   }
 };
 
-// Role-based authorization (for education module)
+// Role-based authorization
 exports.authorize = (...roles) => {
   return (req, res, next) => {
     if (!req.user) {
@@ -61,5 +62,5 @@ exports.authorize = (...roles) => {
   };
 };
 
-// Alias for backward compatibility (used in some routes)
+// Alias for backward compatibility (used in many routes)
 exports.restrictTo = exports.authorize;

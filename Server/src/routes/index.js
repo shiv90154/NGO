@@ -2,21 +2,12 @@
 const express = require('express');
 const router = express.Router();
 
-// Existing routes
-const userRoutes = require('./user.routes.js');
-const studentRoutes = require("./student.routes");
+// User routes (authentication, profile, etc.)
+const userRoutes = require('./auth.routes');
 
-// Module routes
-const educationRoutes = require('./educationRoutes');
-const agricultureRoutes = require("./agricultureRoutes.js");
-
-// Mount routes
-router.use("/students", studentRoutes);
-router.use('/users', userRoutes);
-router.use('/education', educationRoutes);
-router.use('/agriculture', agricultureRoutes);
-
-// Health check endpoint
+// ======================
+// HEALTH CHECK
+// ======================
 router.get('/health', (req, res) => {
   res.status(200).json({
     success: true,
@@ -25,18 +16,26 @@ router.get('/health', (req, res) => {
   });
 });
 
-// Root API info
+// ======================
+// ROOT API INFO
+// ======================
 router.get('/', (req, res) => {
   res.json({
     name: 'Samraddh Bharat Foundation API',
     version: '1.0.0',
     endpoints: {
       users: '/api/users',
-      students: '/api/students',
-      education: '/api/education',
-      health: '/api/health',
     },
   });
 });
+
+// ======================
+// MOUNT USER ROUTES
+// ======================
+router.use('/users', userRoutes);
+
+// ======================
+// 404 HANDLER REMOVED (causing path-to-regexp error)
+// ======================
 
 module.exports = router;

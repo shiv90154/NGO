@@ -1,5 +1,7 @@
 // src/middleware/index.js
+const authMiddleware = require('./auth.middleware');
 
+// ------------------------------------
 // 404 Not Found middleware
 const notFound = (req, res, next) => {
   res.status(404).json({
@@ -18,5 +20,15 @@ const errorHandler = (err, req, res, next) => {
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
   });
 };
+// ------------------------------------
 
-module.exports = { errorHandler, notFound };
+module.exports = {
+  // Auth middleware
+  protect: authMiddleware.protect,
+  authorize: authMiddleware.authorize,
+  restrictTo: authMiddleware.restrictTo,
+  
+  // Error handlers
+  notFound,
+  errorHandler,
+};

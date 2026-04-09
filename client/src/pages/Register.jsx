@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   FaUser, FaEnvelope, FaLock, FaMobile, FaCalendarAlt, FaVenusMars, FaUserMd, FaArrowLeft, FaCheckCircle,
   FaCloudUploadAlt, FaEye, FaEyeSlash, FaChevronRight, FaGraduationCap,
-  FaNewspaper, FaCode, FaMoneyBillWave
+  FaNewspaper, FaCode, FaMoneyBillWave, FaIdCard, FaTint, FaSeedling, FaLaptopCode
 } from 'react-icons/fa';
 import { GiFarmer } from 'react-icons/gi';
 
@@ -214,8 +214,8 @@ const Register = () => {
 
   const steps = [
     { number: 1, title: 'Basic Info', icon: '📝' },
-    { number: 2, title: 'Finance', icon: '💰' },
-    { number: 3, title: 'Healthcare', icon: '🏥' },
+    { number: 2, title: 'Identity', icon: '🆔' },
+    { number: 3, title: 'Health', icon: '🏥' },
     { number: 4, title: 'Agriculture', icon: '🌾' },
     { number: 5, title: 'Education', icon: '🎓' },
     { number: 6, title: 'IT', icon: '💻' },
@@ -223,25 +223,44 @@ const Register = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4">
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
+        {/* Header with Government Emblem */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3">
-            Create <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Account</span>
-          </h1>
+          <div className="inline-flex items-center justify-center gap-2 mb-3">
+            <div className="w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full border-2 border-[#FF9933] flex items-center justify-center">
+                <div className="w-4 h-4 rounded-full bg-[#138808]"></div>
+              </div>
+            </div>
+            <span className="text-xs text-gray-500">Government of India</span>
+          </div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Samraddh Bharat Foundation</h1>
+          <p className="text-gray-500 mt-1">Citizen Registration Portal</p>
+          <div className="flex justify-center gap-1 mt-3">
+            <div className="w-12 h-0.5 bg-[#FF9933]"></div>
+            <div className="w-12 h-0.5 bg-white"></div>
+            <div className="w-12 h-0.5 bg-[#138808]"></div>
+          </div>
         </div>
 
         {/* Progress Steps */}
-        <div className="mb-8 px-4">
+        <div className="bg-white rounded-xl shadow-md p-4 mb-6">
           <div className="flex justify-between items-center">
             {steps.map((s) => (
-              <button onClick={() => { setStep(s.number) }} key={s.number} className="flex flex-col items-center">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold transition-all duration-300
-                  ${step > s.number ? 'bg-green-500 text-white' : step === s.number ? 'bg-blue-500 text-white ring-4 ring-blue-200' : 'bg-gray-200 text-gray-500'}`}>
-                  {step > s.number ? '✓' : s.icon}
+              <button
+                key={s.number}
+                onClick={() => setStep(s.number)}
+                className="flex flex-col items-center group focus:outline-none"
+              >
+                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all
+                  ${step > s.number ? 'bg-green-600 text-white' : 
+                    step === s.number ? 'bg-blue-700 text-white ring-2 ring-blue-300' : 
+                    'bg-gray-200 text-gray-500'}`}
+                >
+                  {step > s.number ? '✓' : s.number}
                 </div>
-                <span className={`text-xs mt-1 hidden md:block ${step === s.number ? 'text-blue-600 font-semibold' : 'text-gray-400'}`}>
+                <span className={`text-xs mt-1 hidden sm:block ${step === s.number ? 'text-blue-700 font-medium' : 'text-gray-400'}`}>
                   {s.title}
                 </span>
               </button>
@@ -249,353 +268,367 @@ const Register = () => {
           </div>
           <div className="relative mt-2">
             <div className="absolute top-0 left-0 h-1 bg-gray-200 rounded-full w-full"></div>
-            <div className="absolute top-0 left-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-500"
+            <div className="absolute top-0 left-0 h-1 bg-blue-700 rounded-full transition-all duration-300"
               style={{ width: `${((step - 1) / 6) * 100}%` }}></div>
           </div>
         </div>
 
-        {/* Success Message */}
+        {/* Success / Error Messages */}
         {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
-            <FaCheckCircle className="text-green-500" /> {success}
+          <div className="bg-green-50 border-l-4 border-green-600 text-green-700 p-4 rounded-md mb-6 flex items-center gap-2">
+            <FaCheckCircle className="text-green-600" />
+            <span>{success}</span>
           </div>
         )}
-
         {error.submit && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
+          <div className="bg-red-50 border-l-4 border-red-600 text-red-700 p-4 rounded-md mb-6">
             {error.submit}
           </div>
         )}
 
         {/* STEP 1: Basic Information */}
         {step === 1 && (
-          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Basic Information</h2>
-            <p className="text-gray-400 mb-6">All fields marked with * are required</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-gray-700 text-sm font-semibold mb-2"><FaUser className="inline mr-2 text-blue-500" /> Full Name *</label>
-                <input type="text" name="name" value={basicInfo.name} onChange={handleBasicChange}
-                  className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${error.name ? 'border-red-400' : 'border-gray-200'}`}
-                  placeholder="Enter your full name" />
-                {error.name && <p className="text-red-500 text-xs mt-1">{error.name}</p>}
-              </div>
-              <div>
-                <label className="block text-gray-700 text-sm font-semibold mb-2"><FaEnvelope className="inline mr-2 text-blue-500" /> Email Address *</label>
-                <input type="email" name="email" value={basicInfo.email} onChange={handleBasicChange}
-                  className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${error.email ? 'border-red-400' : 'border-gray-200'}`}
-                  placeholder="you@example.com" />
-                {error.email && <p className="text-red-500 text-xs mt-1">{error.email}</p>}
-              </div>
-              <div>
-                <label className="block text-gray-700 text-sm font-semibold mb-2"><FaLock className="inline mr-2 text-blue-500" /> Password *</label>
-                <div className="relative">
-                  <input type={showPassword ? "text" : "password"} name="password" value={basicInfo.password} onChange={handleBasicChange}
-                    className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${error.password ? 'border-red-400' : 'border-gray-200'}`}
-                    placeholder="Min. 6 characters" />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    {showPassword ? <FaEyeSlash /> : <FaEye />}
-                  </button>
-                </div>
-                {error.password && <p className="text-red-500 text-xs mt-1">{error.password}</p>}
-              </div>
-              <div>
-                <label className="block text-gray-700 text-sm font-semibold mb-2"><FaLock className="inline mr-2 text-blue-500" /> Confirm Password *</label>
-                <div className="relative">
-                  <input type={showConfirmPassword ? "text" : "password"} name="confirmPassword" value={basicInfo.confirmPassword} onChange={handleBasicChange}
-                    className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${error.confirmPassword ? 'border-red-400' : 'border-gray-200'}`}
-                    placeholder="Re-enter your password" />
-                  <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-                  </button>
-                </div>
-                {error.confirmPassword && <p className="text-red-500 text-xs mt-1">{error.confirmPassword}</p>}
-              </div>
-              <div>
-                <label className="block text-gray-700 text-sm font-semibold mb-2"><FaMobile className="inline mr-2 text-blue-500" /> Mobile Number *</label>
-                <input type="tel" name="mobile" value={basicInfo.mobile} onChange={handleBasicChange}
-                  className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${error.mobile ? 'border-red-400' : 'border-gray-200'}`}
-                  placeholder="9876543210" />
-                {error.mobile && <p className="text-red-500 text-xs mt-1">{error.mobile}</p>}
-              </div>
-              <div>
-                <label className="block text-gray-700 text-sm font-semibold mb-2"><FaCalendarAlt className="inline mr-2 text-blue-500" /> Date of Birth *</label>
-                <input type="date" name="dob" value={basicInfo.dob} onChange={handleBasicChange}
-                  className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${error.dob ? 'border-red-400' : 'border-gray-200'}`} />
-                {error.dob && <p className="text-red-500 text-xs mt-1">{error.dob}</p>}
-              </div>
-              <div>
-                <label className="block text-gray-700 text-sm font-semibold mb-2"><FaVenusMars className="inline mr-2 text-blue-500" /> Gender *</label>
-                <select name="gender" value={basicInfo.gender} onChange={handleBasicChange}
-                  className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${error.gender ? 'border-red-400' : 'border-gray-200'}`}>
-                  <option value="">Select Gender</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
-                {error.gender && <p className="text-red-500 text-xs mt-1">{error.gender}</p>}
-              </div>
-              <div>
-                <label className="block text-gray-700 text-sm font-semibold mb-2"><FaUser className="inline mr-2 text-blue-500" /> Role</label>
-                <select name="role" value={basicInfo.role} onChange={handleBasicChange}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="user">User</option>
-                  <option value="DOCTOR">Doctor</option>
-                  <option value="TEACHER">Teacher</option>
-                  <option value="AGENT">Agent</option>
-                </select>
-              </div>
+          <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+            <div className="bg-blue-50 px-6 py-4 border-b border-blue-100">
+              <h2 className="text-xl font-bold text-blue-800">Step 1: Basic Information</h2>
+              <p className="text-blue-600 text-sm">All fields marked with * are mandatory</p>
             </div>
-            <div className="flex justify-end mt-8">
-              <button onClick={() => handleNext(2)} className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-8 rounded-xl transition flex items-center gap-2 shadow-md">
-                Next: Finance <FaChevronRight />
-              </button>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1">Full Name <span className="text-red-500">*</span></label>
+                  <input type="text" name="name" value={basicInfo.name} onChange={handleBasicChange}
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${error.name ? 'border-red-400' : 'border-gray-300'}`}
+                    placeholder="Enter your full name" />
+                  {error.name && <p className="text-red-500 text-xs mt-1">{error.name}</p>}
+                </div>
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1">Email Address <span className="text-red-500">*</span></label>
+                  <input type="email" name="email" value={basicInfo.email} onChange={handleBasicChange}
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${error.email ? 'border-red-400' : 'border-gray-300'}`}
+                    placeholder="you@gmail.com" />
+                  {error.email && <p className="text-red-500 text-xs mt-1">{error.email}</p>}
+                </div>
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1">Password <span className="text-red-500">*</span></label>
+                  <div className="relative">
+                    <input type={showPassword ? "text" : "password"} name="password" value={basicInfo.password} onChange={handleBasicChange}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${error.password ? 'border-red-400' : 'border-gray-300'}`}
+                      placeholder="Min. 6 characters" />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
+                  {error.password && <p className="text-red-500 text-xs mt-1">{error.password}</p>}
+                </div>
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1">Confirm Password <span className="text-red-500">*</span></label>
+                  <div className="relative">
+                    <input type={showConfirmPassword ? "text" : "password"} name="confirmPassword" value={basicInfo.confirmPassword} onChange={handleBasicChange}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${error.confirmPassword ? 'border-red-400' : 'border-gray-300'}`}
+                      placeholder="Re-enter password" />
+                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
+                  {error.confirmPassword && <p className="text-red-500 text-xs mt-1">{error.confirmPassword}</p>}
+                </div>
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1">Mobile Number <span className="text-red-500">*</span></label>
+                  <input type="tel" name="mobile" value={basicInfo.mobile} onChange={handleBasicChange}
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${error.mobile ? 'border-red-400' : 'border-gray-300'}`}
+                    placeholder="10-digit mobile number" />
+                  {error.mobile && <p className="text-red-500 text-xs mt-1">{error.mobile}</p>}
+                </div>
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1">Date of Birth <span className="text-red-500">*</span></label>
+                  <input type="date" name="dob" value={basicInfo.dob} onChange={handleBasicChange}
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${error.dob ? 'border-red-400' : 'border-gray-300'}`} />
+                  {error.dob && <p className="text-red-500 text-xs mt-1">{error.dob}</p>}
+                </div>
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1">Gender <span className="text-red-500">*</span></label>
+                  <select name="gender" value={basicInfo.gender} onChange={handleBasicChange}
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${error.gender ? 'border-red-400' : 'border-gray-300'}`}>
+                    <option value="">Select</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                  {error.gender && <p className="text-red-500 text-xs mt-1">{error.gender}</p>}
+                </div>
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1">Role (Optional)</label>
+                  <select name="role" value={basicInfo.role} onChange={handleBasicChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="user">User</option>
+                    <option value="DOCTOR">Doctor</option>
+                    <option value="TEACHER">Teacher</option>
+                    <option value="AGENT">Agent</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex justify-end mt-8">
+                <button onClick={() => handleNext(2)} className="bg-blue-700 hover:bg-blue-800 text-white font-medium py-2 px-6 rounded-md transition flex items-center gap-2 shadow-sm">
+                  Next <FaChevronRight className="text-sm" />
+                </button>
+              </div>
             </div>
           </div>
         )}
 
-        {/* STEP 2: Finance */}
+        {/* STEP 2: Identity (Finance) */}
         {step === 2 && (
-          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center"><FaMoneyBillWave className="text-yellow-600 text-xl" /></div>
-              <div><h2 className="text-2xl font-bold text-gray-800">Finance & Identity Documents</h2><p className="text-gray-400">Step 2 of 7</p></div>
+          <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+            <div className="bg-yellow-50 px-6 py-4 border-b border-yellow-100">
+              <h2 className="text-xl font-bold text-yellow-800">Step 2: Identity Documents</h2>
+              <p className="text-yellow-600 text-sm">Upload or enter your identity proofs (optional but recommended)</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div>
-                <label className="block text-gray-600 text-sm mb-2">Aadhar Card Number</label>
-                <div className="flex items-center gap-3">
-                  <input type="text" name="aadharCard" placeholder="12-digit Aadhar Number" value={financeInfo.aadharCard} onChange={handleFinanceChange}
-                    className="flex-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                  <button onClick={() => aadharInputRef.current.click()} className="bg-gray-100 p-2 rounded-lg hover:bg-gray-200">
-                    <FaCloudUploadAlt className="text-blue-500" />
-                  </button>
-                  <input type="file" ref={aadharInputRef} onChange={(e) => handleFileChange(e, 'aadharFile')} accept=".jpg,.jpeg,.pdf" className="hidden" />
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1">Aadhar Card Number</label>
+                  <div className="flex gap-2">
+                    <input type="text" name="aadharCard" placeholder="12-digit Aadhar" value={financeInfo.aadharCard} onChange={handleFinanceChange}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <button onClick={() => aadharInputRef.current.click()} className="bg-gray-100 px-3 rounded-md hover:bg-gray-200 text-gray-700 text-sm">
+                      Upload
+                    </button>
+                    <input type="file" ref={aadharInputRef} onChange={(e) => handleFileChange(e, 'aadharFile')} accept=".jpg,.jpeg,.pdf" className="hidden" />
+                  </div>
+                  {financeInfo.aadharFile && <p className="text-green-600 text-xs mt-1">✓ File uploaded</p>}
                 </div>
-                {financeInfo.aadharFile && <p className="text-green-600 text-xs mt-1">✓ File selected</p>}
-              </div>
-              <div>
-                <label className="block text-gray-600 text-sm mb-2">PAN Card Number</label>
-                <div className="flex items-center gap-3">
-                  <input type="text" name="panCard" placeholder="PAN Number" value={financeInfo.panCard} onChange={handleFinanceChange}
-                    className="flex-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                  <button onClick={() => panInputRef.current.click()} className="bg-gray-100 p-2 rounded-lg hover:bg-gray-200">
-                    <FaCloudUploadAlt className="text-blue-500" />
-                  </button>
-                  <input type="file" ref={panInputRef} onChange={(e) => handleFileChange(e, 'panFile')} accept=".jpg,.jpeg,.pdf" className="hidden" />
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1">PAN Card Number</label>
+                  <div className="flex gap-2">
+                    <input type="text" name="panCard" placeholder="PAN Number" value={financeInfo.panCard} onChange={handleFinanceChange}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <button onClick={() => panInputRef.current.click()} className="bg-gray-100 px-3 rounded-md hover:bg-gray-200 text-gray-700 text-sm">
+                      Upload
+                    </button>
+                    <input type="file" ref={panInputRef} onChange={(e) => handleFileChange(e, 'panFile')} accept=".jpg,.jpeg,.pdf" className="hidden" />
+                  </div>
+                  {financeInfo.panFile && <p className="text-green-600 text-xs mt-1">✓ File uploaded</p>}
                 </div>
-                {financeInfo.panFile && <p className="text-green-600 text-xs mt-1">✓ File selected</p>}
+                <input type="text" name="voterId" placeholder="Voter ID" value={financeInfo.voterId} onChange={handleFinanceChange}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <input type="text" name="passportNumber" placeholder="Passport Number" value={financeInfo.passportNumber} onChange={handleFinanceChange}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
-              <input type="text" name="voterId" placeholder="Voter ID" value={financeInfo.voterId} onChange={handleFinanceChange}
-                className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              <input type="text" name="passportNumber" placeholder="Passport Number" value={financeInfo.passportNumber} onChange={handleFinanceChange}
-                className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-            <div className="flex justify-between mt-8">
-              <button onClick={() => handleBack(1)} className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-xl transition flex items-center gap-2">
-                <FaArrowLeft /> Back
-              </button>
-              <button onClick={() => handleNext(3)} className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition flex items-center gap-2">
-                Next: Healthcare <FaChevronRight />
-              </button>
+              <div className="flex justify-between mt-8">
+                <button onClick={() => handleBack(1)} className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-5 rounded-md transition flex items-center gap-2">
+                  <FaArrowLeft /> Back
+                </button>
+                <button onClick={() => handleNext(3)} className="bg-blue-700 hover:bg-blue-800 text-white font-medium py-2 px-6 rounded-md transition flex items-center gap-2">
+                  Next <FaChevronRight />
+                </button>
+              </div>
             </div>
           </div>
         )}
 
         {/* STEP 3: Healthcare */}
         {step === 3 && (
-          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center"><FaUserMd className="text-green-600 text-xl" /></div>
-              <div><h2 className="text-2xl font-bold text-gray-800">Healthcare Information</h2><p className="text-gray-400">Step 3 of 7</p></div>
+          <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+            <div className="bg-green-50 px-6 py-4 border-b border-green-100">
+              <h2 className="text-xl font-bold text-green-800">Step 3: Healthcare Information</h2>
+              <p className="text-green-600 text-sm">For better health services</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <select name="bloodGroup" value={healthInfo.bloodGroup} onChange={handleHealthChange}
-                className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">Select Blood Group</option>
-                <option value="A+">A+</option><option value="A-">A-</option><option value="B+">B+</option>
-                <option value="B-">B-</option><option value="O+">O+</option><option value="O-">O-</option>
-                <option value="AB+">AB+</option><option value="AB-">AB-</option>
-              </select>
-              <input type="text" name="allergies" placeholder="Any Allergies?" value={healthInfo.allergies} onChange={handleHealthChange}
-                className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              <textarea name="medicalHistory" placeholder="Medical History" value={healthInfo.medicalHistory} onChange={handleHealthChange}
-                rows="2" className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 md:col-span-2" />
-              <input type="text" name="emergencyContactName" placeholder="Emergency Contact Name" value={healthInfo.emergencyContactName} onChange={handleHealthChange}
-                className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              <input type="text" name="emergencyContactRelation" placeholder="Relation" value={healthInfo.emergencyContactRelation} onChange={handleHealthChange}
-                className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              <input type="tel" name="emergencyContactPhone" placeholder="Emergency Phone" value={healthInfo.emergencyContactPhone} onChange={handleHealthChange}
-                className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-            <div className="flex justify-between mt-8">
-              <button onClick={() => handleBack(2)} className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-xl transition flex items-center gap-2">
-                <FaArrowLeft /> Back
-              </button>
-              <button onClick={() => handleNext(4)} className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition flex items-center gap-2">
-                Next: Agriculture <FaChevronRight />
-              </button>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <select name="bloodGroup" value={healthInfo.bloodGroup} onChange={handleHealthChange}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="">Blood Group</option>
+                  <option value="A+">A+</option><option value="A-">A-</option><option value="B+">B+</option>
+                  <option value="B-">B-</option><option value="O+">O+</option><option value="O-">O-</option>
+                  <option value="AB+">AB+</option><option value="AB-">AB-</option>
+                </select>
+                <input type="text" name="allergies" placeholder="Allergies (if any)" value={healthInfo.allergies} onChange={handleHealthChange}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <textarea name="medicalHistory" placeholder="Medical History" value={healthInfo.medicalHistory} onChange={handleHealthChange}
+                  rows="2" className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 md:col-span-2" />
+                <input type="text" name="emergencyContactName" placeholder="Emergency Contact Name" value={healthInfo.emergencyContactName} onChange={handleHealthChange}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <input type="text" name="emergencyContactRelation" placeholder="Relation" value={healthInfo.emergencyContactRelation} onChange={handleHealthChange}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <input type="tel" name="emergencyContactPhone" placeholder="Emergency Phone" value={healthInfo.emergencyContactPhone} onChange={handleHealthChange}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div className="flex justify-between mt-8">
+                <button onClick={() => handleBack(2)} className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-5 rounded-md transition flex items-center gap-2">
+                  <FaArrowLeft /> Back
+                </button>
+                <button onClick={() => handleNext(4)} className="bg-blue-700 hover:bg-blue-800 text-white font-medium py-2 px-6 rounded-md transition flex items-center gap-2">
+                  Next <FaChevronRight />
+                </button>
+              </div>
             </div>
           </div>
         )}
 
         {/* STEP 4: Agriculture */}
         {step === 4 && (
-          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center"><GiFarmer className="text-green-600 text-xl" /></div>
-              <div><h2 className="text-2xl font-bold text-gray-800">Agriculture Information</h2><p className="text-gray-400">Step 4 of 7</p></div>
+          <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+            <div className="bg-green-50 px-6 py-4 border-b border-green-100">
+              <h2 className="text-xl font-bold text-green-800">Step 4: Agriculture Details</h2>
+              <p className="text-green-600 text-sm">For farmers and agri-entrepreneurs</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <input type="number" name="landSize" placeholder="Land Size (in acres)" value={agriInfo.landSize} onChange={handleAgriChange}
-                className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              <input type="text" name="cropType" placeholder="Crop Types (comma separated)" value={agriInfo.cropType} onChange={handleAgriChange}
-                className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              <input type="text" name="farmLocation" placeholder="Farm Location" value={agriInfo.farmLocation} onChange={handleAgriChange}
-                className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              <input type="text" name="irrigationType" placeholder="Irrigation Type" value={agriInfo.irrigationType} onChange={handleAgriChange}
-                className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-            <div className="flex justify-between mt-8">
-              <button onClick={() => handleBack(3)} className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-xl transition flex items-center gap-2">
-                <FaArrowLeft /> Back
-              </button>
-              <button onClick={() => handleNext(5)} className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition flex items-center gap-2">
-                Next: Education <FaChevronRight />
-              </button>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <input type="number" name="landSize" placeholder="Land Size (acres)" value={agriInfo.landSize} onChange={handleAgriChange}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <input type="text" name="cropType" placeholder="Crop Types (comma separated)" value={agriInfo.cropType} onChange={handleAgriChange}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <input type="text" name="farmLocation" placeholder="Farm Location" value={agriInfo.farmLocation} onChange={handleAgriChange}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <input type="text" name="irrigationType" placeholder="Irrigation Type" value={agriInfo.irrigationType} onChange={handleAgriChange}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div className="flex justify-between mt-8">
+                <button onClick={() => handleBack(3)} className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-5 rounded-md transition flex items-center gap-2">
+                  <FaArrowLeft /> Back
+                </button>
+                <button onClick={() => handleNext(5)} className="bg-blue-700 hover:bg-blue-800 text-white font-medium py-2 px-6 rounded-md transition flex items-center gap-2">
+                  Next <FaChevronRight />
+                </button>
+              </div>
             </div>
           </div>
         )}
 
         {/* STEP 5: Education */}
         {step === 5 && (
-          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center"><FaGraduationCap className="text-blue-600 text-xl" /></div>
-              <div><h2 className="text-2xl font-bold text-gray-800">Education Details</h2><p className="text-gray-400">Step 5 of 7</p></div>
+          <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+            <div className="bg-blue-50 px-6 py-4 border-b border-blue-100">
+              <h2 className="text-xl font-bold text-blue-800">Step 5: Education Details</h2>
+              <p className="text-blue-600 text-sm">For educational services</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div>
-                <label className="block text-gray-600 text-sm mb-1">Class / Qualification</label>
-                <input type="text" name="className" placeholder="e.g., 8th, 10th, 12th, Graduate" value={educationInfo.className} onChange={handleEducationChange}
-                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label className="block text-gray-700 text-sm mb-1">Class / Qualification</label>
+                  <input type="text" name="className" placeholder="e.g., 10th, Graduate" value={educationInfo.className} onChange={handleEducationChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-gray-700 text-sm mb-1">School / College</label>
+                  <input type="text" name="schoolName" placeholder="Institution name" value={educationInfo.schoolName} onChange={handleEducationChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-gray-700 text-sm mb-1">Board / University</label>
+                  <input type="text" name="board" placeholder="e.g., CBSE" value={educationInfo.board} onChange={handleEducationChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-gray-700 text-sm mb-1">Percentage / CGPA</label>
+                  <input type="text" name="percentage" placeholder="85% or 8.5 CGPA" value={educationInfo.percentage} onChange={handleEducationChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
               </div>
-              <div>
-                <label className="block text-gray-600 text-sm mb-1">School / College Name</label>
-                <input type="text" name="schoolName" placeholder="Enter school or college name" value={educationInfo.schoolName} onChange={handleEducationChange}
-                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <div className="flex justify-between mt-8">
+                <button onClick={() => handleBack(4)} className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-5 rounded-md transition flex items-center gap-2">
+                  <FaArrowLeft /> Back
+                </button>
+                <button onClick={() => handleNext(6)} className="bg-blue-700 hover:bg-blue-800 text-white font-medium py-2 px-6 rounded-md transition flex items-center gap-2">
+                  Next <FaChevronRight />
+                </button>
               </div>
-              <div>
-                <label className="block text-gray-600 text-sm mb-1">Board / University</label>
-                <input type="text" name="board" placeholder="e.g., CBSE, ICSE, State Board" value={educationInfo.board} onChange={handleEducationChange}
-                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-              <div>
-                <label className="block text-gray-600 text-sm mb-1">Percentage / CGPA</label>
-                <input type="text" name="percentage" placeholder="e.g., 85%, 8.5 CGPA" value={educationInfo.percentage} onChange={handleEducationChange}
-                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-            </div>
-            <div className="flex justify-between mt-8">
-              <button onClick={() => handleBack(4)} className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-xl transition flex items-center gap-2">
-                <FaArrowLeft /> Back
-              </button>
-              <button onClick={() => handleNext(6)} className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition flex items-center gap-2">
-                Next: IT <FaChevronRight />
-              </button>
             </div>
           </div>
         )}
 
         {/* STEP 6: IT */}
         {step === 6 && (
-          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center"><FaCode className="text-purple-600 text-xl" /></div>
-              <div><h2 className="text-2xl font-bold text-gray-800">IT / Development Requirements</h2><p className="text-gray-400">Step 6 of 7</p></div>
+          <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+            <div className="bg-purple-50 px-6 py-4 border-b border-purple-100">
+              <h2 className="text-xl font-bold text-purple-800">Step 6: IT & Development</h2>
+              <p className="text-purple-600 text-sm">For tech professionals and service seekers</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <select name="projectType" value={itInfo.projectType} onChange={handleITChange}
-                className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">Select Project Type</option>
-                {projectTypeOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-              </select>
-              <select name="techStack" value={itInfo.techStack} onChange={handleITChange}
-                className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">Select Preferred Tech Stack</option>
-                {techStackOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-              </select>
-              <input type="text" name="experience" placeholder="Experience Level (Beginner/Intermediate/Expert)" value={itInfo.experience} onChange={handleITChange}
-                className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 md:col-span-2" />
-            </div>
-            <div className="flex justify-between mt-8">
-              <button onClick={() => handleBack(5)} className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-xl transition flex items-center gap-2">
-                <FaArrowLeft /> Back
-              </button>
-              <button onClick={() => handleNext(7)} className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition flex items-center gap-2">
-                Next: Social <FaChevronRight />
-              </button>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <select name="projectType" value={itInfo.projectType} onChange={handleITChange}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="">Project Type</option>
+                  {projectTypeOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
+                <select name="techStack" value={itInfo.techStack} onChange={handleITChange}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="">Tech Stack</option>
+                  {techStackOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
+                <input type="text" name="experience" placeholder="Experience Level" value={itInfo.experience} onChange={handleITChange}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 md:col-span-2" />
+              </div>
+              <div className="flex justify-between mt-8">
+                <button onClick={() => handleBack(5)} className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-5 rounded-md transition flex items-center gap-2">
+                  <FaArrowLeft /> Back
+                </button>
+                <button onClick={() => handleNext(7)} className="bg-blue-700 hover:bg-blue-800 text-white font-medium py-2 px-6 rounded-md transition flex items-center gap-2">
+                  Next <FaChevronRight />
+                </button>
+              </div>
             </div>
           </div>
         )}
 
         {/* STEP 7: Social Media */}
         {step === 7 && (
-          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center"><FaNewspaper className="text-pink-600 text-xl" /></div>
-              <div><h2 className="text-2xl font-bold text-gray-800">Social / News Profile</h2><p className="text-gray-400">Step 7 of 7 - Final Step</p></div>
+          <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+            <div className="bg-pink-50 px-6 py-4 border-b border-pink-100">
+              <h2 className="text-xl font-bold text-pink-800">Step 7: Social & Media Profile</h2>
+              <p className="text-pink-600 text-sm">Final step – complete your profile</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div className="md:col-span-2 flex items-center gap-4">
-                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden border border-gray-200">
-                  {socialInfo.profilePicture ? (
-                    <img src={URL.createObjectURL(socialInfo.profilePicture)} alt="Profile" className="w-full h-full object-cover" />
-                  ) : (
-                    <FaUser className="text-gray-400 text-3xl" />
-                  )}
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="md:col-span-2 flex items-center gap-4">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden border border-gray-300">
+                    {socialInfo.profilePicture ? (
+                      <img src={URL.createObjectURL(socialInfo.profilePicture)} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <FaUser className="text-gray-400 text-2xl" />
+                    )}
+                  </div>
+                  <div>
+                    <button onClick={() => profilePicInputRef.current.click()} className="bg-gray-100 px-3 py-1.5 rounded-md text-sm hover:bg-gray-200 border border-gray-300">
+                      <FaCloudUploadAlt className="inline mr-1" /> Upload Photo
+                    </button>
+                    <input type="file" ref={profilePicInputRef} onChange={handleProfilePictureChange} accept=".jpg,.jpeg,.png" className="hidden" />
+                    <p className="text-gray-400 text-xs mt-1">JPG, PNG only</p>
+                  </div>
                 </div>
                 <div>
-                  <button onClick={() => profilePicInputRef.current.click()} className="bg-gray-100 px-4 py-2 rounded-lg hover:bg-gray-200 border border-gray-200">
-                    <FaCloudUploadAlt className="inline mr-2 text-blue-500" /> Upload Profile Picture
-                  </button>
-                  <input type="file" ref={profilePicInputRef} onChange={handleProfilePictureChange} accept=".jpg,.jpeg,.png" className="hidden" />
-                  <p className="text-gray-400 text-xs mt-1">JPG, PNG (Max 2MB)</p>
+                  <label className="block text-gray-700 text-sm mb-1">Username</label>
+                  <input type="text" name="username" placeholder="@username" value={socialInfo.username} onChange={handleSocialChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-gray-700 text-sm mb-1">Bio</label>
+                  <textarea name="bio" placeholder="Short bio" value={socialInfo.bio} onChange={handleSocialChange}
+                    rows="2" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-gray-700 text-sm mb-1">Interests</label>
+                  <input type="text" name="interests" placeholder="e.g., Technology, Farming" value={socialInfo.interests} onChange={handleSocialChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
               </div>
-              <div>
-                <label className="block text-gray-600 text-sm mb-1">Username</label>
-                <input type="text" name="username" placeholder="@username" value={socialInfo.username} onChange={handleSocialChange}
-                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <div className="flex justify-between mt-8">
+                <button onClick={() => handleBack(6)} className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-5 rounded-md transition flex items-center gap-2">
+                  <FaArrowLeft /> Back
+                </button>
+                <button onClick={handleSubmit} disabled={loading}
+                  className="bg-green-700 hover:bg-green-800 text-white font-medium py-2 px-6 rounded-md transition disabled:opacity-50 flex items-center gap-2">
+                  {loading ? 'Registering...' : 'Submit Registration'} <FaCheckCircle />
+                </button>
               </div>
-              <div>
-                <label className="block text-gray-600 text-sm mb-1">Bio</label>
-                <textarea name="bio" placeholder="Tell something about yourself..." value={socialInfo.bio} onChange={handleSocialChange}
-                  rows="2" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-              <div>
-                <label className="block text-gray-600 text-sm mb-1">Interests</label>
-                <input type="text" name="interests" placeholder="Technology, Farming, Healthcare, etc." value={socialInfo.interests} onChange={handleSocialChange}
-                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-            </div>
-            <div className="flex justify-between mt-8">
-              <button onClick={() => handleBack(6)} className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-xl transition flex items-center gap-2">
-                <FaArrowLeft /> Back
-              </button>
-              <button onClick={handleSubmit} disabled={loading}
-                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-3 px-8 rounded-xl transition disabled:opacity-50 flex items-center gap-2 shadow-md">
-                {loading ? 'Creating Account...' : 'Complete Registration'} <FaCheckCircle />
-              </button>
             </div>
           </div>
         )}
 
         {/* Login Link */}
-        <div className="text-center mt-8">
-          <p className="text-gray-500">Already have an account?{' '}
-            <a href="/login" className="text-blue-500 hover:text-blue-600 underline transition">Sign In</a>
-          </p>
+        <div className="text-center mt-6 text-gray-500 text-sm">
+          Already have an account? <a href="/login" className="text-blue-700 hover:underline">Sign in here</a>
         </div>
       </div>
     </div>

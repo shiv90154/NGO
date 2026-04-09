@@ -1,5 +1,5 @@
+// About.jsx - Government Style (No motion, official look)
 import React from 'react';
-import { motion, useInView } from 'framer-motion';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
@@ -32,166 +32,125 @@ const About = () => {
   return (
     <>
       <Header />
-      <main>
-        {/* Hero Section */}
-        <section className="bg-gradient-to-r from-[#1e3a5f] to-[#2c4e7a] text-white py-20 px-4">
+      <main className="bg-gray-50">
+        {/* Hero Section - Government Blue */}
+        <section className="bg-[#1e3a5f] text-white py-16 px-4">
           <div className="container mx-auto max-w-5xl text-center">
-            <motion.h1
-              className="text-4xl md:text-5xl font-bold mb-6"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              About Samraddh Bharat Foundation
-            </motion.h1>
-            <motion.p
-              className="text-xl max-w-3xl mx-auto text-gray-200"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
+            {/* Tricolor Emblem */}
+            <div className="inline-flex items-center justify-center gap-1 mb-4">
+              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                <div className="w-6 h-6 rounded-full border-2 border-[#FF9933] flex items-center justify-center">
+                  <div className="w-3 h-3 rounded-full bg-[#138808]"></div>
+                </div>
+              </div>
+            </div>
+            <h1 className="text-3xl md:text-5xl font-bold mb-4">About Samraddh Bharat Foundation</h1>
+            <div className="flex justify-center gap-1 my-4">
+              <div className="w-12 h-1 bg-[#FF9933] rounded"></div>
+              <div className="w-12 h-1 bg-white rounded"></div>
+              <div className="w-12 h-1 bg-[#138808] rounded"></div>
+            </div>
+            <p className="text-lg md:text-xl max-w-3xl mx-auto text-gray-200">
               Empowering citizens through technology-driven governance and transparent service delivery.
-            </motion.p>
+            </p>
           </div>
         </section>
 
-        {/* Vision & Mission */}
-        <section className="py-20 px-4 bg-gray-50">
+        {/* Vision & Mission Cards */}
+        <section className="py-16 px-4">
           <div className="container mx-auto max-w-5xl">
             <div className="grid md:grid-cols-2 gap-8">
-              <motion.div
-                initial={{ opacity: 0, x: -50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6 }}
-                viewport={{ once: true }}
-                whileHover={{ scale: 1.02 }}
-                className="bg-white p-8 rounded-2xl shadow-xl"
-              >
-                <div className="text-5xl mb-4">🎯</div>
-                <h3 className="text-2xl font-semibold text-[#1e3a5f] mb-3">Our Vision</h3>
-                <p className="text-gray-600">
-                  To create a "Samraddh Bharat" (Prosperous India) where every citizen has equal access to government services,
-                  opportunities, and benefits through technology-driven governance.
-                </p>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, x: 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6 }}
-                viewport={{ once: true }}
-                whileHover={{ scale: 1.02 }}
-                className="bg-white p-8 rounded-2xl shadow-xl"
-              >
-                <div className="text-5xl mb-4">🚀</div>
-                <h3 className="text-2xl font-semibold text-[#1e3a5f] mb-3">Our Mission</h3>
-                <p className="text-gray-600">
-                  Leveraging digital infrastructure to deliver citizen-centric services, promote transparency, and ensure last-mile
-                  delivery of government schemes and foundation programs.
-                </p>
-              </motion.div>
+              <div className="bg-white rounded-lg shadow-md overflow-hidden border-t-4 border-[#FF9933] hover:shadow-lg transition-all duration-300">
+                <div className="p-8">
+                  <div className="text-5xl mb-4">🎯</div>
+                  <h3 className="text-2xl font-bold text-[#1e3a5f] mb-3">Our Vision</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    To create a "Samraddh Bharat" (Prosperous India) where every citizen has equal access to government services,
+                    opportunities, and benefits through technology-driven governance.
+                  </p>
+                </div>
+              </div>
+              <div className="bg-white rounded-lg shadow-md overflow-hidden border-t-4 border-[#138808] hover:shadow-lg transition-all duration-300">
+                <div className="p-8">
+                  <div className="text-5xl mb-4">🚀</div>
+                  <h3 className="text-2xl font-bold text-[#1e3a5f] mb-3">Our Mission</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Leveraging digital infrastructure to deliver citizen-centric services, promote transparency, and ensure last-mile
+                    delivery of government schemes and foundation programs.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
         {/* Core Values */}
-        <section className="py-20 px-4 bg-white">
+        <section className="py-16 px-4 bg-white">
           <div className="container mx-auto max-w-5xl">
-            <motion.h2
-              className="text-4xl md:text-5xl font-bold text-center text-[#1e3a5f] mb-12"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-            >
-              Our Core Values
-            </motion.h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-center text-[#1e3a5f] mb-4">Our Core Values</h2>
+            <div className="flex justify-center gap-1 mb-12">
+              <div className="w-12 h-1 bg-[#FF9933] rounded"></div>
+              <div className="w-12 h-1 bg-white rounded"></div>
+              <div className="w-12 h-1 bg-[#138808] rounded"></div>
+            </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {coreValues.map((value, index) => (
-                <motion.div
-                  key={index}
-                  className="bg-gray-50 p-6 rounded-xl text-center hover:shadow-lg transition"
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                >
+                <div key={index} className="bg-gray-50 p-6 rounded-lg text-center hover:shadow-md transition-all duration-300 hover:-translate-y-1">
                   <div className="text-4xl mb-3">{value.icon}</div>
                   <h3 className="text-xl font-semibold text-[#1e3a5f] mb-2">{value.title}</h3>
                   <p className="text-gray-600 text-sm">{value.description}</p>
-                </motion.div>
+                </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Key Stats */}
-        <section className="py-20 px-4 bg-gradient-to-br from-[#ff8c42]/10 to-[#ff6b22]/10">
+        {/* Impact Stats */}
+        <section className="py-16 px-4 bg-gradient-to-r from-[#FF9933]/10 to-[#138808]/10">
           <div className="container mx-auto max-w-5xl">
-            <motion.h2
-              className="text-4xl md:text-5xl font-bold text-center text-[#1e3a5f] mb-12"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-            >
-              Our Impact
-            </motion.h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-center text-[#1e3a5f] mb-4">Our Impact</h2>
+            <div className="flex justify-center gap-1 mb-12">
+              <div className="w-12 h-1 bg-[#FF9933] rounded"></div>
+              <div className="w-12 h-1 bg-white rounded"></div>
+              <div className="w-12 h-1 bg-[#138808] rounded"></div>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {stats.map((stat, index) => (
-                <motion.div
-                  key={index}
-                  className="text-center bg-white p-6 rounded-xl shadow-md"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                >
+                <div key={index} className="bg-white rounded-lg p-6 text-center shadow-md hover:shadow-lg transition-all duration-300">
                   <div className="text-4xl mb-2">{stat.icon}</div>
-                  <div className="text-3xl font-bold text-[#ff8c42]">{stat.value}</div>
+                  <div className="text-3xl font-bold text-[#FF9933]">{stat.value}</div>
                   <div className="text-gray-600 text-sm mt-1">{stat.label}</div>
-                </motion.div>
+                </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Our Journey */}
-        <section className="py-20 px-4 bg-white">
+        {/* Our Journey - Timeline */}
+        <section className="py-16 px-4 bg-white">
           <div className="container mx-auto max-w-5xl">
-            <motion.h2
-              className="text-4xl md:text-5xl font-bold text-center text-[#1e3a5f] mb-12"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-            >
-              Our Journey
-            </motion.h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-center text-[#1e3a5f] mb-4">Our Journey</h2>
+            <div className="flex justify-center gap-1 mb-12">
+              <div className="w-12 h-1 bg-[#FF9933] rounded"></div>
+              <div className="w-12 h-1 bg-white rounded"></div>
+              <div className="w-12 h-1 bg-[#138808] rounded"></div>
+            </div>
             <div className="relative">
-              {/* Vertical timeline line */}
-              <div className="absolute left-1/2 transform -translate-x-1/2 w-1 bg-gray-200 h-full hidden md:block"></div>
+              {/* Vertical line (hidden on mobile) */}
+              <div className="absolute left-1/2 transform -translate-x-1/2 w-0.5 bg-gray-200 h-full hidden md:block"></div>
               <div className="space-y-8">
                 {milestones.map((milestone, index) => (
-                  <motion.div
-                    key={index}
-                    className={`relative flex flex-col md:flex-row items-center ${
-                      index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
-                    }`}
-                    initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                    viewport={{ once: true }}
-                  >
+                  <div key={index} className={`relative flex flex-col md:flex-row ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}>
                     {/* Timeline dot */}
-                    <div className="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-[#ff8c42] rounded-full z-10 hidden md:block"></div>
+                    <div className="absolute left-1/2 transform -translate-x-1/2 w-3 h-3 bg-[#FF9933] rounded-full z-10 hidden md:block"></div>
                     <div className="w-full md:w-1/2 p-4">
-                      <div className="bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-lg transition">
-                        <div className="text-[#ff8c42] font-bold text-xl mb-2">{milestone.year}</div>
-                        <h3 className="text-xl font-semibold text-[#1e3a5f] mb-2">{milestone.title}</h3>
-                        <p className="text-gray-600">{milestone.description}</p>
+                      <div className="bg-gray-50 p-5 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border-l-4 border-[#138808]">
+                        <div className="text-[#FF9933] font-bold text-lg mb-1">{milestone.year}</div>
+                        <h3 className="text-lg font-semibold text-[#1e3a5f] mb-1">{milestone.title}</h3>
+                        <p className="text-gray-600 text-sm">{milestone.description}</p>
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             </div>
@@ -199,36 +158,18 @@ const About = () => {
         </section>
 
         {/* Call to Action */}
-        <section className="py-16 px-4 bg-gradient-to-r from-[#1e3a5f] to-[#2c4e7a] text-white text-center">
+        <section className="py-16 px-4 bg-[#1e3a5f] text-white text-center">
           <div className="container mx-auto max-w-3xl">
-            <motion.h3
-              className="text-3xl font-bold mb-4"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-            >
-              Join Us in Building a Prosperous India
-            </motion.h3>
-            <motion.p
-              className="text-lg mb-8 text-gray-200"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              viewport={{ once: true }}
-            >
+            <h3 className="text-2xl md:text-3xl font-bold mb-4">Join Us in Building a Prosperous India</h3>
+            <p className="text-gray-200 mb-8">
               Whether you're a citizen seeking services or an organization wanting to collaborate, we're here to help.
-            </motion.p>
-            <motion.a
+            </p>
+            <a
               href="/contact"
-              className="inline-block bg-[#ff8c42] hover:bg-[#ff6b22] text-white font-semibold px-8 py-3 rounded-lg transition"
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              viewport={{ once: true }}
+              className="inline-block bg-[#FF9933] hover:bg-[#e68900] text-white font-semibold px-6 py-3 rounded-md transition-all duration-300 shadow-md hover:shadow-lg"
             >
-              Get in Touch
-            </motion.a>
+              Get in Touch →
+            </a>
           </div>
         </section>
       </main>
