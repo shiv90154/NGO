@@ -4,7 +4,12 @@ import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/
 import { useAuth } from "../contexts/AuthContext";
 
 const Login = () => {
-  const { login } = useAuth();
+  const { login, user } = useAuth();
+  useEffect(() => {
+    if (user) navigate("/services", { replace: true });
+
+  }, [])
+
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");

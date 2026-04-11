@@ -5,6 +5,7 @@ import Contact from "./pages/Contact";
 import ServicesSection from "./pages/ServicesSection";
 import LoginForm from "./pages/LoginForm";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
 import Profile from "./pages/Profile";
 import VerifyOTP from "./pages/VerifyOTP";
 import TestDashboard from "./pages/TestDashboard";
@@ -37,6 +38,7 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/login/" element={<LoginForm />} />
         <Route path="/register/" element={<Register />} />
+        <Route path="/forgot-password/" element={<ForgotPassword />} />
         <Route path="/register/:role" element={<Register />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
         <Route path="/profile" element={<Profile />} />

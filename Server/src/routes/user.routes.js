@@ -43,6 +43,17 @@ router.post('/verify-otp', userController.verifyOTP);
 router.post('/resend-otp', userController.resendOTP);
 router.post('/login', userController.login);
 
+// ── Forgot-password flow (3 steps, all public) ──────────────────────────────
+// Step 1: Submit email → OTP is sent if the account exists and is verified
+router.post('/forgot-password', userController.forgotPassword);
+
+// Step 2: Submit email + OTP → validates the code (OTP kept alive for step 3)
+router.post('/verify-reset-otp', userController.verifyForgotPasswordOTP);
+
+// Step 3: Submit email + OTP + newPassword → saves the new password
+router.post('/reset-password', userController.resetPassword);
+// ────────────────────────────────────────────────────────────────────────────
+
 // ======================
 // PROTECTED ROUTES (Authentication required)
 // ======================
@@ -52,9 +63,7 @@ router.put('/profile', protect, upload.single('profileImage'), userController.up
 router.get('/subordinates', protect, userController.getSubordinates);
 router.get('/subordinates/:id', protect, userController.getSubordinates);
 
-
 router.post('/wallet', protect, userController.updateWallet);
-
 
 router.get('/', protect, restrictTo('SUPER_ADMIN', 'ADDITIONAL_DIRECTOR'), userController.getAllUsers);
 router.get('/:id', protect, restrictTo('SUPER_ADMIN', 'ADDITIONAL_DIRECTOR', 'STATE_OFFICER'), userController.getUserById);

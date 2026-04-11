@@ -282,7 +282,7 @@ exports.register = async (req, res) => {
 };
 
 // ======================
-// VERIFY OTP
+// VERIFY OTP  (registration flow)
 // ======================
 exports.verifyOTP = async (req, res) => {
   try {
@@ -320,7 +320,7 @@ exports.verifyOTP = async (req, res) => {
 };
 
 // ======================
-// RESEND OTP
+// RESEND OTP  (registration flow)
 // ======================
 exports.resendOTP = async (req, res) => {
   try {
@@ -371,6 +371,129 @@ exports.login = async (req, res) => {
 
     res.json({ success: true, message: 'Login successful', token, user: userData });
   } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// ======================
+// FORGOT PASSWORD — Step 1
+// Send OTP only if the account exists and is verified
+// ======================
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+
+    const user = await User.findOne({ email });
+
+    // Return the same message whether the user exists or not to prevent
+    // email enumeration attacks, but only send when the account is real.
+    if (!user || !user.isVerified) {
+      return res.status(200).json({
+        success: true,
+        message: 'If this email is registered and verified, an OTP has been sent.',
+      });
+    }
+
+    const otp = generateOTP();
+    const hashedOtp = await hashOTP(otp);
+
+    user.otp = hashedOtp;
+    user.otpExpire = Date.now() + 5 * 60 * 1000; // 5 minutes
+    await user.save();
+
+    // Fire-and-forget — do not await so the response is immediate
+    sendEmail(email, otp, 5).catch(err =>
+      console.error(`[forgotPassword] Email send failed for ${email}:`, err.message)
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'If this email is registered and verified, an OTP has been sent.',
+    });
+  } catch (error) {
+    console.error('[forgotPassword] Error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// ======================
+// VERIFY FORGOT-PASSWORD OTP — Step 2
+// Validates the OTP but does NOT clear it (needed again in resetPassword)
+// ======================
+exports.verifyForgotPasswordOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      return res.status(400).json({ success: false, message: 'Email and OTP are required' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    if (!user.otp) {
+      return res.status(400).json({ success: false, message: 'No OTP found. Please request a new one.' });
+    }
+    if (user.otpExpire < Date.now()) {
+      return res.status(400).json({ success: false, message: 'OTP has expired. Please request a new one.' });
+    }
+
+    const isValid = await verifyOTP(otp, user.otp);
+    if (!isValid) {
+      return res.status(400).json({ success: false, message: 'Invalid OTP' });
+    }
+
+    // OTP is valid — intentionally keep it on the document so resetPassword
+    // can re-verify it in the next step. It expires at the same otpExpire.
+    res.status(200).json({ success: true, message: 'OTP verified. You may now reset your password.' });
+  } catch (error) {
+    console.error('[verifyForgotPasswordOTP] Error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// ======================
+// RESET PASSWORD — Step 3
+// Re-verifies OTP, then saves the new hashed password and clears OTP fields
+// ======================
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ success: false, message: 'Email, OTP, and new password are required' });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    if (!user.otp) {
+      return res.status(400).json({ success: false, message: 'No OTP found. Please restart the reset flow.' });
+    }
+    if (user.otpExpire < Date.now()) {
+      return res.status(400).json({ success: false, message: 'OTP has expired. Please request a new one.' });
+    }
+
+    const isValid = await verifyOTP(otp, user.otp);
+    if (!isValid) {
+      return res.status(400).json({ success: false, message: 'Invalid OTP' });
+    }
+
+    // Set new password — the pre-save hook in user.model.js will hash it
+    user.password = newPassword;
+    user.otp = null;
+    user.otpExpire = null;
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Password reset successfully. You can now log in.' });
+  } catch (error) {
+    console.error('[resetPassword] Error:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 };
