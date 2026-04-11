@@ -3,6 +3,8 @@ const express = require('express');
 const router = express.Router();
 const Agriculture = require('../models/agriculture.model');
 const User = require('../models/user.model');
+const CropGuide = require('../models/cropguide.model');
+
 const { protect } = require('../middleware/auth.middleware');
 
 // ==================== ASYNC WRAPPER ====================
@@ -74,7 +76,14 @@ const fromFrontendFormat = (frontendData) => {
 
     return { userUpdate, agricultureUpdate };
 };
-
+router.get('/crop-guide', async (req, res) => {
+    try {
+        const guides = await CropGuide.find({ isActive: true });
+        res.json({ success: true, data: guides });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 // ==================== PROFILE ENDPOINTS ====================
 // GET /api/agriculture/profile
 router.get('/profile', protect, getAgri, asyncHandler(async (req, res) => {

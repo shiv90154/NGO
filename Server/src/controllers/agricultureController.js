@@ -1,36 +1,22 @@
 // controllers/agricultureController.js
 const mongoose = require('mongoose');
 const Agriculture = require('../models/agriculture.model');
+const CropGuide = require('../models/cropGuide.model');
 const User = require('../models/user.model');
 
 // ======================
-// FARMER REGISTRATION & PROFILE CONTROLLERS
+// FARMER PROFILE
 // ======================
 
-// @desc    Register new farmer
-// @route   POST /api/agriculture/farmers
-// @access  Public
 exports.registerFarmer = async (req, res) => {
     try {
         const { name, email, password, phone, farmerDetails } = req.body;
 
         const userExists = await User.findOne({ email });
-        if (userExists) {
-            return res.status(400).json({ success: false, message: 'User already exists' });
-        }
+        if (userExists) return res.status(400).json({ success: false, message: 'User already exists' });
 
-        const user = await User.create({
-            name,
-            email,
-            password,
-            phone,
-            role: 'AGRICULTURE'
-        });
-
-        const agriculture = await Agriculture.create({
-            _id: user._id,
-            farmerDetails: farmerDetails
-        });
+        const user = await User.create({ name, email, password, phone, role: 'AGRICULTURE' });
+        const agriculture = await Agriculture.create({ userId: user._id, ...farmerDetails });
 
         res.status(201).json({ success: true, data: agriculture });
     } catch (error) {
@@ -38,109 +24,93 @@ exports.registerFarmer = async (req, res) => {
     }
 };
 
-// @desc    Get all farmers (Admin only)
-// @route   GET /api/agriculture/farmers
 exports.getFarmers = async (req, res) => {
     try {
-        const farmers = await Agriculture.find().populate('farmerDetails');
+        const farmers = await Agriculture.find().populate('userId', 'fullName email phone');
         res.json({ success: true, data: farmers });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// @desc    Get farmer by ID
-// @route   GET /api/agriculture/farmers/:id
 exports.getFarmerById = async (req, res) => {
     try {
-        const farmer = await Agriculture.findById(req.params.id || req.user.id);
+        const farmer = await Agriculture.findOne({ userId: req.params.id || req.user.id });
         if (!farmer) return res.status(404).json({ success: false, message: 'Farmer not found' });
-
         res.json({ success: true, data: farmer });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// @desc    Update farmer profile
-// @route   PUT /api/agriculture/farmers/:id
 exports.updateFarmer = async (req, res) => {
     try {
-        const farmer = await Agriculture.findById(req.params.id);
+        const farmer = await Agriculture.findOne({ userId: req.params.id });
         if (!farmer) return res.status(404).json({ success: false, message: 'Farmer not found' });
 
-        if (farmer._id.toString() !== req.user.id && req.user.role !== 'SUPER_ADMIN') {
+        if (farmer.userId.toString() !== req.user.id && req.user.role !== 'SUPER_ADMIN') {
             return res.status(403).json({ success: false, message: 'Not authorized' });
         }
 
-        const updated = await Agriculture.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+        const updated = await Agriculture.findOneAndUpdate({ userId: req.params.id }, req.body, { new: true, runValidators: true });
         res.json({ success: true, data: updated });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// @desc    Delete farmer (Admin only)
-// @route   DELETE /api/agriculture/farmers/:id
 exports.deleteFarmer = async (req, res) => {
     try {
-        const farmer = await Agriculture.findById(req.params.id);
+        const farmer = await Agriculture.findOneAndDelete({ userId: req.params.id });
         if (!farmer) return res.status(404).json({ success: false, message: 'Farmer not found' });
-
         await User.findByIdAndDelete(req.params.id);
-        await farmer.remove();
         res.json({ success: true, message: 'Farmer deleted' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// @desc    Get dashboard data
-// @route   GET /api/agriculture/dashboard
 exports.getDashboardData = async (req, res) => {
     try {
-        const agriculture = await Agriculture.findById(req.user.id);
+        const agriculture = await Agriculture.findOne({ userId: req.user.id });
         if (!agriculture) return res.status(404).json({ success: false, message: 'Farmer not found' });
 
-        const dashboardData = {
-            farmingStats: agriculture.farmingStats,
-            activeCrops: agriculture.crops.filter(c => c.growthStage !== 'harvested'),
-            recentOrders: agriculture.ordersReceived.slice(-5),
-            activeListings: agriculture.productListings.filter(l => l.status === 'active'),
-            recentQueries: agriculture.supportQueries.slice(-3)
-        };
-
-        res.json({ success: true, data: dashboardData });
+        res.json({
+            success: true,
+            data: {
+                stats: agriculture.stats,
+                activeCrops: agriculture.crops.filter(c => c.growthStage !== 'harvested'),
+                recentOrders: agriculture.ordersReceived.slice(-5),
+                activeListings: agriculture.productListings.filter(l => l.status === 'active'),
+                recentQueries: agriculture.supportQueries.slice(-3),
+            },
+        });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// @desc    Get farming stats
-// @route   GET /api/agriculture/stats
 exports.getFarmingStats = async (req, res) => {
     try {
-        const agriculture = await Agriculture.findById(req.user.id);
+        const agriculture = await Agriculture.findOne({ userId: req.user.id });
         if (!agriculture) return res.status(404).json({ success: false, message: 'Farmer not found' });
-
-        res.json({ success: true, data: agriculture.farmingStats });
+        res.json({ success: true, data: agriculture.stats });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
 // ======================
-// CROP MANAGEMENT CONTROLLERS
+// CROP MANAGEMENT
 // ======================
 
-// @desc    Add new crop
-// @route   POST /api/agriculture/crops
 exports.addCrop = async (req, res) => {
     try {
-        const agriculture = await Agriculture.findById(req.user.id);
+        const agriculture = await Agriculture.findOne({ userId: req.user.id });
         if (!agriculture) return res.status(404).json({ success: false, message: 'Farmer not found' });
 
         agriculture.crops.push(req.body);
+        agriculture.stats.totalCrops = agriculture.crops.length;
         await agriculture.save();
 
         res.status(201).json({ success: true, data: agriculture.crops });
@@ -149,24 +119,19 @@ exports.addCrop = async (req, res) => {
     }
 };
 
-// @desc    Get my crops
-// @route   GET /api/agriculture/crops
 exports.getMyCrops = async (req, res) => {
     try {
-        const agriculture = await Agriculture.findById(req.user.id);
+        const agriculture = await Agriculture.findOne({ userId: req.user.id });
         if (!agriculture) return res.status(404).json({ success: false, message: 'Farmer not found' });
-
         res.json({ success: true, data: agriculture.crops });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// @desc    Update crop
-// @route   PUT /api/agriculture/crops/:cropId
 exports.updateCrop = async (req, res) => {
     try {
-        const agriculture = await Agriculture.findById(req.user.id);
+        const agriculture = await Agriculture.findOne({ userId: req.user.id });
         if (!agriculture) return res.status(404).json({ success: false, message: 'Farmer not found' });
 
         const crop = agriculture.crops.id(req.params.cropId);
@@ -174,105 +139,89 @@ exports.updateCrop = async (req, res) => {
 
         Object.assign(crop, req.body);
         await agriculture.save();
-
         res.json({ success: true, data: agriculture.crops });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// @desc    Delete crop
-// @route   DELETE /api/agriculture/crops/:cropId
 exports.deleteCrop = async (req, res) => {
     try {
-        const agriculture = await Agriculture.findById(req.user.id);
+        const agriculture = await Agriculture.findOne({ userId: req.user.id });
         if (!agriculture) return res.status(404).json({ success: false, message: 'Farmer not found' });
 
-        agriculture.crops.id(req.params.cropId).remove();
+        agriculture.crops.pull({ _id: req.params.cropId });
+        agriculture.stats.totalCrops = agriculture.crops.length;
         await agriculture.save();
-
         res.json({ success: true, message: 'Crop deleted' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// @desc    Upload crop photos
-// @route   POST /api/agriculture/crops/:cropId/photos
 exports.uploadCropPhotos = async (req, res) => {
     try {
         const { photos, statusUpdate } = req.body;
-        const agriculture = await Agriculture.findById(req.user.id);
+        const agriculture = await Agriculture.findOne({ userId: req.user.id });
         if (!agriculture) return res.status(404).json({ success: false, message: 'Farmer not found' });
 
         const crop = agriculture.crops.id(req.params.cropId);
         if (!crop) return res.status(404).json({ success: false, message: 'Crop not found' });
 
-        agriculture.cropPhotos.push({
-            cropId: req.params.cropId,
-            photos: photos,
-            statusUpdate: statusUpdate
-        });
-
+        crop.photos.push(...(photos || []));
+        if (statusUpdate) crop.notes = statusUpdate;
         await agriculture.save();
-        res.status(201).json({ success: true, data: agriculture.cropPhotos });
+        res.status(201).json({ success: true, data: crop });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// @desc    Get crop photos
-// @route   GET /api/agriculture/crops/:cropId/photos
 exports.getCropPhotos = async (req, res) => {
     try {
-        const agriculture = await Agriculture.findById(req.user.id);
+        const agriculture = await Agriculture.findOne({ userId: req.user.id });
         if (!agriculture) return res.status(404).json({ success: false, message: 'Farmer not found' });
 
-        const photos = agriculture.cropPhotos.filter(p => p.cropId.toString() === req.params.cropId);
-        res.json({ success: true, data: photos });
+        const crop = agriculture.crops.id(req.params.cropId);
+        if (!crop) return res.status(404).json({ success: false, message: 'Crop not found' });
+
+        res.json({ success: true, data: crop.photos });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
 // ======================
-// PRODUCT LISTING CONTROLLERS
+// PRODUCT LISTINGS
 // ======================
 
-// @desc    Create product listing
-// @route   POST /api/agriculture/products
 exports.createProductListing = async (req, res) => {
     try {
-        const agriculture = await Agriculture.findById(req.user.id);
+        const agriculture = await Agriculture.findOne({ userId: req.user.id });
         if (!agriculture) return res.status(404).json({ success: false, message: 'Farmer not found' });
 
         agriculture.productListings.push(req.body);
+        agriculture.stats.totalProducts = agriculture.productListings.length;
         await agriculture.save();
-
         res.status(201).json({ success: true, data: agriculture.productListings });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// @desc    Get my listings
-// @route   GET /api/agriculture/products/my-listings
 exports.getMyListings = async (req, res) => {
     try {
-        const agriculture = await Agriculture.findById(req.user.id);
+        const agriculture = await Agriculture.findOne({ userId: req.user.id });
         if (!agriculture) return res.status(404).json({ success: false, message: 'Farmer not found' });
-
         res.json({ success: true, data: agriculture.productListings });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// @desc    Update listing
-// @route   PUT /api/agriculture/products/:productId
 exports.updateListing = async (req, res) => {
     try {
-        const agriculture = await Agriculture.findById(req.user.id);
+        const agriculture = await Agriculture.findOne({ userId: req.user.id });
         if (!agriculture) return res.status(404).json({ success: false, message: 'Farmer not found' });
 
         const listing = agriculture.productListings.id(req.params.productId);
@@ -280,97 +229,84 @@ exports.updateListing = async (req, res) => {
 
         Object.assign(listing, req.body);
         await agriculture.save();
-
         res.json({ success: true, data: agriculture.productListings });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// @desc    Delete listing
-// @route   DELETE /api/agriculture/products/:productId
 exports.deleteListing = async (req, res) => {
     try {
-        const agriculture = await Agriculture.findById(req.user.id);
+        const agriculture = await Agriculture.findOne({ userId: req.user.id });
         if (!agriculture) return res.status(404).json({ success: false, message: 'Farmer not found' });
 
-        agriculture.productListings.id(req.params.productId).remove();
+        agriculture.productListings.pull({ _id: req.params.productId });
+        agriculture.stats.totalProducts = agriculture.productListings.length;
         await agriculture.save();
-
         res.json({ success: true, message: 'Listing deleted' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// @desc    Get all active products (public)
-// @route   GET /api/agriculture/products
 exports.getAllProducts = async (req, res) => {
     try {
         const { category, search, page = 1, limit = 10 } = req.query;
 
-        const farmers = await Agriculture.find({});
-        let allProducts = [];
+        // Efficient aggregation instead of loading all documents in memory
+        const pipeline = [
+            { $unwind: '$productListings' },
+            { $match: { 'productListings.status': 'active' } },
+            ...(category ? [{ $match: { 'productListings.category': category } }] : []),
+            ...(search ? [{ $match: { 'productListings.productName': { $regex: search, $options: 'i' } } }] : []),
+            { $replaceRoot: { newRoot: '$productListings' } },
+            { $skip: (page - 1) * Number(limit) },
+            { $limit: Number(limit) },
+        ];
 
-        farmers.forEach(farmer => {
-            const activeProducts = farmer.productListings.filter(p => p.status === 'active');
-            allProducts.push(...activeProducts);
-        });
-
-        if (category) allProducts = allProducts.filter(p => p.category === category);
-        if (search) allProducts = allProducts.filter(p => p.productName.toLowerCase().includes(search.toLowerCase()));
-
-        const start = (page - 1) * limit;
-        const paginated = allProducts.slice(start, start + limit);
+        const products = await Agriculture.aggregate(pipeline);
+        const total = await Agriculture.aggregate([
+            { $unwind: '$productListings' },
+            { $match: { 'productListings.status': 'active' } },
+            { $count: 'count' },
+        ]);
 
         res.json({
             success: true,
-            data: paginated,
-            pagination: { page, limit, total: allProducts.length, pages: Math.ceil(allProducts.length / limit) }
+            data: products,
+            pagination: { page: Number(page), limit: Number(limit), total: total[0]?.count || 0, pages: Math.ceil((total[0]?.count || 0) / limit) },
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// @desc    Get product by ID
-// @route   GET /api/agriculture/products/:productId
 exports.getProductById = async (req, res) => {
     try {
-        const farmers = await Agriculture.find({});
-        let foundProduct = null;
+        const result = await Agriculture.aggregate([
+            { $unwind: '$productListings' },
+            { $match: { 'productListings._id': new mongoose.Types.ObjectId(req.params.productId) } },
+            { $replaceRoot: { newRoot: '$productListings' } },
+        ]);
 
-        for (const farmer of farmers) {
-            const product = farmer.productListings.id(req.params.productId);
-            if (product) {
-                foundProduct = product;
-                break;
-            }
-        }
-
-        if (!foundProduct) return res.status(404).json({ success: false, message: 'Product not found' });
-
-        res.json({ success: true, data: foundProduct });
+        if (!result.length) return res.status(404).json({ success: false, message: 'Product not found' });
+        res.json({ success: true, data: result[0] });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
 // ======================
-// ORDER MANAGEMENT CONTROLLERS
+// ORDERS
 // ======================
 
-// @desc    Place order
-// @route   POST /api/agriculture/orders
 exports.placeOrder = async (req, res) => {
     const session = await mongoose.startSession();
     session.startTransaction();
-
     try {
         const { productId, quantity, deliveryAddress, paymentMethod } = req.body;
 
-        // Find seller
-        const seller = await Agriculture.findOne({ 'productListings._id': productId });
+        const seller = await Agriculture.findOne({ 'productListings._id': productId }).session(session);
         if (!seller) return res.status(404).json({ success: false, message: 'Product not found' });
 
         const product = seller.productListings.id(productId);
@@ -379,29 +315,18 @@ exports.placeOrder = async (req, res) => {
         }
 
         const totalAmount = product.pricePerUnit * quantity;
-        const orderId = `ORD-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+        const orderId = `ORD-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
 
-        const orderData = {
-            orderId,
-            productId,
-            buyerId: req.user.id,
-            quantity,
-            totalAmount,
-            unitPrice: product.pricePerUnit,
-            deliveryAddress,
-            paymentMethod,
-            orderStatus: 'pending',
-            paymentStatus: 'pending'
-        };
+        const orderData = { orderId, productId, buyerId: req.user.id, quantity, totalAmount, unitPrice: product.pricePerUnit, deliveryAddress, paymentMethod };
 
-        // Add to seller's ordersReceived
         seller.ordersReceived.push(orderData);
+        seller.stats.totalOrders = seller.ordersReceived.length;
+        seller.stats.totalRevenue += totalAmount;
         await seller.save({ session });
 
-        // Add to buyer's ordersPlaced
-        const buyer = await Agriculture.findById(req.user.id);
+        const buyer = await Agriculture.findOne({ userId: req.user.id }).session(session);
         if (buyer) {
-            buyer.ordersPlaced.push(orderData);
+            buyer.ordersPlaced.push({ ...orderData, sellerId: seller.userId });
             await buyer.save({ session });
         }
 
@@ -415,35 +340,31 @@ exports.placeOrder = async (req, res) => {
     }
 };
 
-// @desc    Get my orders (as buyer)
-// @route   GET /api/agriculture/orders
 exports.getMyOrders = async (req, res) => {
     try {
-        const agriculture = await Agriculture.findById(req.user.id);
+        const agriculture = await Agriculture.findOne({ userId: req.user.id });
         if (!agriculture) return res.status(404).json({ success: false, message: 'User not found' });
-
         res.json({ success: true, data: agriculture.ordersPlaced });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// @desc    Update order status (for seller)
-// @route   PUT /api/agriculture/orders/:orderId/status
 exports.updateOrderStatus = async (req, res) => {
     try {
         const { status } = req.body;
-        const agriculture = await Agriculture.findById(req.user.id);
+        const agriculture = await Agriculture.findOne({ userId: req.user.id });
         if (!agriculture) return res.status(404).json({ success: false, message: 'Farmer not found' });
 
         const order = agriculture.ordersReceived.id(req.params.orderId);
         if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
 
         order.orderStatus = status;
-        if (status === 'delivered') order.deliveredAt = Date.now();
-        if (status === 'confirmed') order.confirmedAt = Date.now();
-        if (status === 'shipped') order.shippedAt = Date.now();
-        if (status === 'cancelled') order.cancelledAt = Date.now();
+        const now = Date.now();
+        if (status === 'confirmed') order.confirmedAt = now;
+        if (status === 'shipped') order.shippedAt = now;
+        if (status === 'delivered') order.deliveredAt = now;
+        if (status === 'cancelled') order.cancelledAt = now;
 
         await agriculture.save();
         res.json({ success: true, data: order });
@@ -452,32 +373,24 @@ exports.updateOrderStatus = async (req, res) => {
     }
 };
 
-// @desc    Cancel order (for buyer)
-// @route   PUT /api/agriculture/orders/:orderId/cancel
 exports.cancelOrder = async (req, res) => {
     try {
-        const agriculture = await Agriculture.findById(req.user.id);
+        const agriculture = await Agriculture.findOne({ userId: req.user.id });
         if (!agriculture) return res.status(404).json({ success: false, message: 'User not found' });
 
         const order = agriculture.ordersPlaced.id(req.params.orderId);
         if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
-
-        if (order.orderStatus !== 'pending') {
-            return res.status(400).json({ success: false, message: 'Order cannot be cancelled' });
-        }
+        if (order.orderStatus !== 'pending') return res.status(400).json({ success: false, message: 'Only pending orders can be cancelled' });
 
         order.orderStatus = 'cancelled';
         order.cancelledAt = Date.now();
         await agriculture.save();
 
-        // Also update in seller's ordersReceived
+        // Mirror cancellation to seller
         const seller = await Agriculture.findOne({ 'ordersReceived.orderId': order.orderId });
         if (seller) {
-            const sellerOrder = seller.ordersReceived.id(order._id);
-            if (sellerOrder) {
-                sellerOrder.orderStatus = 'cancelled';
-                await seller.save();
-            }
+            const sellerOrder = seller.ordersReceived.find(o => o.orderId === order.orderId);
+            if (sellerOrder) { sellerOrder.orderStatus = 'cancelled'; await seller.save(); }
         }
 
         res.json({ success: true, message: 'Order cancelled' });
@@ -487,34 +400,28 @@ exports.cancelOrder = async (req, res) => {
 };
 
 // ======================
-// REVIEWS & RATINGS CONTROLLERS
+// REVIEWS
 // ======================
 
-// @desc    Add review for seller
-// @route   POST /api/agriculture/reviews/:orderId
 exports.addReview = async (req, res) => {
     try {
         const { rating, review } = req.body;
-        const agriculture = await Agriculture.findById(req.user.id);
+        const agriculture = await Agriculture.findOne({ userId: req.user.id });
         if (!agriculture) return res.status(404).json({ success: false, message: 'User not found' });
 
         const order = agriculture.ordersPlaced.id(req.params.orderId);
         if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
-
-        if (order.orderStatus !== 'delivered') {
-            return res.status(400).json({ success: false, message: 'Can only review delivered orders' });
-        }
+        if (order.orderStatus !== 'delivered') return res.status(400).json({ success: false, message: 'Can only review delivered orders' });
 
         order.buyerRating = rating;
         order.buyerReview = review;
         await agriculture.save();
 
-        // Update seller's average rating
+        // Recalculate seller average rating
         const seller = await Agriculture.findOne({ 'ordersReceived.orderId': order.orderId });
         if (seller) {
-            const completedOrders = seller.ordersReceived.filter(o => o.buyerRating);
-            const avgRating = completedOrders.reduce((sum, o) => sum + o.buyerRating, 0) / completedOrders.length;
-            seller.farmingStats.averageRating = avgRating || 0;
+            const rated = seller.ordersReceived.filter(o => o.buyerRating);
+            seller.stats.averageRating = rated.length ? rated.reduce((s, o) => s + o.buyerRating, 0) / rated.length : 0;
             await seller.save();
         }
 
@@ -524,11 +431,9 @@ exports.addReview = async (req, res) => {
     }
 };
 
-// @desc    Get seller reviews
-// @route   GET /api/agriculture/reviews/seller/:sellerId
 exports.getSellerReviews = async (req, res) => {
     try {
-        const seller = await Agriculture.findById(req.params.sellerId);
+        const seller = await Agriculture.findOne({ userId: req.params.sellerId });
         if (!seller) return res.status(404).json({ success: false, message: 'Seller not found' });
 
         const reviews = seller.ordersReceived
@@ -542,33 +447,123 @@ exports.getSellerReviews = async (req, res) => {
 };
 
 // ======================
-// SUPPORT QUERIES CONTROLLERS
+// SUPPORT QUERIES
 // ======================
 
-// @desc    Create support query
-// @route   POST /api/agriculture/support
 exports.createSupportQuery = async (req, res) => {
     try {
-        const agriculture = await Agriculture.findById(req.user.id);
+        const agriculture = await Agriculture.findOne({ userId: req.user.id });
         if (!agriculture) return res.status(404).json({ success: false, message: 'User not found' });
-
         agriculture.supportQueries.push(req.body);
         await agriculture.save();
-
         res.status(201).json({ success: true, data: agriculture.supportQueries });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// @desc    Get my queries
-// @route   GET /api/agriculture/support
 exports.getMyQueries = async (req, res) => {
     try {
-        const agriculture = await Agriculture.findById(req.user.id);
+        const agriculture = await Agriculture.findOne({ userId: req.user.id });
         if (!agriculture) return res.status(404).json({ success: false, message: 'User not found' });
-
         res.json({ success: true, data: agriculture.supportQueries });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// ======================
+// CROP GUIDE  (public reference data — no auth needed)
+// ======================
+
+// @desc   Get all crop guide entries (with optional season filter & search)
+// @route  GET /api/agriculture/crop-guide
+// @access Public
+exports.getCropGuide = async (req, res) => {
+    try {
+        const { season, search, page = 1, limit = 50 } = req.query;
+
+        const filter = { isActive: true };
+        if (season && season !== 'All') filter.season = season;
+        if (search) filter.$text = { $search: search };           // uses the text index on `name`
+
+        const crops = await CropGuide.find(filter)
+            .sort({ season: 1, name: 1 })
+            .skip((page - 1) * Number(limit))
+            .limit(Number(limit))
+            .select('-__v');
+
+        const total = await CropGuide.countDocuments(filter);
+
+        res.json({
+            success: true,
+            data: crops,
+            meta: {
+                total,
+                page: Number(page),
+                limit: Number(limit),
+                pages: Math.ceil(total / Number(limit)),
+                seasons: ['Rabi', 'Kharif', 'Zaid', 'Perennial'],
+            },
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc   Get single crop guide entry by ID or name
+// @route  GET /api/agriculture/crop-guide/:idOrName
+// @access Public
+exports.getCropGuideById = async (req, res) => {
+    try {
+        const { idOrName } = req.params;
+        const isObjectId = mongoose.Types.ObjectId.isValid(idOrName);
+
+        const crop = isObjectId
+            ? await CropGuide.findById(idOrName).select('-__v')
+            : await CropGuide.findOne({ name: { $regex: `^${idOrName}$`, $options: 'i' } }).select('-__v');
+
+        if (!crop) return res.status(404).json({ success: false, message: 'Crop not found' });
+        res.json({ success: true, data: crop });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc   Add a crop guide entry (admin only)
+// @route  POST /api/agriculture/crop-guide
+// @access Admin
+exports.addCropGuideEntry = async (req, res) => {
+    try {
+        const crop = await CropGuide.create(req.body);
+        res.status(201).json({ success: true, data: crop });
+    } catch (error) {
+        if (error.code === 11000) return res.status(400).json({ success: false, message: 'A crop with this name already exists' });
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc   Update a crop guide entry (admin only)
+// @route  PUT /api/agriculture/crop-guide/:id
+// @access Admin
+exports.updateCropGuideEntry = async (req, res) => {
+    try {
+        const crop = await CropGuide.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }).select('-__v');
+        if (!crop) return res.status(404).json({ success: false, message: 'Crop not found' });
+        res.json({ success: true, data: crop });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc   Delete a crop guide entry (admin only)
+// @route  DELETE /api/agriculture/crop-guide/:id
+// @access Admin
+exports.deleteCropGuideEntry = async (req, res) => {
+    try {
+        const crop = await CropGuide.findByIdAndDelete(req.params.id);
+        if (!crop) return res.status(404).json({ success: false, message: 'Crop not found' });
+        res.json({ success: true, message: `${crop.name} removed from crop guide` });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

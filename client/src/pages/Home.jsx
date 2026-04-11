@@ -292,7 +292,7 @@ const Home = () => {
                 <SectionHeading title="How It Works" subtitle="Simple steps to access government services online" />
                 <div className="space-y-4">
                   {[
-                    { step: 1, title: 'Register', desc: 'Sign up with your mobile number or Aadhaar', icon: '📝' },
+                    { step: 1, title: 'Register', desc: 'Sign up with your Email', icon: '📝' },
                     { step: 2, title: 'Choose Service', desc: 'Select from 50+ digital services', icon: '🔍' },
                     { step: 3, title: 'Get Benefits', desc: 'Receive certificates, payments, or assistance', icon: '🎁' },
                   ].map((item, idx) => (
