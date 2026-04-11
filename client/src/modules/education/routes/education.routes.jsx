@@ -2,15 +2,16 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 import Dashboard from "../pages/Dashboard";
 import Courses from "../pages/Courses";
-import Tests from "../pages/Classes";
+import Tests from "../pages/Tests";
 import Notes from "../pages/Notes";
 import Profile from "../pages/Profile";
+import Layout from "../pages/Layout";
 import ViewCourse from "../pages/ViewCourse"; // ← import ViewCourse
 export default function EducationRoutes() {
   return (
     <Routes>
 
-      <Route path="/" element={<Dashboard />}>
+      <Route path="/" element={<Layout />}>
 
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />

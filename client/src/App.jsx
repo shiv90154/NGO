@@ -10,7 +10,7 @@ import VerifyOTP from "./pages/VerifyOTP";
 import TestDashboard from "./pages/TestDashboard";
 import ScrollToTop from "./components/ScrollToTop";
 import Refund from "./pages/Refund";
-import Disclaimer from "./pages/Disclamier";
+import Disclaimer from "./pages/Disclaimer";
 import Privacy from "./pages/Privacy";
 import Faq from "./pages/Faq";
 // Import module dashboards
@@ -42,7 +42,7 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/test-dashboard" element={<TestDashboard />} />
         <Route path="/refund" element={<Refund />} />
-        <Route path="/disclamier" element={<Disclaimer />} />
+        <Route path="/disclaimer" element={<Disclaimer />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/faq" element={<Faq />} />
 
@@ -50,8 +50,8 @@ function App() {
         {/* Module dashboard routes (standalone) */}
         <Route path="/education/*" element={<EducationRoutes />} />
         <Route path="/agriculture/*" element={<AgricultureRoutes />} />
-        <Route path="/healthcare/dashboard" element={<HealthcareDashboard />} />
-        <Route path="/news/dashboard" element={<NewsDashboard />} />
+        <Route path="/healthcare/" element={<HealthcareDashboard />} />
+        <Route path="/news/" element={<NewsDashboard />} />
         <Route path="/it/dashboard" element={<ITDashboard />} />
 
 

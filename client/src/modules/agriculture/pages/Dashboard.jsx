@@ -25,20 +25,21 @@ const AgricultureDashboard = () => {
 
   const fetchDashboardStats = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/agriculture/dashboard`, {
+      const response = await axios.get(`${API_URL}/agriculture/dashboard`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.success) {
         const data = response.data.data;
         setStats({
-          activeCrops: data.farmingStats?.activeCrops || 0,
-          productsListed: data.farmingStats?.activeListings || 0,
-          ordersReceived: data.farmingStats?.totalOrdersReceived || 0,
-          totalRevenue: data.farmingStats?.totalRevenue || 0
+          activeCrops: data.stats?.totalCrops || 0,
+          productsListed: data.activeProducts || 0,
+          ordersReceived: data.stats?.totalOrders || 0,
+          totalRevenue: data.stats?.totalRevenue || 0
         });
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
+      toast.error('Failed to load dashboard stats');
     } finally {
       setLoading(false);
     }

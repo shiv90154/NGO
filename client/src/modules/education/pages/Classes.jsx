@@ -7,7 +7,7 @@ const Classes = () => {
     const { studentId } = useOutletContext();
 
     useEffect(() => {
-        fetch(`${import.meta.env.VITE_API_URL}/students/classes/${studentId}`)
+        fetch(`${import.meta.env.VITE_API_URL}/students/my-courses`)
             .then((res) => res.json())
             .then((data) => {
                 setClasses(data);

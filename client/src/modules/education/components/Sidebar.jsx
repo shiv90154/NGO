@@ -21,17 +21,15 @@ export default function Sidebar() {
   const toggleSidebar = () => setCollapsed(!collapsed);
 
   const navLinkClass = ({ isActive }) =>
-    `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
-      isActive
-        ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
-        : "text-slate-300 hover:bg-slate-800 hover:text-white"
+    `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
+      ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
+      : "text-slate-300 hover:bg-slate-800 hover:text-white"
     } ${collapsed ? "justify-center px-2" : ""}`;
 
   return (
     <div
-      className={`relative bg-slate-900 text-white flex flex-col shadow-2xl shadow-slate-900/20 z-10 transition-all duration-300 ${
-        collapsed ? "w-20" : "w-72"
-      }`}
+      className={`relative bg-slate-900 text-white flex flex-col shadow-2xl shadow-slate-900/20 z-10 transition-all duration-300 ${collapsed ? "w-20" : "w-72"
+        }`}
     >
       {/* Toggle Button */}
       <button
@@ -83,20 +81,7 @@ export default function Sidebar() {
 
       {/* User & Footer Actions */}
       <div className="p-4 border-t border-slate-800 space-y-1.5">
-        {/* User Avatar + Name (only when expanded) */}
-        <div className={`flex items-center gap-3 px-4 py-3 rounded-xl ${collapsed ? "justify-center px-2" : ""}`}>
-          <img
-            src="https://i.pravatar.cc/300?img=7"
-            alt="avatar"
-            className="w-8 h-8 rounded-full ring-2 ring-slate-700"
-          />
-          {!collapsed && (
-            <div className="flex-1">
-              <p className="text-sm font-semibold">Alex Johnson</p>
-              <p className="text-xs text-slate-400">Student</p>
-            </div>
-          )}
-        </div>
+
 
         <button
           className={`flex items-center gap-3 px-4 py-3 w-full rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition-all duration-200 ${collapsed ? "justify-center px-2" : ""}`}

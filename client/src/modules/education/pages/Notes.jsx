@@ -22,7 +22,6 @@ const MOCK_NOTES = [
 ];
 
 const Notes = () => {
-    const { studentId } = useOutletContext();
 
     const [notes, setNotes] = useState([]);
     const [loading, setLoading] = useState(true);

@@ -11,7 +11,6 @@ const AgricultureRoutes = () => (
       <Route path="/" element={<AgricultureDashboard />} />
       <Route path="/1/" element={<DashboardHome />} />
       <Route path="/profile/" element={<AgricultureProfile />} />
-
       <Route path="/crops/" element={<CropGuide />} />
       <Route path="/orders/" element={<Orders />} />
     </Routes>
