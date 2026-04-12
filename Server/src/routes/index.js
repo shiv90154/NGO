@@ -5,6 +5,9 @@ const router = express.Router();
 // User routes (authentication, profile, etc.)
 const userRoutes = require('./auth.routes');
 
+// Education routes (courses, tests, certificates, etc.)
+const educationRoutes = require('./educationRoutes');   // <-- import education routes
+
 // ======================
 // HEALTH CHECK
 // ======================
@@ -25,17 +28,15 @@ router.get('/', (req, res) => {
     version: '1.0.0',
     endpoints: {
       users: '/api/users',
+      education: '/api/education',
     },
   });
 });
 
 // ======================
-// MOUNT USER ROUTES
+// MOUNT ROUTES
 // ======================
 router.use('/users', userRoutes);
-
-// ======================
-// 404 HANDLER REMOVED (causing path-to-regexp error)
-// ======================
+router.use('/education', educationRoutes);   // <-- mount education routes
 
 module.exports = router;

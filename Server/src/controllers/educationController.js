@@ -8,7 +8,7 @@ const {
   Note,
   TeacherEarning
 } = require('../models/education.model');
-const User = require('../models/user.model');
+const User = require('../models/user.model'); // if needed
 
 // ======================
 // COURSE CONTROLLERS
@@ -41,12 +41,19 @@ exports.createCourse = async (req, res) => {
   }
 };
 
-// @desc    Get all published courses (with filters)
+// @desc    Get all published courses (with filters) – supports ?myCourses=true for teacher
 // @route   GET /api/education/courses
 exports.getCourses = async (req, res) => {
   try {
-    const { category, level, search, page = 1, limit = 10 } = req.query;
+    const { category, level, search, page = 1, limit = 10, myCourses } = req.query;
     let filter = { isPublished: true };
+
+    // If teacher requests only their own courses (for dashboard)
+    if (myCourses === 'true' && req.user) {
+      filter = { instructor: req.user.id };
+      // Also include unpublished courses for teacher
+      delete filter.isPublished;
+    }
 
     if (category) filter.category = category;
     if (level) filter.level = level;
@@ -111,7 +118,7 @@ exports.deleteCourse = async (req, res) => {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ success: false, message: 'Course not found' });
 
-    await course.remove();
+    await Course.findByIdAndDelete(req.params.id);
     res.json({ success: true, message: 'Course deleted' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -231,11 +238,24 @@ exports.getTestsByCourse = async (req, res) => {
   }
 };
 
+// NEW: Get a single test by ID (for taking the test)
+// @route   GET /api/education/tests/:testId
+exports.getTestById = async (req, res) => {
+  try {
+    const test = await Test.findById(req.params.testId).populate('course', 'title');
+    if (!test) return res.status(404).json({ success: false, message: 'Test not found' });
+    // Optionally check if user is enrolled in the course
+    res.json({ success: true, data: test });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // @desc    Submit a test
 // @route   POST /api/education/tests/:testId/submit
 exports.submitTest = async (req, res) => {
   try {
-    const { answers } = req.body;
+    const { answers, startedAt } = req.body;
     const test = await Test.findById(req.params.testId);
     if (!test) return res.status(404).json({ success: false, message: 'Test not found' });
 
@@ -244,7 +264,7 @@ exports.submitTest = async (req, res) => {
 
     test.questions.forEach((q, idx) => {
       const selected = answers[idx];
-      const isCorrect = selected === q.correctOption;
+      const isCorrect = (selected === q.correctOption);
       if (isCorrect) score += q.marks;
       userAnswers.push({ questionId: idx, selectedOption: selected, isCorrect });
     });
@@ -261,6 +281,7 @@ exports.submitTest = async (req, res) => {
       percentage,
       passed,
       answers: userAnswers,
+      startedAt: startedAt || new Date(),
       submittedAt: new Date()
     });
 
@@ -320,6 +341,25 @@ exports.getMyCertificates = async (req, res) => {
   try {
     const certs = await Certificate.find({ user: req.user.id }).populate('course', 'title');
     res.json({ success: true, data: certs });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// NEW: Get a single certificate by ID
+// @route   GET /api/education/certificates/:certId
+exports.getCertificateById = async (req, res) => {
+  try {
+    const certificate = await Certificate.findById(req.params.certId)
+      .populate('user', 'fullName email')
+      .populate('course', 'title');
+    if (!certificate) return res.status(404).json({ success: false, message: 'Certificate not found' });
+
+    // Ensure the requesting user owns the certificate or is admin
+    if (certificate.user._id.toString() !== req.user.id && req.user.role !== 'SUPER_ADMIN') {
+      return res.status(403).json({ success: false, message: 'Unauthorized' });
+    }
+    res.json({ success: true, data: certificate });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

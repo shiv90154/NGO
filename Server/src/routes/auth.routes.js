@@ -4,10 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Import controller
 const userController = require('../controllers/auth.controller');
-
-// Import middleware
 const { protect, restrictTo } = require('../middleware/auth.middleware');
 
 // Configure multer for temporary file storage
@@ -45,6 +42,11 @@ router.post(
 router.post('/verify-otp', userController.verifyOTP);
 router.post('/resend-otp', userController.resendOTP);
 router.post('/login', userController.login);
+
+// NEW: Forgot password flow
+router.post('/forgot-password', userController.forgotPassword);
+router.post('/verify-reset-otp', userController.verifyResetOtp);
+router.post('/reset-password', userController.resetPassword);
 
 // ======================
 // PROTECTED ROUTES (Authentication required)

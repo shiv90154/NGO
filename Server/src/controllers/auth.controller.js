@@ -48,7 +48,7 @@ const parseArray = (value) => {
 };
 
 // ======================
-// REGISTER (Full version with all new fields)
+// REGISTER
 // ======================
 exports.register = async (req, res) => {
   try {
@@ -58,50 +58,26 @@ exports.register = async (req, res) => {
     }
 
     const {
-      // Basic Info
       fullName, name, email, phone, mobile, password,
       role, modules,
       fatherName, motherName, dob, dateOfBirth, gender,
       aadhaarNumber, aadharCard, panNumber, panCard, voterId, passportNumber,
       state, district, block, village, pincode, fullAddress,
       reportsTo, sponsorId,
-
-      // Teacher fields
       specialization, qualifications, experienceYears,
-
-      // Doctor fields
       doctorSpecialization, doctorExperience, consultationFee, registrationNumber, bloodGroup,
       allergies, medicalHistory,
       emergencyContactName, emergencyContactRelation, emergencyContactPhone,
-
-      // Farmer/Agriculture fields
       landSize, crops, cropType, farmingType, isContractFarmer, farmLocation, irrigationType,
-
-      // Education fields
       className, schoolName, board, percentage,
-
-      // IT fields
       projectType, techStack, experience,
-
-      // Social fields
       username, bio, interests,
-
-      // Bank account
       bankAccount,
-
-      // Agent commission rate
       commissionRate,
-
-      // NEW: Media creator
       isMediaCreator,
-
-      // NEW: Seller profile
       isSeller, storeName, gstNumber,
-
-      // NEW: CRM/IT fields (can be updated later)
     } = req.body;
 
-    // Handle both field name variations
     const finalName = fullName || name;
     const finalEmail = email;
     const finalPhone = phone || mobile;
@@ -124,12 +100,10 @@ exports.register = async (req, res) => {
     let mappedRole = (role || 'USER').toUpperCase();
     if (!VALID_ROLES.includes(mappedRole)) mappedRole = 'USER';
 
-    // Parse modules
     let userModules = [];
     if (modules) {
       userModules = Array.isArray(modules) ? modules : [modules];
     } else {
-      // Auto-detect modules from filled fields
       if (finalAadhaar || finalPan || voterId || passportNumber) userModules.push('FINANCE');
       if (bloodGroup || allergies || medicalHistory || emergencyContactName) userModules.push('HEALTHCARE');
       if (landSize || crops || cropType || farmLocation || irrigationType) userModules.push('AGRICULTURE');
@@ -140,7 +114,6 @@ exports.register = async (req, res) => {
       if (isSeller === 'true' || isSeller === true) userModules.push('ECOMMERCE');
     }
 
-    // Base user data
     const userData = {
       fullName: finalName,
       email: finalEmail,
@@ -242,7 +215,7 @@ exports.register = async (req, res) => {
       };
     }
 
-    // Seller profile (E-commerce)
+    // Seller profile
     if (userModules.includes('ECOMMERCE') || isSeller === 'true' || isSeller === true) {
       userData.sellerProfile = {
         isSeller: true,
@@ -268,7 +241,7 @@ exports.register = async (req, res) => {
 
     const user = new User(userData);
 
-    // Handle file uploads (profile, aadhaar, pan, store logo)
+    // Handle file uploads
     if (req.files) {
       const moveFile = async (fieldName, prefix) => {
         const file = req.files[fieldName]?.[0];
@@ -286,11 +259,7 @@ exports.register = async (req, res) => {
       await moveFile('aadharDocument', 'aadhaar');
       await moveFile('panImage', 'pan');
       await moveFile('panDocument', 'pan');
-      // Store logo
       await moveFile('storeLogo', 'store_logo');
-      if (req.files['storeLogo']?.[0]) {
-        user.sellerProfile.storeLogo = `/uploads/${fileNameFromMove}`; // careful: need to capture filename
-      }
     }
 
     await user.save();
@@ -395,7 +364,6 @@ exports.login = async (req, res) => {
     const isMatch = await user.comparePassword(password);
     if (!isMatch) return res.status(400).json({ success: false, message: 'Invalid credentials' });
 
-    // Update last login
     await user.updateLastLogin(req.ip, req.headers['user-agent']);
 
     const token = jwt.sign(
@@ -416,7 +384,84 @@ exports.login = async (req, res) => {
 };
 
 // ======================
-// GET PROFILE (with populated new fields)
+// FORGOT PASSWORD - SEND OTP
+// ======================
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const otp = generateOTP();
+    const hashedOtp = await hashOTP(otp);
+    user.otp = hashedOtp;
+    user.otpExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
+    await user.save();
+
+    await sendEmail(email, otp).catch(err => console.error('Email error:', err));
+    console.log(`OTP for ${email}: ${otp}`); // For development
+
+    res.json({ success: true, message: 'OTP sent to your email' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// ======================
+// VERIFY OTP FOR PASSWORD RESET
+// ======================
+exports.verifyResetOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      return res.status(400).json({ success: false, message: 'Email and OTP are required' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    if (!user.otp || !(await verifyOTP(otp, user.otp)) || user.otpExpire < Date.now()) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
+    }
+
+    res.json({ success: true, message: 'OTP verified' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// ======================
+// RESET PASSWORD
+// ======================
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ success: false, message: 'All fields are required' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    if (!user.otp || !(await verifyOTP(otp, user.otp)) || user.otpExpire < Date.now()) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
+    }
+
+    user.password = newPassword;
+    user.otp = undefined;
+    user.otpExpire = undefined;
+    await user.save();
+
+    res.json({ success: true, message: 'Password reset successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// ======================
+// GET PROFILE
 // ======================
 exports.getProfile = async (req, res) => {
   try {
@@ -443,14 +488,13 @@ exports.getProfile = async (req, res) => {
 };
 
 // ======================
-// UPDATE PROFILE (includes all new fields)
+// UPDATE PROFILE
 // ======================
 exports.updateProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
-    // Helper to move uploaded file
     const moveFile = async (fieldName, prefix) => {
       const file = req.files?.[fieldName]?.[0];
       if (file) {
@@ -468,16 +512,13 @@ exports.updateProfile = async (req, res) => {
       return null;
     };
 
-    // Profile image
     await moveFile('profileImage', 'profile');
     await moveFile('profilePicture', 'profile');
-    // Store logo
     const logoFileName = await moveFile('storeLogo', 'store_logo');
     if (logoFileName && user.sellerProfile) {
       user.sellerProfile.storeLogo = `/uploads/${logoFileName}`;
     }
 
-    // Simple fields
     const simpleFields = [
       'fullName', 'phone', 'fatherName', 'motherName', 'dob', 'gender',
       'state', 'district', 'block', 'village', 'pincode', 'fullAddress',
@@ -488,7 +529,6 @@ exports.updateProfile = async (req, res) => {
       if (req.body[key] !== undefined) user[key] = req.body[key];
     }
 
-    // Emergency contact
     if (req.body.emergencyContactName || req.body.emergencyContactRelation || req.body.emergencyContactPhone) {
       user.emergencyContact = {
         name: req.body.emergencyContactName || user.emergencyContact?.name,
@@ -525,7 +565,7 @@ exports.updateProfile = async (req, res) => {
       if (req.body.irrigationType !== undefined) user.farmerProfile.irrigationType = req.body.irrigationType;
     }
 
-    // Education profile (student)
+    // Education profile
     if (req.body.className !== undefined || req.body.schoolName !== undefined || req.body.board !== undefined || req.body.percentage !== undefined) {
       user.educationProfile = user.educationProfile || {};
       if (req.body.className !== undefined) user.educationProfile.className = req.body.className;
@@ -627,7 +667,7 @@ exports.updateProfile = async (req, res) => {
 };
 
 // ======================
-// ASSIGN HIERARCHY (Admin)
+// ASSIGN HIERARCHY
 // ======================
 exports.assignReporting = async (req, res) => {
   try {
@@ -770,7 +810,7 @@ exports.updateWallet = async (req, res) => {
 };
 
 // ======================
-// NEW: ADD HEALTH RECORD
+// ADD HEALTH RECORD
 // ======================
 exports.addHealthRecord = async (req, res) => {
   try {
@@ -805,7 +845,7 @@ exports.addHealthRecord = async (req, res) => {
 };
 
 // ======================
-// NEW: ADD PRODUCT LISTING (Agriculture/E-commerce)
+// ADD PRODUCT LISTING
 // ======================
 exports.addProductListing = async (req, res) => {
   try {
@@ -844,7 +884,7 @@ exports.addProductListing = async (req, res) => {
 };
 
 // ======================
-// NEW: ADD CONTRACT FARMING AGREEMENT
+// ADD CONTRACT FARMING AGREEMENT
 // ======================
 exports.addContractFarming = async (req, res) => {
   try {
@@ -875,7 +915,7 @@ exports.addContractFarming = async (req, res) => {
 };
 
 // ======================
-// NEW: ADD LOAN
+// ADD LOAN
 // ======================
 exports.addLoan = async (req, res) => {
   try {
@@ -902,7 +942,7 @@ exports.addLoan = async (req, res) => {
 };
 
 // ======================
-// NEW: ADD CLIENT (CRM)
+// ADD CLIENT (CRM)
 // ======================
 exports.addClient = async (req, res) => {
   try {
@@ -930,7 +970,7 @@ exports.addClient = async (req, res) => {
 };
 
 // ======================
-// NEW: ADD PROJECT (CRM/IT)
+// ADD PROJECT (CRM/IT)
 // ======================
 exports.addProject = async (req, res) => {
   try {
@@ -959,7 +999,7 @@ exports.addProject = async (req, res) => {
 };
 
 // ======================
-// NEW: ADD STORE PRODUCT (E-commerce)
+// ADD STORE PRODUCT (E-commerce)
 // ======================
 exports.addStoreProduct = async (req, res) => {
   try {
